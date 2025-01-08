@@ -1,6 +1,6 @@
 public class GameThread implements Runnable{
 
-    int client_ID;
+    int client_ID = 0;
 
     public enum GameState
     {
@@ -19,7 +19,7 @@ public class GameThread implements Runnable{
 
     GameState gameState = GameState.IDLE;
 
-    //Konstruktor
+    // Konstruktor
     public GameThread(int id){
         client_ID = id;
     }
@@ -32,6 +32,7 @@ public class GameThread implements Runnable{
     public void game(int client_ID){
         //Start des Spiels
         setGameState(GameState.DEPOSIT);
+        System.out.println("ehre " + client_ID);
     }
 
     //region Getter and Setter
