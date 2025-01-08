@@ -22,23 +22,23 @@ public class Main {
     }
 
     public void startSession(){
-        Thread thread = new Thread(new GameThread());
+        Thread thread = new Thread(new GameThread(5));
         thread.start();
     }
 
-    public void game(){
+    public void game(int client_ID){
         setGameState(GameState.DEPOSIT);
     }
 
     class GameThread implements Runnable{
         int client_ID;
 
-        public GameThread(){
-
+        public GameThread(int id){
+            client_ID = id;
         }
 
         public void run(){
-            game();
+            game(client_ID);
         }
     }
 
