@@ -31,6 +31,7 @@ public class Main {
         thread.start();
     }
 
+    // Funktioniert als Hauptmethode für das Blackjack Spiel
     public void game(int client_ID){
         setGameState(GameState.DEPOSIT);
     }
