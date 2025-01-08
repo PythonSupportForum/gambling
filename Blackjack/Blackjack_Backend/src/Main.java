@@ -9,7 +9,7 @@ public class Main {
         DEPOSIT,
         START,
         BET,
-        DRAW,
+        SHUFFLE,
         DEALER_START,
         PLAYER_DRAW,
         DEALER_DRAW,
