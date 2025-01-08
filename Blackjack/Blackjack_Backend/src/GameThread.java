@@ -131,9 +131,28 @@ public class GameThread implements Runnable{
 
         setGameState(GameState.DEALER_DRAW);
 
-        //region Dealer Algorithmus, später mit Frontend troubleshooten
-        //dealerAlgorithm(dealerStack, deck);
+        //Hier gehört die Dealer Algorithmus Funktion hin
         
+        setGameState(GameState.PLAYER_WON);
+        setGameState(GameState.PLAYER_LOST);
+        setGameState(GameState.WITHDRAW);
+    }
+
+    //region Getter and Setter
+    public GameState getGameState() {
+        return gameState;
+    }
+
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
+    }
+    //endregion
+}
+
+
+//region Dealer Algorithmus, später mit Frontend troubleshooten
+//dealerAlgorithm(dealerStack, deck);
+
 private void dealerAlgorithm(List<GameCard> dealerStack, Stack<GameCard> deck) {
     int total = 0;
     boolean hasAce = false;
@@ -177,20 +196,3 @@ private void dealerAlgorithm(List<GameCard> dealerStack, Stack<GameCard> deck) {
     }
 }
 //endregion
-        
-        
-        setGameState(GameState.PLAYER_WON);
-        setGameState(GameState.PLAYER_LOST);
-        setGameState(GameState.WITHDRAW);
-    }
-
-    //region Getter and Setter
-    public GameState getGameState() {
-        return gameState;
-    }
-
-    public void setGameState(GameState gameState) {
-        this.gameState = gameState;
-    }
-    //endregion
-}
