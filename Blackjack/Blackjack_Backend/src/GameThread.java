@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Stack;
+import java.util.Scanner;
 
 public class GameThread implements Runnable{
 
@@ -36,6 +37,8 @@ public class GameThread implements Runnable{
     // Funktioniert als Hauptmethode für das Blackjack Spiel
     public void game(int client_ID){
         //Start des Spiels
+        List<GameCard> dealerStack = new ArrayList<>();
+        List<GameCard> playerStack = new ArrayList<>();
         Stack<GameCard> deck = new Stack<>();
         setGameState(GameState.DEPOSIT);
         setGameState(GameState.START);
@@ -113,8 +116,70 @@ public class GameThread implements Runnable{
         }
 
         setGameState(GameState.DEALER_START);
+
+        dealerStack.add(deck.pop());
+        dealerStack.add(deck.pop());
+        if(dealerStack.get(1).getCoat() == 'a'){
+            //ask for Insurance Bet
+        }
+        
         setGameState(GameState.PLAYER_DRAW);
+        boolean input = false;
+        while(!input){
+            //ist nich vollständig, nach mit Frontend lösen
+            Scanner c = new Scanner(System.in);
+        }
+
         setGameState(GameState.DEALER_DRAW);
+
+        //region Dealer Algorithmus, später mit Frontend troubleshooten
+        //dealerAlgorithm(dealerStack, deck);
+        
+private void dealerAlgorithm(List<GameCard> dealerStack, Stack<GameCard> deck) {
+    int total = 0;
+    boolean hasAce = false;
+
+    // Calculate initial hand value
+    for (GameCard card : dealerStack) {
+        if (card.getCoat() == 'a') {
+            hasAce = true;
+            total += 11;
+        } else if (card.getCoat() == 'j' || card.getCoat() == 'q' || card.getCoat() == 'k' || card.getCoat() == '0') {
+            total += 10;
+        } else {
+            total += Character.getNumericValue(card.getCoat());
+        }
+    }
+
+    // Adjust Ace value if necessary
+    if (hasAce && total > 21) {
+        total -= 10; // Count Ace as 1 instead of 11
+    }
+
+    // Draw until the dealer's hand reaches a stable strategy threshold
+    while (total < 17 || (total < 18 && hasAce)) {
+        GameCard newCard = deck.pop();
+        dealerStack.add(newCard);
+
+        if (newCard.getCoat() == 'a') {
+            hasAce = true;
+            total += 11;
+        } else if (newCard.getCoat() == 'j' || newCard.getCoat() == 'q' || newCard.getCoat() == 'k' || newCard.getCoat() == '0') {
+            total += 10;
+        } else {
+            total += Character.getNumericValue(newCard.getCoat());
+        }
+
+        // Recheck Ace value adjustment if over 21
+        if (hasAce && total > 21) {
+            total -= 10;
+            hasAce = false; // Reset Ace value to prevent double-counting
+        }
+    }
+}
+//endregion
+        
+        
         setGameState(GameState.PLAYER_WON);
         setGameState(GameState.PLAYER_LOST);
         setGameState(GameState.WITHDRAW);
