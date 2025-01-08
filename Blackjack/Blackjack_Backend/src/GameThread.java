@@ -28,9 +28,6 @@ public class GameThread implements Runnable{
         game(client_ID);
     }
 
-
-    //Carl sit ein huso
-
     // Funktioniert als Hauptmethode für das Blackjack Spiel
     public void game(int client_ID){
         //Start des Spiels
