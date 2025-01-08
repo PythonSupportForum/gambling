@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Stack;
@@ -40,7 +41,7 @@ public class GameThread implements Runnable{
         setGameState(GameState.START);
         setGameState(GameState.BET);
         setGameState(GameState.SHUFFLE);
-        List<GameCard> a = new List<GameCard>();
+        List<GameCard> a = new ArrayList<>();
 
         //region Karten hinzufügen
         // Clubs (Kreuz)
