@@ -40,7 +40,7 @@ public class GameThread implements Runnable{
         setGameState(GameState.START);
         setGameState(GameState.BET);
         setGameState(GameState.SHUFFLE);
-        List<GameCard> a = new List<GameCard>();
+        List<GameCard> a = new ArrayList<GameCard>();
 
         //region Karten hinzufügen
         // Clubs (Kreuz)
