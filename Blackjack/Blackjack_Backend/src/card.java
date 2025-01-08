@@ -1,8 +1,8 @@
-public class card {
+public class GameCard {
     private char id;
     private char coat;
 
-    public card(char id, char coat){
+    public GameCard(char id, char coat){
         this.setId(id);
         this.setCoat(coat);
     }
