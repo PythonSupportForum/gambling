@@ -9,7 +9,7 @@ public class Main {
 
     public static void main(String[] args){
 
-        int port = 1015;
+        int port = 8080;
 
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Server gestartet, wartet auf Verbindungen...");
