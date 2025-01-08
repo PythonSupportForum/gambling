@@ -1,19 +1,19 @@
 public class GameCard {
-    private char id;
+    private char valueOfCard;
     private char coat;
 
-    public GameCard(char id, char coat){
-        this.setId(id);
+    public GameCard(char valueOfCard, char coat){
+        this.setId(valueOfCard);
         this.setCoat(coat);
     }
 
     //region Getter und Setter
     public char getId() {
-        return id;
+        return valueOfCard;
     }
 
-    public void setId(char id) {
-        this.id = id;
+    public void setId(char valueOfCard) {
+        this.valueOfCard = valueOfCard;
     }
 
     public char getCoat() {

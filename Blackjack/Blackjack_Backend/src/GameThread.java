@@ -1,6 +1,6 @@
 public class GameThread implements Runnable{
 
-    int client_ID = 0;
+    int client_ID;
 
     public enum GameState
     {
@@ -19,7 +19,7 @@ public class GameThread implements Runnable{
 
     GameState gameState = GameState.IDLE;
 
-    // Konstruktor
+    //Konstruktor
     public GameThread(int id){
         client_ID = id;
     }
@@ -28,11 +28,13 @@ public class GameThread implements Runnable{
         game(client_ID);
     }
 
+
+    //Carl sit ein huso
+
     // Funktioniert als Hauptmethode für das Blackjack Spiel
     public void game(int client_ID){
         //Start des Spiels
         setGameState(GameState.DEPOSIT);
-        System.out.println("ehre " + client_ID);
     }
 
     //region Getter and Setter
