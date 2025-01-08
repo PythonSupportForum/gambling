@@ -26,11 +26,13 @@ public class Main {
                 // Nachricht vom Client lesen
                 String clientMessage;
                 while ((clientMessage = input.readLine()) != null) {
+                    System.out.println(clientMessage);
+
                     // Erwartet client_ID in der ersten Nachricht des Clients
-                    int client_ID = Integer.parseInt(clientMessage);
+                    //int client_ID = Integer.parseInt(clientMessage);
                     // Bestätigung an den Client
                     output.println("acc");
-                    startSession(client_ID, clientSocket);
+                    //startSession(client_ID, clientSocket);
 
                     // Beenden, falls "exit" gesendet wird
                     if (clientMessage.equalsIgnoreCase("exit")) {
