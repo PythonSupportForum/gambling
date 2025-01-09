@@ -198,7 +198,7 @@ public class GameThread implements Runnable {
         setGameState(GameState.WITHDRAW);
     }
 
-    public int currentPlayerValue(List<GameCard> playerStack) {
+    public int currentValue(List<GameCard> playerStack) {
         int totalValue = 0;
         int aceCount = 0;
 
