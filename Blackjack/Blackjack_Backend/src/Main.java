@@ -11,9 +11,8 @@ public class Main {
 
         int port = 8080;
 
-        WebSocketServer server = new BlackjackWebSocketServer(new InetSocketAddress(port));
+        WebSocketServer server = new BlackjackServer(new InetSocketAddress(port));
         server.start();
-
         System.out.println("WebSocket-Server gestartet auf Port: " + port);
     }
 

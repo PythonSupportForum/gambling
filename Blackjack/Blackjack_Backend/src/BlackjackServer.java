@@ -4,16 +4,16 @@ import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
 
-class BlackjackWebSocketServer extends WebSocketServer {
+class BlackjackServer extends WebSocketServer {
 
-    public BlackjackWebSocketServer(InetSocketAddress address) {
+    public BlackjackServer(InetSocketAddress address) {
         super(address);
     }
 
     @Override
     public void onOpen(org.java_websocket.WebSocket conn, ClientHandshake handshake) {
         System.out.println("Neue Verbindung: " + conn.getRemoteSocketAddress());
-        conn.send("Willkommen am WebSocket-Server!"); // Sende Willkommensnachricht
+        conn.send("acc"); // Sende Willkommensnachricht
     }
 
     @Override
