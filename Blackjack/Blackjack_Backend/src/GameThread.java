@@ -198,11 +198,11 @@ public class GameThread implements Runnable {
         setGameState(GameState.WITHDRAW);
     }
 
-    public int currentValue(List<GameCard> playerStack) {
+    public int currentValue(List<GameCard> Stack) {
         int totalValue = 0;
         int aceCount = 0;
 
-        for (GameCard card : playerStack) {
+        for (GameCard card : Stack) {
             char valueOfCard = card.getCoat();
 
             if (valueOfCard >= '2' && valueOfCard <= '9') {
