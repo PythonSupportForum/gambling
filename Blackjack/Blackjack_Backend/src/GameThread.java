@@ -55,6 +55,7 @@ public class GameThread implements Runnable {
     // Funktioniert als Hauptmethode für das Blackjack Spiel
     public void game(int client_ID) {
         //Start des Spiels
+        int id = client_ID;
         int coins = 0;
         double balance = 0.0;
         //Den Kontostand abfragen in der Datenbank
@@ -169,7 +170,14 @@ public class GameThread implements Runnable {
             try
             {
                 bet = Integer.parseInt(inputString);
-                input2 = true;
+                if(bet > coins){
+                    System.out.println("Du hast nicht genug Coins um zu spielen!");
+                    bet = 0;
+                } else {
+                    coins -= bet;
+                    System.out.println("Du hast " + bet + " Coins gesetzt!");
+                    input2 = true;
+                }
             }
             catch(NumberFormatException e)
             {
@@ -177,6 +185,7 @@ public class GameThread implements Runnable {
             }
 
         }
+
         //endregion
 
         setGameState(GameState.SHUFFLE);
@@ -197,7 +206,7 @@ public class GameThread implements Runnable {
             setGameState(GameState.INSURANCE_BET);
             boolean input4 = false;
             while (!input4) {
-                //ist nich vollständig, nach mit Frontend lösen
+                //ist nicht vollständig, nachher mit Frontend lösen
                 Scanner c = new Scanner(System.in);
                 String inputString = c.nextLine();
                 try
@@ -247,17 +256,64 @@ public class GameThread implements Runnable {
 
         }
 
-
-
         setGameState(GameState.DEALER_DRAW);
 
-        //Hier gehört die Dealer Algorithmus Funktion hin
+        int total = 0;
+        int aceCounter = 0;
+        if(dealerStack.get(0).getValueOfCard() == 'a'){
+            aceCounter += 1;
+        }
+        if(dealerStack.get(1).getValueOfCard() == 'a'){
+            aceCounter += 1;
+        }
+        total = currentValue(dealerStack);
 
-        setGameState(GameState.PLAYER_WON);
-        setGameState(GameState.PLAYER_LOST);
-        setGameState(GameState.WITHDRAW);
+        // Weiter Karten nehmen bis eine neue Karte zu riskant ist
+        while (total < 17 || (total < 18 && aceCounter > 0)) {
+            GameCard newCard = deck.pop();
+            dealerStack.add(newCard);
+
+            if (newCard.getCoat() == 'a') {
+                aceCounter += 1;
+                total += 11;
+            } else if (newCard.getCoat() == 'j' || newCard.getCoat() == 'q' || newCard.getCoat() == 'k' || newCard.getCoat() == '0') {
+                total += 10;
+            } else {
+                total += Character.getNumericValue(newCard.getCoat());
+            }
+
+            // Checken, ob mit dem Ass als 11 die 21 überschritten werden
+            if (aceCounter > 0 && total > 21) {
+                total -= 10;
+                aceCounter -= 1; // Ass Counter einen runtersetzen
+            }
+        }
+
+        if(currentValue(dealerStack) < currentValue(playerStack)){
+            coins += (bet * 2);
+            System.out.println("Du hast gewonnen!");
+            // Unser Kontostand muss um den Wert der Coins verringert werden, also Anzahl der Coins * 100
+            setGameState(GameState.PLAYER_WON);
+        } else if(currentValue(dealerStack) == currentValue(playerStack)){
+            coins += bet;
+            System.out.println("Unentschieden!");
+            setGameState(GameState.WITHDRAW);
+        } else if(currentValue(dealerStack) > currentValue(playerStack)){
+            System.out.println("Du hast verloren!");
+            // Unser Kontostand muss um den Wert der Coins erhöht werden, also Anzahl der Coins * 100
+            setGameState(GameState.PLAYER_LOST);
+        } else {
+            System.out.println("Ups??!? Ein Fehler ist aufgetreten!");
+        }
+
+
+
+        //Die Idee ist, das das Spiel direkt neustartet
+        game(id);
+
     }
 
+    //region currentValue-Methode
     public int currentValue(List<GameCard> playerStack) {
         int totalValue = 0;
         int aceCount = 0;
@@ -286,6 +342,7 @@ public class GameThread implements Runnable {
 
         return totalValue;
     }
+    //endregion
 
     //region Getter and Setter
     public GameState getGameState() {
@@ -298,50 +355,4 @@ public class GameThread implements Runnable {
     //endregion
 
 
-    //region Dealer Algorithmus, später mit Frontend troubleshooten
-    //dealerAlgorithm(dealerStack, deck);
-
-    private void dealerAlgorithm(List<GameCard> dealerStack, Stack<GameCard> deck) {
-        int total = 0;
-        boolean hasAce = false;
-
-        // Calculate initial hand value
-        for (GameCard card : dealerStack) {
-            if (card.getCoat() == 'a') {
-                hasAce = true;
-                total += 11;
-            } else if (card.getCoat() == 'j' || card.getCoat() == 'q' || card.getCoat() == 'k' || card.getCoat() == '0') {
-                total += 10;
-            } else {
-                total += Character.getNumericValue(card.getCoat());
-            }
-        }
-
-        // Adjust Ace value if necessary
-        if (hasAce && total > 21) {
-            total -= 10; // Count Ace as 1 instead of 11
-        }
-
-        // Draw until the dealer's hand reaches a stable strategy threshold
-        while (total < 17 || (total < 18 && hasAce)) {
-            GameCard newCard = deck.pop();
-            dealerStack.add(newCard);
-
-            if (newCard.getCoat() == 'a') {
-                hasAce = true;
-                total += 11;
-            } else if (newCard.getCoat() == 'j' || newCard.getCoat() == 'q' || newCard.getCoat() == 'k' || newCard.getCoat() == '0') {
-                total += 10;
-            } else {
-                total += Character.getNumericValue(newCard.getCoat());
-            }
-
-            // Recheck Ace value adjustment if over 21
-            if (hasAce && total > 21) {
-                total -= 10;
-                hasAce = false; // Reset Ace value to prevent double-counting
-            }
-        }
-    }
-    //endregion
 }

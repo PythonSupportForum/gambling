@@ -3,16 +3,16 @@ public class GameCard {
     private char coat;
 
     public GameCard(char valueOfCard, char coat){
-        this.setId(valueOfCard);
+        this.setValueOfCard(valueOfCard);
         this.setCoat(coat);
     }
 
     //region Getter und Setter
-    public char getId() {
+    public char getValueOfCard() {
         return valueOfCard;
     }
 
-    public void setId(char valueOfCard) {
+    public void setValueOfCard(char valueOfCard) {
         this.valueOfCard = valueOfCard;
     }
 
