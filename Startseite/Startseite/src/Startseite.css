@@ -1,0 +1,37 @@
+
+*{
+    font-family: Helvetica;
+    color: #15471c;
+}
+
+.Header {
+    position: fixed;
+    top: 0px;
+    bottom: 80%;
+    left: 0px;
+    right: 0px;
+    background-color: #bf9b30;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+
+}
+
+#Logo {
+    font-weight: 900;
+    letter-spacing: -3px;
+    font-size: 7vw;
+    margin-left: 5%;
+    transition: all 100s;
+    cursor: crosshair;
+}
+#Logo:hover {
+    transform: rotate(50000deg);
+}
+
+#Anmelden {
+    margin-left: 10%;
+    height: 50%;
+    width: 20%;
+}
