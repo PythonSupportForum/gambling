@@ -117,7 +117,7 @@ public class GameThread implements Runnable {
         dealerStack.add(deck.pop());
         dealerStack.add(deck.pop());
         if (dealerStack.get(1).getCoat() == 'a') {
-            //ask for Insurance Bet
+            // ask for Insurance Bet
         }
 
         setGameState(GameState.PLAYER_DRAW);

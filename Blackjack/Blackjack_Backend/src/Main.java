@@ -1,9 +1,9 @@
-import java.io.BufferedReader;
+import org.java_websocket.WebSocket;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.WebSocketServer;
+
+import java.net.InetSocketAddress;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
 
 public class Main {
 
@@ -11,41 +11,13 @@ public class Main {
 
         int port = 8080;
 
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Server gestartet, wartet auf Verbindungen...");
-            while (true)
-            {
-                // Warten auf eine Verbindung vom Client
-                Socket clientSocket = serverSocket.accept();
-                System.out.println("Client verbunden: " + clientSocket.getInetAddress());
+        WebSocketServer server = new BlackjackWebSocketServer(new InetSocketAddress(port));
+        server.start();
 
-                // Streams zum Senden und Empfangen
-                BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true);
-
-                // Nachricht vom Client lesen
-                String clientMessage;
-                while ((clientMessage = input.readLine()) != null) {
-                    System.out.println(clientMessage);
-
-                    // Erwartet client_ID in der ersten Nachricht des Clients
-                    //int client_ID = Integer.parseInt(clientMessage);
-                    // Bestätigung an den Client
-                    output.println("acc");
-                    //startSession(client_ID, clientSocket);
-
-                    // Beenden, falls "exit" gesendet wird
-                    if (clientMessage.equalsIgnoreCase("exit")) {
-                        break;
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        System.out.println("WebSocket-Server gestartet auf Port: " + port);
     }
 
-    public static void startSession(int ID, Socket clientSocket){
+    public static void startSession(int ID){
         Thread thread = new Thread(new GameThread(ID));
         thread.start();
     }
