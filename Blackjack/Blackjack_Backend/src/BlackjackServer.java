@@ -3,38 +3,53 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 class BlackjackServer extends WebSocketServer {
+
+    int count = 0;
+
+    private final Map<WebSocket, GameThread> clientThreads = Collections.synchronizedMap(new HashMap<>());
+
 
     public BlackjackServer(InetSocketAddress address) {
         super(address);
     }
 
     @Override
-    public void onOpen(org.java_websocket.WebSocket conn, ClientHandshake handshake) {
+    public void onOpen(WebSocket conn, ClientHandshake handshake) {
         System.out.println("Neue Verbindung: " + conn.getRemoteSocketAddress());
-        conn.send("acc"); // Sende Willkommensnachricht
+        conn.send("acc"); // Sende Bestätigung
+        GameThread gameThread = new GameThread(count, conn);
+        Thread thread = new Thread(gameThread);
+        thread.start();
+        clientThreads.put(conn, gameThread);
     }
 
     @Override
-    public void onClose(org.java_websocket.WebSocket conn, int code, String reason, boolean remote) {
+    public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         System.out.println("Verbindung geschlossen: " + conn.getRemoteSocketAddress() + ", Grund: " + reason);
+
+        GameThread gameThread = clientThreads.remove(conn);
+
+        if (gameThread != null) {
+            gameThread.currentThread.interrupt();
+        }
     }
 
     @Override
-    public void onMessage(org.java_websocket.WebSocket conn, String message) {
+    public void onMessage(WebSocket conn, String message) {
         System.out.println("Nachricht vom Client: " + message);
 
-        // Beispiel: Behandeln bestimmter Befehle
-        if (message.equalsIgnoreCase("start")) {
-            conn.send("Spiel startet jetzt!");
-            GameThread game = new GameThread(conn.hashCode());
-            new Thread(game).start();
-        } else if (message.equalsIgnoreCase("exit")) {
-            conn.send("Spiel wird beendet. Verabschiedung!");
-            conn.close();
+        // Finde den entsprechenden Thread
+        GameThread thread = clientThreads.get(conn);
+
+        if (thread instanceof GameThread) {
+            thread.handleMessage(message); // Nachricht an den GameThread weiterleiten
         } else {
-            conn.send("Unbekannter Befehl: " + message);
+            conn.send("Es ist ein Fehler aufgetreten: Kein Thread für diesen Client gefunden.");
         }
     }
 
@@ -47,10 +62,5 @@ class BlackjackServer extends WebSocketServer {
     @Override
     public void onStart() {
         System.out.println("WebSocket-Server wurde erfolgreich gestartet.");
-    }
-
-    public static void startSession(int ID){
-        Thread thread = new Thread(new GameThread(ID));
-        thread.start();
     }
 }

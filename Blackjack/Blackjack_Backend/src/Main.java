@@ -15,6 +15,4 @@ public class Main {
         server.start();
         System.out.println("WebSocket-Server gestartet auf Port: " + port);
     }
-
-
 }
