@@ -32,6 +32,11 @@ public class GameThread implements Runnable {
     // Funktioniert als Hauptmethode für das Blackjack Spiel
     public void game(int client_ID) {
         //Start des Spiels
+        int coins = 0;
+        double balance = 0.0;
+        int bet = 0;
+        //Kontostand abfragen in der Datenbank
+
         List<GameCard> availableCards = new ArrayList<GameCard>();
         List<GameCard> temp = new ArrayList<GameCard>();
         //region Karten hinzufügen
@@ -100,8 +105,28 @@ public class GameThread implements Runnable {
         List<GameCard> playerStack = new ArrayList<>();
         Stack<GameCard> deck = new Stack<>();
         setGameState(GameState.DEPOSIT);
+        boolean input = false;
+        while (!input) {
+            //ist nich vollständig, nach mit Frontend lösen
+            Scanner c = new Scanner(System.in);
+
+        }
+        int coinAmount = 0; //Der Input vom Spieler, temporäre Variable
+        if(balance - (coinAmount * 100) < 0){
+            //Fehler an Spieler zurücksenden, zu wenig Geld
+        } else {
+            coins += coinAmount;
+            balance -= coinAmount * 100;
+        }
+
         setGameState(GameState.START);
         setGameState(GameState.BET);
+        boolean input2 = false;
+        while (!input2) {
+            //ist nich vollständig, nach mit Frontend lösen
+            Scanner c = new Scanner(System.in);
+
+        }
         setGameState(GameState.SHUFFLE);
 
 
@@ -121,8 +146,8 @@ public class GameThread implements Runnable {
         }
 
         setGameState(GameState.PLAYER_DRAW);
-        boolean input = false;
-        while (!input) {
+        boolean input3 = false;
+        while (!input3) {
             //ist nich vollständig, nach mit Frontend lösen
             Scanner c = new Scanner(System.in);
         }
