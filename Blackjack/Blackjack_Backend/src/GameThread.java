@@ -226,6 +226,35 @@ public class GameThread implements Runnable {
         setGameState(GameState.WITHDRAW);
     }
 
+    public int currentPlayerValue(List<GameCard> playerStack) {
+        int totalValue = 0;
+        int aceCount = 0;
+
+        for (GameCard card : playerStack) {
+            char valueOfCard = card.getCoat();
+
+            if (valueOfCard >= '2' && valueOfCard <= '9') {
+                // Numerische Karten: '2' bis '9'
+                totalValue += Character.getNumericValue(valueOfCard);
+            } else if (valueOfCard == '0' || valueOfCard == 'j' || valueOfCard == 'q' || valueOfCard == 'k') {
+                // Zehner ('0'), Bube ('j'), Dame ('q'), König ('k'): Wert 10
+                totalValue += 10;
+            } else if (valueOfCard == 'a') {
+                // Ass: Hat zunächst den Wert 11
+                totalValue += 11;
+                aceCount++;
+            }
+        }
+
+        // Wenn der Gesamtwert > 21 ist, wird der Wert der Asse reduziert (11 -> 1)
+        while (totalValue > 21 && aceCount > 0) {
+            totalValue -= 10; // Ein Ass wird von 11 auf 1 reduziert
+            aceCount--;       // Ein Ass weniger mit Wert 11
+        }
+
+        return totalValue;
+    }
+
     //region Getter and Setter
     public GameState getGameState() {
         return gameState;
