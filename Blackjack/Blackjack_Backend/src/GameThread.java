@@ -1,8 +1,12 @@
+import org.java_websocket.WebSocket;
+
 import java.util.*;
 
 public class GameThread implements Runnable {
 
+    WebSocket conn;
     int client_ID;
+    public Thread currentThread = Thread.currentThread();
 
     public enum GameState {
         IDLE,
@@ -21,13 +25,32 @@ public class GameThread implements Runnable {
     GameState gameState = GameState.IDLE;
 
     //Konstruktor
-    public GameThread(int id) {
-        client_ID = id;
+    public GameThread(int id, WebSocket _conn) {
+        conn = _conn;
     }
 
     public void run() {
         game(client_ID);
     }
+
+    public void handleMessage(String message) {
+        System.out.println("Verarbeite Nachricht im Thread: " + message);
+
+        switch (message.toLowerCase()) {
+            case "start":
+                conn.send("Spiel wurde gestartet!");
+                break;
+            case "exit":
+                conn.send("Spiel wird beendet.");
+                conn.close(); // Verbindung beenden
+                currentThread.interrupt();// Beende den Thread
+                break;
+            default:
+                conn.send("Unbekannter Befehl: " + message);
+                break;
+        }
+    }
+
 
     // Funktioniert als Hauptmethode für das Blackjack Spiel
     public void game(int client_ID) {
@@ -116,6 +139,7 @@ public class GameThread implements Runnable {
             try
             {
                 coinAmount = Integer.parseInt(inputString);
+                input = true;
             }
             catch(NumberFormatException e)
             {
