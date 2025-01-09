@@ -149,7 +149,6 @@ public class GameThread implements Runnable {
 
         }
 
-        //Der Input vom Spieler, temporäre Variable
         if(balance - (coinAmount * 100) < 0){
             System.out.println("Du bist broke du Bastard!");
         } else {
@@ -220,7 +219,16 @@ public class GameThread implements Runnable {
         playerStack.add(deck.pop());
         boolean input3 = false;
         while (!input3) {
-            //ist nich vollständig, nach mit Frontend lösen
+            //ist nicht vollständig, nachher mit Frontend lösen
+            if(currentValue(playerStack) > 21){
+                setGameState(GameState.PLAYER_LOST);
+                System.out.println("Bust! Du hast verloren!");
+                break;
+            }
+            if(currentValue(playerStack) == 21){
+                System.out.println("Herzlichen Glückwunsch! Du hast einen Blackjack!");
+                break;
+            }
             Scanner c = new Scanner(System.in);
             String inputString = c.nextLine();
             try
@@ -239,6 +247,8 @@ public class GameThread implements Runnable {
 
         }
 
+
+
         setGameState(GameState.DEALER_DRAW);
 
         //Hier gehört die Dealer Algorithmus Funktion hin
@@ -248,7 +258,7 @@ public class GameThread implements Runnable {
         setGameState(GameState.WITHDRAW);
     }
 
-    public int currentPlayerValue(List<GameCard> playerStack) {
+    public int currentValue(List<GameCard> playerStack) {
         int totalValue = 0;
         int aceCount = 0;
 
