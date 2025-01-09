@@ -11,6 +11,7 @@ public class GameThread implements Runnable {
         BET,
         SHUFFLE,
         DEALER_START,
+        INSURANCE_BET,
         PLAYER_DRAW,
         DEALER_DRAW,
         PLAYER_WON,
@@ -34,8 +35,9 @@ public class GameThread implements Runnable {
         //Start des Spiels
         int coins = 0;
         double balance = 0.0;
+        //Den Kontostand abfragen in der Datenbank
         int bet = 0;
-        //Kontostand abfragen in der Datenbank
+        int insuranceBet = 0;
 
         List<GameCard> availableCards = new ArrayList<GameCard>();
         List<GameCard> temp = new ArrayList<GameCard>();
@@ -105,7 +107,7 @@ public class GameThread implements Runnable {
         List<GameCard> playerStack = new ArrayList<>();
         Stack<GameCard> deck = new Stack<>();
         setGameState(GameState.DEPOSIT);
-
+        //region Geld umtauschen
         boolean input = false;
         int coinAmount = 0;
 
@@ -116,6 +118,7 @@ public class GameThread implements Runnable {
             try
             {
                 coinAmount = Integer.parseInt(inputString);
+                input = true;
             }
             catch(NumberFormatException e)
             {
@@ -126,22 +129,36 @@ public class GameThread implements Runnable {
 
          //Der Input vom Spieler, temporäre Variable
         if(balance - (coinAmount * 100) < 0){
-            //Fehler an Spieler zurücksenden, zu wenig Geld
+            System.out.println("Du bist broke du Bastard!");
         } else {
             coins += coinAmount;
             balance -= coinAmount * 100;
+            System.out.println("Du hast " + coinAmount + " Coins umgetauscht!");
         }
-
+        //endregion
         setGameState(GameState.START);
+
         setGameState(GameState.BET);
+        //region Geld setzen
         boolean input2 = false;
         while (!input2) {
             //ist nich vollständig, nach mit Frontend lösen
             Scanner c = new Scanner(System.in);
+            String inputString = c.nextLine();
+            try
+            {
+                bet = Integer.parseInt(inputString);
+                input2 = true;
+            }
+            catch(NumberFormatException e)
+            {
+                continue;
+            }
 
         }
-        setGameState(GameState.SHUFFLE);
+        //endregion
 
+        setGameState(GameState.SHUFFLE);
 
         while (!availableCards.isEmpty()) {
             Random b = new Random();
@@ -155,14 +172,49 @@ public class GameThread implements Runnable {
         dealerStack.add(deck.pop());
         dealerStack.add(deck.pop());
         if (dealerStack.get(1).getCoat() == 'a') {
-            // ask for Insurance Bet
+            //region Insurance Bet
+            setGameState(GameState.INSURANCE_BET);
+            boolean input4 = false;
+            while (!input4) {
+                //ist nich vollständig, nach mit Frontend lösen
+                Scanner c = new Scanner(System.in);
+                String inputString = c.nextLine();
+                try
+                {
+                    insuranceBet = Integer.parseInt(inputString);
+                    input4 = true;
+                }
+                catch(NumberFormatException e)
+                {
+                    continue;
+                }
+
+            }
+            //endregion
         }
 
         setGameState(GameState.PLAYER_DRAW);
+        playerStack.add(deck.pop());
+        playerStack.add(deck.pop());
         boolean input3 = false;
         while (!input3) {
             //ist nich vollständig, nach mit Frontend lösen
             Scanner c = new Scanner(System.in);
+            String inputString = c.nextLine();
+            try
+            {
+                if(Boolean.parseBoolean(inputString)){
+                    playerStack.add(deck.pop());
+                    continue;
+                } else {
+                    input3 = true;
+                }
+            }
+            catch(NumberFormatException e)
+            {
+                continue;
+            }
+
         }
 
         setGameState(GameState.DEALER_DRAW);
@@ -230,5 +282,6 @@ public class GameThread implements Runnable {
             }
         }
     }
+    //endregion
 }
-//endregion
+
