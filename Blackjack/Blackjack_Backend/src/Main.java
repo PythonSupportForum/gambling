@@ -16,8 +16,5 @@ public class Main {
         System.out.println("WebSocket-Server gestartet auf Port: " + port);
     }
 
-    public static void startSession(int ID){
-        Thread thread = new Thread(new GameThread(ID));
-        thread.start();
-    }
+
 }

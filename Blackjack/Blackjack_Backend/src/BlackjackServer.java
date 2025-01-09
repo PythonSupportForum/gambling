@@ -48,4 +48,9 @@ class BlackjackServer extends WebSocketServer {
     public void onStart() {
         System.out.println("WebSocket-Server wurde erfolgreich gestartet.");
     }
+
+    public static void startSession(int ID){
+        Thread thread = new Thread(new GameThread(ID));
+        thread.start();
+    }
 }

@@ -105,13 +105,26 @@ public class GameThread implements Runnable {
         List<GameCard> playerStack = new ArrayList<>();
         Stack<GameCard> deck = new Stack<>();
         setGameState(GameState.DEPOSIT);
+
         boolean input = false;
+        int coinAmount = 0;
+
         while (!input) {
             //ist nich vollständig, nach mit Frontend lösen
             Scanner c = new Scanner(System.in);
+            String inputString = c.nextLine();
+            try
+            {
+                coinAmount = Integer.parseInt(inputString);
+            }
+            catch(NumberFormatException e)
+            {
+                continue;
+            }
 
         }
-        int coinAmount = 0; //Der Input vom Spieler, temporäre Variable
+
+         //Der Input vom Spieler, temporäre Variable
         if(balance - (coinAmount * 100) < 0){
             //Fehler an Spieler zurücksenden, zu wenig Geld
         } else {
