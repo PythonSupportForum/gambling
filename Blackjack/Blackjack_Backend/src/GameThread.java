@@ -6,9 +6,9 @@ import java.util.*;
 public class GameThread implements Runnable {
 
     // Liste, aus welcher die Karten entnommen werden, welche dann in den Stacks landen
-    List<GameCard> temp = new ArrayList<GameCard>();
+    List<GameCard> temp = new ArrayList<>();
 
-    final List<GameCard> AVAILABLECARDS = new ArrayList<GameCard>();
+    final List<GameCard> AVAILABLECARDS = new ArrayList<>();
 
     boolean running = true;
     WebSocket conn;
@@ -21,12 +21,12 @@ public class GameThread implements Runnable {
 
     boolean exchangeInput = false;
     boolean betInput = false;
+    boolean insuranceInput = false;
 
     boolean cardInput = false;
 
     int coins = 0;
     double balance = 0.0;
-    //Den Kontostand abfragen in der Datenbank
     int bet = 0;
     int splitBet = 0;
     int insuranceBet = 0;
@@ -49,7 +49,8 @@ public class GameThread implements Runnable {
         PLAYER_WON,
         PUSH,
         PLAYER_LOST,
-        WITHDRAW
+        WITHDRAW,
+        END
     }
 
     // Beschreibt den Status, indem sich das Spiel befindet
@@ -59,6 +60,7 @@ public class GameThread implements Runnable {
     public GameThread(int id, WebSocket _conn) {
         client_ID = id;
         conn = _conn;
+        balance = 1000.0;
 
         //region Karten hinzufügen
         // Clubs (Kreuz)
@@ -126,27 +128,11 @@ public class GameThread implements Runnable {
     // Implementation der run() - Methode des Runnable Interfaces, erste Funktion die nach der Öffnung des Threads ausgeführt wird
     public void run() {
         System.out.print(client_ID + "\n");
-        game(client_ID); // ruft Hauptmethode des Spiels auf, beginnt Spiel mit dem Client
+        game(); // ruft Hauptmethode des Spiels auf, beginnt Spiel mit dem Client
     }
 
     // Verarbeiten einer einkommenden Nachricht vom Client
     public void handleMessage(String message) {
-//        switch (message.toLowerCase()) {
-//            case "exchange":
-//                    break;
-//            case "accept":
-//                break;
-//            case "bet":
-//                break;
-//            case "insurance":
-//                break;
-//            case "end":
-//                running = false;
-//                break;
-//            default:
-//                System.out.println("Client Message: " + message);
-//                break;
-//        }
         if (message.startsWith("exchange")){
             coinAmount = Integer.parseInt(message.substring(9));
             exchangeInput = true;
@@ -156,48 +142,52 @@ public class GameThread implements Runnable {
             betInput = true;
         } else if (message.startsWith("insurance")) {
             insuranceBet = message.substring(11).length();
-
+            insuranceInput = true;
+        } else if (message.startsWith("end")) {
+            running = false;
         }
     }
 
     // Funktioniert als Hauptmethode für das Blackjack Spiel
-    public void game(int client_ID) {
-        //Start des Spiels
+    public void game() {
+        //Start der Spiellogik
 
+        // Loop zum erneuten Spielen
         while (running) {
-            setGameState(GameState.DEPOSIT);
 
-            // füllt temp mit allen Karten
-            temp.addAll(AVAILABLECARDS);
+            setGameState(GameState.DEPOSIT);
 
             //region Geld umtauschen
             while (!exchangeInput) {
-                //ist nich vollständig, nach mit Frontend lösen
+                //ist nicht vollständig, nach mit Frontend lösen
+                System.out.print("Eintauschen");
                 Scanner c = new Scanner(System.in);
                 String inputString = c.nextLine();
                 try {
                     coinAmount = Integer.parseInt(inputString);
-                    exchangeInput = true;
-                } catch (NumberFormatException e) {
-                    continue;
-                }
-
+                    // Umtauschen: Tilotaler zu Coins
+                    if (balance - (coinAmount * 100) < 0) {
+                        System.out.println("Du bist broke du Bastard!");
+                    } else {
+                        coins += coinAmount;
+                        balance -= coinAmount * 100;
+                        exchangeInput = true;
+                        System.out.println("Du hast " + coinAmount + " Coins umgetauscht!");
+                    }
+                    //endregion
+                } catch (NumberFormatException e) {}
             }
 
-            if (balance - (coinAmount * 100) < 0) {
-                System.out.println("Du bist broke du Bastard!");
-            } else {
-                coins += coinAmount;
-                balance -= coinAmount * 100;
-                System.out.println("Du hast " + coinAmount + " Coins umgetauscht!");
-            }
-            //endregion
+            // Start des Spiels
             setGameState(GameState.START);
 
+            // füllt temp mit allen Karten
+            temp.addAll(AVAILABLECARDS);
+
             setGameState(GameState.BET);
-            //region Geld setzen
+            //region Coins setzen
             while (!betInput) {
-                //ist nich vollständig, nach mit Frontend lösen
+                //ist nicht vollständig, nach mit Frontend lösen
                 Scanner c = new Scanner(System.in);
                 String inputString = c.nextLine();
                 try {
@@ -234,14 +224,13 @@ public class GameThread implements Runnable {
             if (dealerStack.get(1).getValueOfCard() == '0' || dealerStack.get(1).getValueOfCard() == 'j' || dealerStack.get(1).getValueOfCard() == 'q' || dealerStack.get(1).getValueOfCard() == 'k') {
                 //region Insurance Bet
                 setGameState(GameState.INSURANCE_BET);
-                boolean input4 = false;
-                while (!input4) {
+                while (!insuranceInput) {
                     //ist nicht vollständig, nachher mit Frontend lösen
                     Scanner c = new Scanner(System.in);
                     String inputString = c.nextLine();
                     try {
                         insuranceBet = Integer.parseInt(inputString);
-                        input4 = true;
+                        insuranceInput = true;
                     } catch (NumberFormatException e) {
                     }
                 }
@@ -268,7 +257,7 @@ public class GameThread implements Runnable {
                 checkValue();
             }
 
-            if (gameState == GameState.PLAYER_DRAW) {
+            if (getGameState() == GameState.PLAYER_DRAW) {
 
                 setGameState(GameState.DEALER_DRAW);
 
@@ -325,20 +314,24 @@ public class GameThread implements Runnable {
                 }
             }
 
-            if (gameState == GameState.PLAYER_WON){
+            if (getGameState() == GameState.PLAYER_WON){
                 // Spieler gewinnt, der Spieler erhält seinen Einsatz im Verhältnis 2:1 zurück
                 coins += 2*bet;
-            } else if (gameState == GameState.PLAYER_LOST) {
+            } else if (getGameState() == GameState.PLAYER_LOST) {
                 // Spieler verliert, es passiert nichts
             }
-            else if (gameState == GameState.PUSH) {
+            else if (getGameState() == GameState.PUSH) {
                 // Push, der Spieler erhält seine Coins zurück
                 coins += bet;
             }
         }
 
-            conn.close(); // Verbindung beenden
-            currentThread.interrupt();// Beende den Thread
+        setGameState(GameState.WITHDRAW);
+
+        setGameState(GameState.END);
+
+        conn.close(); // Verbindung beenden
+        currentThread.interrupt();// Beende den Thread
     }
 
     private void checkValue() {
