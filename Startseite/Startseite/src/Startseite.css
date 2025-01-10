@@ -62,7 +62,7 @@
     cursor: auto;
 }
 #Anmelden:not(.form) .form-container {
-    animation: fadeOut 2s forwards;
+    opacity: 0;
 }
 #Anmelden:not(.form) .text {
     animation: fadeIn 2s forwards;
