@@ -131,6 +131,68 @@ public class GameThread implements Runnable {
         client_ID = -1;
         conn = null;
         balance = 1000.0;
+
+        //region Karten hinzufügen
+        // Clubs (Kreuz)
+        AVAILABLECARDS.add(new GameCard('2', 'c'));
+        AVAILABLECARDS.add(new GameCard('3', 'c'));
+        AVAILABLECARDS.add(new GameCard('4', 'c'));
+        AVAILABLECARDS.add(new GameCard('5', 'c'));
+        AVAILABLECARDS.add(new GameCard('6', 'c'));
+        AVAILABLECARDS.add(new GameCard('7', 'c'));
+        AVAILABLECARDS.add(new GameCard('8', 'c'));
+        AVAILABLECARDS.add(new GameCard('9', 'c'));
+        AVAILABLECARDS.add(new GameCard('0', 'c')); // 10
+        AVAILABLECARDS.add(new GameCard('j', 'c')); // Bube
+        AVAILABLECARDS.add(new GameCard('q', 'c')); // Dame
+        AVAILABLECARDS.add(new GameCard('k', 'c')); // König
+        AVAILABLECARDS.add(new GameCard('a', 'c')); // Ass
+
+        // Diamonds (Karo)
+        AVAILABLECARDS.add(new GameCard('2', 'd'));
+        AVAILABLECARDS.add(new GameCard('3', 'd'));
+        AVAILABLECARDS.add(new GameCard('4', 'd'));
+        AVAILABLECARDS.add(new GameCard('5', 'd'));
+        AVAILABLECARDS.add(new GameCard('6', 'd'));
+        AVAILABLECARDS.add(new GameCard('7', 'd'));
+        AVAILABLECARDS.add(new GameCard('8', 'd'));
+        AVAILABLECARDS.add(new GameCard('9', 'd'));
+        AVAILABLECARDS.add(new GameCard('0', 'd')); // 10
+        AVAILABLECARDS.add(new GameCard('j', 'd')); // Bube
+        AVAILABLECARDS.add(new GameCard('q', 'd')); // Dame
+        AVAILABLECARDS.add(new GameCard('k', 'd')); // König
+        AVAILABLECARDS.add(new GameCard('a', 'd')); // Ass
+
+        // Hearts (Herz)
+        AVAILABLECARDS.add(new GameCard('2', 'h'));
+        AVAILABLECARDS.add(new GameCard('3', 'h'));
+        AVAILABLECARDS.add(new GameCard('4', 'h'));
+        AVAILABLECARDS.add(new GameCard('5', 'h'));
+        AVAILABLECARDS.add(new GameCard('6', 'h'));
+        AVAILABLECARDS.add(new GameCard('7', 'h'));
+        AVAILABLECARDS.add(new GameCard('8', 'h'));
+        AVAILABLECARDS.add(new GameCard('9', 'h'));
+        AVAILABLECARDS.add(new GameCard('0', 'h')); // 10
+        AVAILABLECARDS.add(new GameCard('j', 'h')); // Bube
+        AVAILABLECARDS.add(new GameCard('q', 'h')); // Dame
+        AVAILABLECARDS.add(new GameCard('k', 'h')); // König
+        AVAILABLECARDS.add(new GameCard('a', 'h')); // Ass
+
+        // Spades (Pik)
+        AVAILABLECARDS.add(new GameCard('2', 's'));
+        AVAILABLECARDS.add(new GameCard('3', 's'));
+        AVAILABLECARDS.add(new GameCard('4', 's'));
+        AVAILABLECARDS.add(new GameCard('5', 's'));
+        AVAILABLECARDS.add(new GameCard('6', 's'));
+        AVAILABLECARDS.add(new GameCard('7', 's'));
+        AVAILABLECARDS.add(new GameCard('8', 's'));
+        AVAILABLECARDS.add(new GameCard('9', 's'));
+        AVAILABLECARDS.add(new GameCard('0', 's')); // 10
+        AVAILABLECARDS.add(new GameCard('j', 's')); // Bube
+        AVAILABLECARDS.add(new GameCard('q', 's')); // Dame
+        AVAILABLECARDS.add(new GameCard('k', 's')); // König
+        AVAILABLECARDS.add(new GameCard('a', 's')); // Ass
+        // endregion
     }
 
     // Implementation der run() - Methode des Runnable Interfaces, erste Funktion die nach der Öffnung des Threads ausgeführt wird
@@ -249,13 +311,15 @@ public class GameThread implements Runnable {
 
             setGameState(GameState.PLAYER_DRAW);
 
+            String coat = "";
+
             GameCard card = deck.pop();
             playerStack.add(card);
-            System.out.print("Wert: " + card.getValue());
+            printCard(card);
 
             card = deck.pop();
             playerStack.add(card);
-            System.out.print("Farbe: " + card.getCoat());
+            printCard(card);
 
             checkValue();
             while (!cardInput) {
@@ -266,7 +330,9 @@ public class GameThread implements Runnable {
                 String inputString = c.nextLine();
                 try {
                     if (Boolean.parseBoolean(inputString)) {
-                        playerStack.add(deck.pop());
+                        card = deck.pop();
+                        playerStack.add(card);
+                        printCard(card);
                     } else {
                         cardInput = true;
                     }
@@ -409,6 +475,25 @@ public class GameThread implements Runnable {
         }
         //endregion
 
-
+        void printCard(GameCard card){
+        String coat = "";
+            System.out.print("Wert: " + card.getValue() + " ");
+            switch (card.getCoat()){
+                case 'c':
+                    coat = "Clubs";
+                    break;
+                case 'd':
+                    coat = "Diamonds";
+                    break;
+                case 'h':
+                    coat = "Hearts";
+                    break;
+                case 's':
+                    coat = "Spades";
+                    break;
+                default:
+                    break;
+            }
+            System.out.print("Farbe: " + coat + "\n");
+        }
     }
-
