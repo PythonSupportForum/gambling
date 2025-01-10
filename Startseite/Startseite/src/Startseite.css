@@ -41,7 +41,7 @@
     border-left-color: #e6ac0c;
     border-right-color: #f8bb12;
     border-bottom-color: #f8bb12;
-    border-width: 5px;
+    border-width: 15px;
     border-radius: 400px;
     transition: all 0.2s;
     cursor: pointer;
@@ -176,4 +176,12 @@
     color: red;
     font-size: 14px;
     text-align: center;
+}
+
+#Blackjack {
+
+}
+
+#Slots {
+
 }
