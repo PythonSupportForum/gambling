@@ -63,11 +63,11 @@
 }
 #Anmelden:not(.form) .text {
     opacity: 1;
-    display: none;
+    display: block;
 }
 #Anmelden.form .text {
     opacity: 0;
-    display: block;
+    display: none;
 }
 #Anmelden .text {
     color: #e6ac0c;
