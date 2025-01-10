@@ -5,6 +5,7 @@ import java.util.*;
 // Implementiert das Runnable interface -> Nutzung der Java Implementation für Multithreading
 public class GameThread implements Runnable {
 
+    boolean running = true;
     WebSocket conn;
     int client_ID;
     // Ermöglicht Zugriff auf Thread Objekt, wenn GameThread Objekt gefunden wurde
@@ -43,12 +44,11 @@ public class GameThread implements Runnable {
     public void handleMessage(String message) {
         switch (message.toLowerCase()) {
             case "start":
-                conn.send("Spiel wurde gestartet!");
+                System.out.println("Spiel wurde gestartet!");
                 break;
             case "exit":
-                conn.send("Spiel wird beendet.");
-                conn.close(); // Verbindung beenden
-                currentThread.interrupt();// Beende den Thread
+                System.out.println("Spiel wird beendet.");
+                running = false;
                 break;
             default:
                 conn.send("Unbekannter Befehl: " + message);
@@ -134,10 +134,12 @@ public class GameThread implements Runnable {
         List<GameCard> playerStack = new ArrayList<>();
         List<GameCard> playerSplitStack = new ArrayList<>();
         Stack<GameCard> deck = new Stack<>();
-        setGameState(GameState.DEPOSIT);
-        //region Geld umtauschen
-        boolean input = false;
-        int coinAmount = 0;
+
+        while(running) {
+            setGameState(GameState.DEPOSIT);
+            //region Geld umtauschen
+            boolean input = false;
+            int coinAmount = 0;
 
         while (!input) {
             //ist nich vollständig, nach mit Frontend lösen
@@ -231,48 +233,22 @@ public class GameThread implements Runnable {
         setGameState(GameState.PLAYER_DRAW);
         playerStack.add(deck.pop());
         playerStack.add(deck.pop());
-        if(playerStack.get(0).getValueOfCard() == playerStack.get(1).getValueOfCard()){
-            boolean input5 = false;
-            while (!input5) {
-                //ist nicht vollständig, nachher mit Frontend lösen
-                Scanner c = new Scanner(System.in);
-                String inputString = c.nextLine();
-                try
-                {
-                    if(Integer.parseInt(inputString) > 0){
-                       playerSplitStack.add(playerStack.get(1));
-                       playerStack.remove(1);
-                       splitBet = Integer.parseInt(inputString);
-                        input5 = true;
-                    } else {
-                        input5 = true;
-                    }
-                }
-                catch(NumberFormatException e)
-                {
-                    continue;
-                }
-
-            }
-        }
-
-        // Der Spieler wird imer weiter gefragt, bis er über die 21 kommt oder keine Karte mehr nehmen möchte
         boolean input3 = false;
         while (!input3) {
             //ist nicht vollständig, nachher mit Frontend lösen
+            if(currentValue(playerStack) > 21){
+                setGameState(GameState.PLAYER_LOST);
+                System.out.println("Bust! Du hast verloren!");
+                break;
+            }
+            if(currentValue(playerStack) == 21){
+                System.out.println("Herzlichen Glückwunsch! Du hast einen Blackjack!");
+                break;
+            }
             Scanner c = new Scanner(System.in);
             String inputString = c.nextLine();
             try
             {
-                if(currentValue(playerStack) > 21){
-                    setGameState(GameState.PLAYER_LOST);
-                    System.out.println("Bust! Du hast verloren!");
-                    break;
-                }
-                if(currentValue(playerStack) == 21){
-                    System.out.println("Herzlichen Glückwunsch! Du hast einen Blackjack!");
-                    break;
-                }
                 if(Boolean.parseBoolean(inputString)){
                     playerStack.add(deck.pop());
                     continue;
@@ -285,38 +261,6 @@ public class GameThread implements Runnable {
                 continue;
             }
 
-        }
-
-        //Der Spieler wird genau wie zuvor gefragt, ob er eine Karte nehmen möchte nur für den 2. gesplitteten Stapel
-        if(splitBet > 0){
-            while (!input3) {
-                //ist nicht vollständig, nachher mit Frontend lösen
-                Scanner c = new Scanner(System.in);
-                String inputString = c.nextLine();
-                try
-                {
-                    if(currentValue(playerSplitStack) > 21){
-                        setGameState(GameState.PLAYER_LOST);
-                        System.out.println("Bust! Dein zweiter Stapel ist über 21!");
-                        break;
-                    }
-                    if(currentValue(playerSplitStack) == 21){
-                        System.out.println("Herzlichen Glückwunsch! Du hast einen Blackjack!");
-                        break;
-                    }
-                    if(Boolean.parseBoolean(inputString)){
-                        playerSplitStack.add(deck.pop());
-                        continue;
-                    } else {
-                        input3 = true;
-                    }
-                }
-                catch(NumberFormatException e)
-                {
-                    continue;
-                }
-
-            }
         }
 
         setGameState(GameState.DEALER_DRAW);
@@ -375,6 +319,8 @@ public class GameThread implements Runnable {
         bet = 0;
         insuranceBet = 0;
 
+        conn.close(); // Verbindung beenden
+        currentThread.interrupt();// Beende den Thread
 
     }
 

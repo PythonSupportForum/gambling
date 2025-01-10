@@ -1,18 +1,17 @@
 const socket = new WebSocket('ws://127.0.0.1:8080');
-
+window.clientID = -1;
 // Verbindung geöffnet
 socket.onopen = () => {
-    const clientID = '1234';
-    console.log(`Sende client_ID: ${clientID}`);
-    socket.send(clientID);
+    socket.send('Hallo');
 };
 
 // Nachricht vom Server empfangen
 socket.onmessage = (event) => {
-    if(event.data == 'acc'){
-        const clientID = '1234';
-        console.log(`Sende client_ID: ${clientID}`);
-        socket.send(clientID);
+    console.log(event);
+    const msg = event.data.toString();
+    if(event.data.toString().indexOf('acc') === 0)
+    {
+        clientID = Number(msg.substring(4, msg.length));
     }
 };
 
