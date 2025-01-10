@@ -39,6 +39,12 @@ $isLoggedIn = isset($_SESSION['user']);
     document.getElementById("Anmelden").onclick = ()=>{
         document.getElementById("Anmelden").classList.add("form");
     }
+    document.addEventListener("click", (event) => {
+        const anmeldenButton = document.getElementById("Anmelden");
+        if (!anmeldenButton.contains(event.target)) {
+            anmeldenButton.classList.remove("form");
+        }
+    });
 </script>
 </body>
 </html>

@@ -50,7 +50,7 @@
     transform: scale(0.95);
 }
 #Anmelden.form {
-    animation: buttonToSign 10s;
+    animation: buttonToSign 10s forwards;
 }
 #Anmelden.form .form-container {
     opacity: 1;
