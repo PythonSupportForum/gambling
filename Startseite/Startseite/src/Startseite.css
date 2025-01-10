@@ -31,7 +31,6 @@
 
 
 #Anmelden {
-    margin-left: 10%;
     height: 50%;
     width: 20%;
     font-size: 2vw;
@@ -40,14 +39,16 @@
     border-style: solid;
     border-top-color: #e6ac0c;
     border-left-color: #e6ac0c;
-    border-right-color: #9b750b;
-    border-bottom-color: #9b750b;
+    border-right-color: #f8bb12;
+    border-bottom-color: #f8bb12;
     border-width: 15px;
     border-radius: 400px;
     transition: 0.2s;
+    animation: buttonToSign 10s;
 }
 #Anmelden:hover {
     transform: scale(0.95);
+
 }
 
 #Guthaben {
@@ -60,4 +61,27 @@
     right: 5%;
     height: 5%;
     aspect-ratio: 1 / 1;
+}
+
+@keyframes buttonToSign {
+    0% {
+        color: transparent;
+        background-color: #00541d;
+    }
+
+    10% {
+        width: 80%;
+        height: 60vh;
+        transform: translate(10vw, 50vh);
+        border-radius: 50px;
+        background-color: #00541d;
+    }
+    100% {
+        width: 80%;
+        height: 60vh;
+        transform: translate(10vw, 50vh);
+        border-radius: 50px;
+        color: transparent;
+        background-color: #00541d;
+    }
 }
