@@ -5,6 +5,8 @@ import java.util.*;
 // Implementiert das Runnable interface -> Nutzung der Java Implementation für Multithreading
 public class GameThread implements Runnable {
 
+    Scanner c = new Scanner(System.in);
+
     // Liste, aus welcher die Karten entnommen werden, welche dann in den Stacks landen
     List<GameCard> temp = new ArrayList<>();
 
@@ -166,8 +168,8 @@ public class GameThread implements Runnable {
             //region Geld umtauschen
             while (!exchangeInput) {
                 //ist nicht vollständig, nach mit Frontend lösen
-                System.out.print("Eintauschen");
-                Scanner c = new Scanner(System.in);
+                System.out.print("Eintauschen, du hast " + balance + " TiloTaler\n");
+
                 String inputString = c.nextLine();
                 try {
                     coinAmount = Integer.parseInt(inputString);
@@ -178,7 +180,7 @@ public class GameThread implements Runnable {
                         coins += coinAmount;
                         balance -= coinAmount * 100;
                         exchangeInput = true;
-                        System.out.println("Du hast " + coinAmount + " Coins umgetauscht!");
+                        System.out.println("Du hast " + coinAmount + " Coins erworben!");
                     }
                     //endregion
                 } catch (NumberFormatException e) {}
@@ -194,21 +196,20 @@ public class GameThread implements Runnable {
             //region Coins setzen
             while (!betInput) {
                 //ist nicht vollständig, nach mit Frontend lösen
-                Scanner c = new Scanner(System.in);
+                System.out.println("Wie viele Coins willst du setzen?");
+
                 String inputString = c.nextLine();
                 try {
                     bet = Integer.parseInt(inputString);
                     if (bet > coins) {
-                        System.out.println("Du hast nicht genug Coins um zu spielen!");
+                        System.out.println("Du hast nicht genug Coins für diesen Betrag!");
                         bet = 0;
                     } else {
                         coins -= bet;
                         System.out.println("Du hast " + bet + " Coins gesetzt!");
                         betInput = true;
                     }
-                } catch (NumberFormatException e) {
-                    continue;
-                }
+                } catch (NumberFormatException e) {}
 
             }
 
@@ -227,15 +228,18 @@ public class GameThread implements Runnable {
 
             dealerStack.add(deck.pop());
             dealerStack.add(deck.pop());
-            if (dealerStack.get(1).getValueOfCard() == '0' || dealerStack.get(1).getValueOfCard() == 'j' || dealerStack.get(1).getValueOfCard() == 'q' || dealerStack.get(1).getValueOfCard() == 'k') {
+            if (dealerStack.get(1).getValue() == '0' || dealerStack.get(1).getValue() == 'j' || dealerStack.get(1).getValue() == 'q' || dealerStack.get(1).getValue() == 'k') {
                 //region Insurance Bet
                 setGameState(GameState.INSURANCE_BET);
                 while (!insuranceInput) {
                     //ist nicht vollständig, nachher mit Frontend lösen
+                    System.out.print("Willst du eine Insurance bet ablegen?(False, True)");
+
                     Scanner c = new Scanner(System.in);
                     String inputString = c.nextLine();
                     try {
                         insuranceBet = Integer.parseInt(inputString);
+                        System.out.println("Du hast " + insuranceBet + " als Insurance Bet gesetzt");
                         insuranceInput = true;
                     } catch (NumberFormatException e) {
                     }
@@ -244,11 +248,20 @@ public class GameThread implements Runnable {
             }
 
             setGameState(GameState.PLAYER_DRAW);
-            playerStack.add(deck.pop());
-            playerStack.add(deck.pop());
+
+            GameCard card = deck.pop();
+            playerStack.add(card);
+            System.out.print("Wert: " + card.getValue());
+
+            card = deck.pop();
+            playerStack.add(card);
+            System.out.print("Farbe: " + card.getCoat());
+
             checkValue();
             while (!cardInput) {
                 //ist nicht vollständig, nachher mit Frontend lösen
+                System.out.println("Willst du noch eine Karte nehmen?(False, True)");
+
                 Scanner c = new Scanner(System.in);
                 String inputString = c.nextLine();
                 try {
@@ -269,10 +282,10 @@ public class GameThread implements Runnable {
 
                 int total = 0;
                 int aceCounter = 0;
-                if (dealerStack.get(0).getValueOfCard() == 'a') {
+                if (dealerStack.get(0).getValue() == 'a') {
                     aceCounter += 1;
                 }
-                if (dealerStack.get(1).getValueOfCard() == 'a') {
+                if (dealerStack.get(1).getValue() == 'a') {
                     aceCounter += 1;
                 }
                 total = currentValue(dealerStack);
@@ -313,7 +326,7 @@ public class GameThread implements Runnable {
                 } else {
                     System.out.println("Ups??!? Ein Fehler ist aufgetreten!");
                 }
-                if (insuranceBet > 0 && dealerStack.get(0).getValueOfCard() == 'a') {
+                if (insuranceBet > 0 && dealerStack.get(0).getValue() == 'a') {
                     coins += insuranceBet;
                     System.out.println("Du hast den Insurance Bet erhalten!");
                     setGameState(GameState.PLAYER_LOST);
