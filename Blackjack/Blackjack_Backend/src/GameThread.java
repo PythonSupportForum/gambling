@@ -1,8 +1,6 @@
 import org.java_websocket.WebSocket;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 // Implementiert das Runnable interface -> Nutzung der Java Implementation für Multithreading
@@ -68,9 +66,21 @@ public class GameThread implements Runnable {
     public GameThread(int id, WebSocket _conn) {
         client_ID = id;
         conn = _conn;
-        balance = 1000.0;
 
         dbConnection = getConnection();
+
+        String query = "SELECT Kontostand FROM Kunden WHERE id = " + client_ID;
+        try{
+            assert dbConnection != null;
+            Statement stmt = dbConnection.createStatement();
+            stmt.executeQuery(query);
+            ResultSet rs = stmt.getResultSet();
+            rs.next();
+            balance = rs.getDouble("Kontostand");
+            rs.close();
+            stmt.close();
+        }
+        catch(SQLException e){}
 
         //region Karten hinzufügen
         // Clubs (Kreuz)
@@ -138,9 +148,20 @@ public class GameThread implements Runnable {
     public GameThread(){
         client_ID = -1;
         conn = null;
-        balance = 1000.0;
-
         dbConnection = getConnection();
+
+        String query = "SELECT Kontostand FROM Kunden WHERE id = " + client_ID;
+        try{
+            assert dbConnection != null;
+            Statement stmt = dbConnection.createStatement();
+            stmt.executeQuery(query);
+            ResultSet rs = stmt.getResultSet();
+            rs.next();
+            balance = rs.getDouble("Kontostand");
+            rs.close();
+            stmt.close();
+        }
+        catch(SQLException e){}
 
         //region Karten hinzufügen
         // Clubs (Kreuz)
@@ -242,7 +263,12 @@ public class GameThread implements Runnable {
             cardInput = false;
             wantsExchange = false;
 
-            System.out.println("Willst du einzahlen?(true, false)");
+            playerSplitStack.clear();
+            playerStack.clear();
+            dealerStack.clear();
+            deck.clear();
+
+            System.out.println("Dein Kontostand ist " + balance +" Willst du einzahlen?(true, false)");
             String wants = c.nextLine();
 
             if(wants.equals("true")){ wantsExchange = true;}
@@ -467,7 +493,7 @@ public class GameThread implements Runnable {
             int aceCount = 0;
 
             for (GameCard card : playerStack) {
-                char valueOfCard = card.getCoat();
+                char valueOfCard = card.getValue();
 
                 if (valueOfCard >= '2' && valueOfCard <= '9') {
                     // Numerische Karten: '2' bis '9'
@@ -525,7 +551,7 @@ public class GameThread implements Runnable {
 
     // Methode zum Erstellen der Verbindung
     public static Connection getConnection() {
-        // Datenbank-URL (Host, Port und Datenbankname anpassen)
+        // Verknüpfung zur Datenbank
         String url = "jdbc:mariadb://db.ontubs.de:3306/gambling";
         // Benutzername und Passwort
         String user = "carl";
@@ -534,7 +560,7 @@ public class GameThread implements Runnable {
         try {
             // Verbindung herstellen
             Connection connection = DriverManager.getConnection(url, user, password);
-            System.out.println("Verbindung zur MariaDB erfolgreich!");
+            System.out.println("Verbindung zur Datenbank erfolgreich!");
             return connection;
         } catch (SQLException e) {
             // Fehlerbehandlung, falls die Verbindung fehlschlägt
