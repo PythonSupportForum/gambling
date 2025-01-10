@@ -1,18 +1,20 @@
+// Klasse für Spielkarten
 public class GameCard {
-    private char valueOfCard;
-    private char coat;
+    private char valueOfCard; // "Wert" der Karte in Blackjack
+    private char coat; // "Farbe" der Karte
 
+    // Konstruktor
     public GameCard(char valueOfCard, char coat){
-        this.setId(valueOfCard);
+        this.setValueOfCard(valueOfCard);
         this.setCoat(coat);
     }
 
     //region Getter und Setter
-    public char getId() {
+    public char getValueOfCard() {
         return valueOfCard;
     }
 
-    public void setId(char valueOfCard) {
+    public void setValueOfCard(char valueOfCard) {
         this.valueOfCard = valueOfCard;
     }
 
