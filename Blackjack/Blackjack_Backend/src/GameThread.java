@@ -1,5 +1,8 @@
 import org.java_websocket.WebSocket;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.*;
 
 // Implementiert das Runnable interface -> Nutzung der Java Implementation für Multithreading
@@ -27,6 +30,8 @@ public class GameThread implements Runnable {
     boolean insuranceInput;
 
     boolean cardInput;
+
+    Connection dbConnection;
 
     int coins = 0;
     double balance = 0.0;
@@ -64,6 +69,8 @@ public class GameThread implements Runnable {
         client_ID = id;
         conn = _conn;
         balance = 1000.0;
+
+        dbConnection = getConnection();
 
         //region Karten hinzufügen
         // Clubs (Kreuz)
@@ -132,6 +139,8 @@ public class GameThread implements Runnable {
         client_ID = -1;
         conn = null;
         balance = 1000.0;
+
+        dbConnection = getConnection();
 
         //region Karten hinzufügen
         // Clubs (Kreuz)
@@ -513,4 +522,25 @@ public class GameThread implements Runnable {
             }
             System.out.print("Farbe: " + coat + "\n");
         }
+
+    // Methode zum Erstellen der Verbindung
+    public static Connection getConnection() {
+        // Datenbank-URL (Host, Port und Datenbankname anpassen)
+        String url = "jdbc:mariadb://db.ontubs.de:3306/gambling";
+        // Benutzername und Passwort
+        String user = "carl";
+        String password = "geilo123!";
+
+        try {
+            // Verbindung herstellen
+            Connection connection = DriverManager.getConnection(url, user, password);
+            System.out.println("Verbindung zur MariaDB erfolgreich!");
+            return connection;
+        } catch (SQLException e) {
+            // Fehlerbehandlung, falls die Verbindung fehlschlägt
+            System.err.println("Datenbankverbindung fehlgeschlagen!");
+            e.printStackTrace();
+            return null;
+        }
     }
+}
