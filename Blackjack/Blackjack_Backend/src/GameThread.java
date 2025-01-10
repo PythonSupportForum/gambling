@@ -21,11 +21,12 @@ public class GameThread implements Runnable {
     List<GameCard> playerSplitStack = new ArrayList<>();
     Stack<GameCard> deck = new Stack<>();
 
-    boolean exchangeInput = false;
-    boolean betInput = false;
-    boolean insuranceInput = false;
+    boolean wantsExchange;
+    boolean exchangeInput;
+    boolean betInput;
+    boolean insuranceInput;
 
-    boolean cardInput = false;
+    boolean cardInput;
 
     int coins = 0;
     double balance = 0.0;
@@ -221,32 +222,45 @@ public class GameThread implements Runnable {
     // Funktioniert als Hauptmethode für das Blackjack Spiel
     public void game() {
         //Start der Spiellogik
+        setGameState(GameState.START);
 
         // Loop zum erneuten Spielen
         while (running) {
-
             setGameState(GameState.DEPOSIT);
+            exchangeInput = false;
+            betInput = false;
+            insuranceInput = false;
+            cardInput = false;
+            wantsExchange = false;
 
-            //region Geld umtauschen
-            while (!exchangeInput) {
-                //ist nicht vollständig, nach mit Frontend lösen
-                System.out.print("Eintauschen, du hast " + balance + " TiloTaler\n");
+            System.out.println("Willst du einzahlen?(true, false)");
+            String wants = c.nextLine();
 
-                String inputString = c.nextLine();
-                try {
-                    coinAmount = Integer.parseInt(inputString);
-                    // Umtauschen: Tilotaler zu Coins
-                    if (balance - (coinAmount * 100) < 0) {
-                        System.out.println("Du bist broke du Bastard!");
-                    } else {
-                        coins += coinAmount;
-                        balance -= coinAmount * 100;
-                        exchangeInput = true;
-                        System.out.println("Du hast " + coinAmount + " Coins erworben!");
-                    }
-                    //endregion
-                } catch (NumberFormatException e) {}
+            if(wants.equals("true")){ wantsExchange = true;}
+
+            if(wantsExchange){
+                while (!exchangeInput) {
+                    //ist nicht vollständig, nach mit Frontend lösen
+                    System.out.print("Eintauschen, du hast " + balance + " TiloTaler\n");
+
+                    String inputString = c.nextLine();
+                    try {
+                        coinAmount = Integer.parseInt(inputString);
+                        // Umtauschen: Tilotaler zu Coins
+                        if (balance - (coinAmount * 100) < 0) {
+                            System.out.println("Du bist broke du Bastard!");
+                        } else {
+                            coins += coinAmount;
+                            balance -= coinAmount * 100;
+                            exchangeInput = true;
+                            System.out.println("Du hast " + coinAmount + " Coins erworben!");
+                        }
+                        //endregion
+                    } catch (NumberFormatException e) {}
+                }
             }
+            //region Geld umtauschen
+
 
             // Start des Spiels
             setGameState(GameState.START);
@@ -295,7 +309,7 @@ public class GameThread implements Runnable {
                 setGameState(GameState.INSURANCE_BET);
                 while (!insuranceInput) {
                     //ist nicht vollständig, nachher mit Frontend lösen
-                    System.out.print("Willst du eine Insurance bet ablegen?(False, True)");
+                    System.out.print("Willst du eine Insurance bet ablegen?(false, true)");
 
                     Scanner c = new Scanner(System.in);
                     String inputString = c.nextLine();
@@ -324,7 +338,7 @@ public class GameThread implements Runnable {
             checkValue();
             while (!cardInput) {
                 //ist nicht vollständig, nachher mit Frontend lösen
-                System.out.println("Willst du noch eine Karte nehmen?(False, True)");
+                System.out.println("Willst du noch eine Karte nehmen?(false, true)");
 
                 Scanner c = new Scanner(System.in);
                 String inputString = c.nextLine();
