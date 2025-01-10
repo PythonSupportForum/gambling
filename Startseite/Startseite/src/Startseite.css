@@ -56,6 +56,14 @@
 }
 #Anmelden .form-container {
     position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    padding: 10px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    color: white;
 }
 #Anmelden.form .form-container {
     opacity: 1;
@@ -68,7 +76,6 @@
 }
 #Anmelden:not(.form) .text {
     animation: fadeIn 2s forwards;
-    position: absolute;
 }
 #Anmelden.form .text {
     animation: fadeOut 2s forwards;

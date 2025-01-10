@@ -1,6 +1,22 @@
 <?php
 session_start();
 $isLoggedIn = isset($_SESSION['user']);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Überprüfen, ob die Anmeldedaten gesendet wurden
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
+
+    if ($username === 'BENUTZERnarme' && $password === 'DRIN Passwormt') {
+        $_SESSION['user'] = $username;
+        $isLoggedIn = true;
+        header('Location: /login.php');
+        exit();
+    } else {
+        $error = 'Ungültige Anmeldedaten!';
+    }
+}
+
 ?>
 
 <html>
@@ -20,9 +36,16 @@ $isLoggedIn = isset($_SESSION['user']);
         <button id="Anmelden" onclick="window.location.href='/login.php'">
             <span class="text">Anmelden</span>
             <div class="form-container">
-                <form action="/" method="POST">
-                    <input type="text" value="BENUTZERnarme">
-                    <input type="password" value="DRIN Passwormt">
+                <form action="./" method="POST">
+                    <div class="form-group">
+                        <label for="username">Benutzername</label>
+                        <input type="text" id="username" name="username" required placeholder="Benutzername">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Passwort</label>
+                        <input type="password" id="password" name="password" required placeholder="Passwort">
+                    </div>
+                    <button type="submit" class="btn-submit">Einloggen</button>
                 </form>
             </div>
         </button>
