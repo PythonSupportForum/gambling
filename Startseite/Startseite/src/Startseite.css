@@ -102,6 +102,7 @@
 
 @keyframes buttonToSign {
     0% {
+        color: transparent;
         background-color: #00541d;
     }
     10% {
@@ -116,6 +117,7 @@
         height: 60vh;
         transform: translate(10vw, 50vh);
         border-radius: 50px;
+        color: transparent;
         background-color: #00541d;
     }
 }
