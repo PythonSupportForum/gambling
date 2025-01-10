@@ -43,10 +43,7 @@ class BlackjackServer extends WebSocketServer {
         System.out.println("Verbindung geschlossen: " + conn.getRemoteSocketAddress() + ", Grund: " + reason);
 
         GameThread gameThread = clientThreads.remove(conn);
-
-        if (gameThread != null) {
-            gameThread.currentThread.interrupt();
-        }
+        gameThread.handleQuit();
     }
 
     // Beim Erhalten einer Benachrichtigung → Verteilung der Nachrichten auf die zugehörigen Threads
