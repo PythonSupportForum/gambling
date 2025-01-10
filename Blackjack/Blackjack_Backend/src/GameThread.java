@@ -313,11 +313,19 @@ public class GameThread implements Runnable {
 
                     Scanner c = new Scanner(System.in);
                     String inputString = c.nextLine();
-                    try {
-                        insuranceBet = Integer.parseInt(inputString);
-                        System.out.println("Du hast " + insuranceBet + " als Insurance Bet gesetzt");
+                    if(inputString.equals("true")){
+                        System.out.println("Wieviel?");
+                        inputString = c.nextLine();
+                        try {
+                            insuranceBet = Integer.parseInt(inputString);
+                            System.out.println("Du hast " + insuranceBet + " als Insurance Bet gesetzt");
+                            insuranceInput = true;
+                        } catch (NumberFormatException e) {
+                        }
+                    }
+                    else{
+                        insuranceBet = 0;
                         insuranceInput = true;
-                    } catch (NumberFormatException e) {
                     }
                 }
                 //endregion
