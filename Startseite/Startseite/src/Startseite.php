@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <?php if (!$isLoggedIn): ?>
         <!-- Anmelden-Button nur anzeigen, wenn der Benutzer NICHT angemeldet ist -->
-        <button id="Anmelden" onclick="window.location.href='/login.php'">
+        <div id="Anmelden" onclick="window.location.href='/login.php'">
             <span class="text">Anmelden</span>
             <div class="form-container">
                 <form action="./" method="POST">
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <button type="submit" class="btn-submit">Einloggen</button>
                 </form>
             </div>
-        </button>
+        </div>
     <?php else: ?>
         <!-- Konto-Daten anzeigen, wenn der Benutzer angemeldet ist -->
         <div id="Account">
