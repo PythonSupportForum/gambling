@@ -178,10 +178,58 @@
     text-align: center;
 }
 
-#Blackjack {
-
+#BlackjackButton {
+    height: 7%;
+    position: fixed;
+    bottom: 35%;
+    width: 20%;
+    left: 17.5%;
+    background-color: #e6ac0c;
+    border: solid 15px #e6ac0c;
+    border-radius: 40px;
+    color: #00541d;
+    font-weight: 700;
+    font-size: 60px;
 }
 
-#Slots {
+#SlotsButton {
+    height: 7%;
+    position: fixed;
+    bottom: 35%;
+    width: 20%;
+    right: 17.5%;
+    background-color: #e6ac0c;
+    border: solid 15px #e6ac0c;
+    border-radius: 40px;
+    color: #00541d;
+    font-weight: 700;
+    font-size: 60px;
+}
+
+#BlackjackImage {
+    width: 40%;
+    position: fixed;
+    left: 7.5%;
+    top: 35%;
+    border-radius: 40px;
+}
+#SlotsImage {
+    width: 40%;
+    height: 33%;
+    position: fixed;
+    right: 7.5%;
+    top: 35%;
+    border-radius: 40px;
+    aspect-ratio: 1 / 1;
+}
+
+#Footer {
+    height: 10%;
+    width: 100%;
+    background-color: #00541d;
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
 
 }
