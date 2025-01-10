@@ -2,10 +2,12 @@ import org.java_websocket.WebSocket;
 
 import java.util.*;
 
+// Implementiert das Runnable interface -> Nutzung der Java Implementation für Multithreading
 public class GameThread implements Runnable {
 
     WebSocket conn;
     int client_ID;
+    // Ermöglicht Zugriff auf Thread Objekt, wenn GameThread Objekt gefunden wurde
     public Thread currentThread = Thread.currentThread();
 
     public enum GameState {
@@ -23,20 +25,22 @@ public class GameThread implements Runnable {
         WITHDRAW
     }
 
+    // Beschreibt den Status, indem sich das Spiel befindet
     GameState gameState = GameState.IDLE;
 
-    //Konstruktor
+    // Konstruktor
     public GameThread(int id, WebSocket _conn) {
+        client_ID = id;
         conn = _conn;
     }
 
+    // Implementation der run() - Methode des Runnable Interfaces, erste Funktion die nach der Öffnung des Threads ausgeführt wird
     public void run() {
-        game(client_ID);
+        game(client_ID); // ruft Hauptmethode des Spiels auf, beginnt Spiel mit dem Client
     }
 
+    // Verarbeiten einer einkommenden Nachricht vom Client
     public void handleMessage(String message) {
-        System.out.println("Verarbeite Nachricht im Thread: " + message);
-
         switch (message.toLowerCase()) {
             case "start":
                 conn.send("Spiel wurde gestartet!");
@@ -59,6 +63,7 @@ public class GameThread implements Runnable {
         double balance = 0.0;
         //Den Kontostand abfragen in der Datenbank
         int bet = 0;
+        // Kontostand abfragen in der Datenbank
         int insuranceBet = 0;
 
         List<GameCard> availableCards = new ArrayList<GameCard>();
