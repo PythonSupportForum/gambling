@@ -65,10 +65,12 @@
 
 @keyframes buttonToSign {
     0% {
-        color: transparent;
+        color: black;
         background-color: #00541d;
     }
-
+    2% {
+        color: transparent;
+    }
     10% {
         width: 80%;
         height: 60vh;
