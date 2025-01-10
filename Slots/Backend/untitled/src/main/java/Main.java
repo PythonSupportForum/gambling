@@ -8,7 +8,7 @@ public class Main {
         System.out.println("Hallo!");
 
         String url = "jdbc:mysql://db.ontubs.de:3306/gambling";
-        String user = "carli";
+        String user = "larsi";
         String password = "geilo123!";
 
         try {
