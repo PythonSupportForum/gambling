@@ -25,7 +25,7 @@ public class GameThread implements Runnable {
     boolean wantsExchange;
     boolean exchangeInput;
     boolean betInput;
-    boolean insuranceInput;
+    boolean insuranceInput = false;
 
     boolean cardInput;
 

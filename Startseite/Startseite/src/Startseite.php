@@ -65,11 +65,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
 </div>
 
 <div id = "Blackjack">
-    <button>Blackjack</button>
+    <img id = "BlackjackImage" src="../../../Blackjack/Blackjack_Frontend/assets/Blackjack.jpg" height="1000" width="1500"/>
+    <button id = "BlackjackButton">BLACKJACK</button>
 </div>
 <div id = "Slots">
-    <button>Slots</button>
+    <img id = "SlotsImage" src="../../../Slots/assets/Slots.png"/>
+    <button id = "SlotsButton">SLOTS</button>
 </div>
+
+<div id = "Footer"></div>
 <script>
     document.getElementById("Anmelden").onclick = ()=>{
         document.getElementById("Anmelden").classList.add("form");
