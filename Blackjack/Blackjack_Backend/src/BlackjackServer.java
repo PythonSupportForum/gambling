@@ -11,7 +11,7 @@ import java.util.Map;
 class BlackjackServer extends WebSocketServer {
 
     // Funktioniert als Client_ID (intern). Mit jedem neuen Client wird diesem eine um 1 höhere ID zugewiesen
-    int count = 0;
+    int count = -1;
 
     // "Dictionary" an Threads, Abfrage eines Threads mit Schlüssel Websocket, synchronizedMaps sind thread-sicher
     private final Map<WebSocket, GameThread> clientThreads = Collections.synchronizedMap(new HashMap<>());
@@ -24,9 +24,12 @@ class BlackjackServer extends WebSocketServer {
     // Beim Öffnen einer Verbindung wird ein neuer Thread erstellt, indem nur die eine Verbindung behandelt wird
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
+        count++;
         System.out.println("Neue Verbindung: " + conn.getRemoteSocketAddress());
         // Senden der ClientId an den Client
-        conn.send("acc " + count); // Sende Bestätigung
+        conn.send("acc " + count);
+
+        // Starten eines neuen Threads
         GameThread gameThread = new GameThread(count, conn);
         Thread thread = new Thread(gameThread);
         thread.start();

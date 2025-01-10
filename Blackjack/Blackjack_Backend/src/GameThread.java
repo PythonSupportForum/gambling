@@ -37,21 +37,26 @@ public class GameThread implements Runnable {
 
     // Implementation der run() - Methode des Runnable Interfaces, erste Funktion die nach der Öffnung des Threads ausgeführt wird
     public void run() {
+        System.out.print(client_ID + "\n");
         game(client_ID); // ruft Hauptmethode des Spiels auf, beginnt Spiel mit dem Client
     }
 
     // Verarbeiten einer einkommenden Nachricht vom Client
     public void handleMessage(String message) {
         switch (message.toLowerCase()) {
-            case "start":
-                System.out.println("Spiel wurde gestartet!");
+            case "exchange":
+                    break;
+            case "accept":
                 break;
-            case "exit":
-                System.out.println("Spiel wird beendet.");
+            case "bet":
+                break;
+            case "insurance":
+                break;
+            case "end":
                 running = false;
                 break;
             default:
-                conn.send("Unbekannter Befehl: " + message);
+                System.out.println("Client Message: " + message);
                 break;
         }
     }
@@ -66,8 +71,11 @@ public class GameThread implements Runnable {
         int splitBet = 0;
         int insuranceBet = 0;
 
+        // unveränderte Liste aller Karten
         List<GameCard> availableCards = new ArrayList<GameCard>();
+        // Liste, aus welcher die Karten entnommen werden, welche dann in den Stacks landen
         List<GameCard> temp = new ArrayList<GameCard>();
+
         //region Karten hinzufügen
         // Clubs (Kreuz)
         availableCards.add(new GameCard('2', 'c'));
@@ -128,6 +136,7 @@ public class GameThread implements Runnable {
         availableCards.add(new GameCard('q', 's')); // Dame
         availableCards.add(new GameCard('k', 's')); // König
         availableCards.add(new GameCard('a', 's')); // Ass
+
         // endregion
 
         List<GameCard> dealerStack = new ArrayList<>();
@@ -137,6 +146,10 @@ public class GameThread implements Runnable {
 
         while (running) {
             setGameState(GameState.DEPOSIT);
+
+            // füllt temp mit allen Karten
+            temp.addAll(availableCards);
+
             //region Geld umtauschen
             boolean input = false;
             int coinAmount = 0;
@@ -191,11 +204,11 @@ public class GameThread implements Runnable {
 
             setGameState(GameState.SHUFFLE);
 
-            while (!availableCards.isEmpty()) {
+            while (!temp.isEmpty()) {
                 Random b = new Random();
-                int random = b.nextInt(availableCards.size());
-                deck.push(availableCards.get(random));
-                availableCards.remove(random);
+                int random = b.nextInt(temp.size());
+                deck.push(temp.get(random));
+                temp.remove(random);
             }
 
             setGameState(GameState.DEALER_START);
@@ -213,10 +226,7 @@ public class GameThread implements Runnable {
                     try {
                         insuranceBet = Integer.parseInt(inputString);
                         input4 = true;
-                    } catch (NumberFormatException e) {
-                        continue;
-                    }
-
+                    } catch (NumberFormatException e) {}
                 }
                 //endregion
             }
@@ -280,7 +290,7 @@ public class GameThread implements Runnable {
                 // Checken, ob mit dem Ass als 11 die 21 überschritten werden
                 if (aceCounter > 0 && total > 21) {
                     total -= 10;
-                    aceCounter -= 1; // Ass Counter einen runtersetzen
+                    aceCounter -= 1; // Ass Counter einen herabsetzen
                 }
             }
 
@@ -310,11 +320,10 @@ public class GameThread implements Runnable {
 
             conn.close(); // Verbindung beenden
             currentThread.interrupt();// Beende den Thread
-
-        }
+    }
 
         //region currentValue-Methode
-        public int currentValue (List < GameCard > playerStack) {
+        public int currentValue (List<GameCard> playerStack) {
             int totalValue = 0;
             int aceCount = 0;
 
@@ -334,7 +343,7 @@ public class GameThread implements Runnable {
                 }
             }
 
-            // Wenn der Gesamtwert > 21 ist, wird der Wert der Asse reduziert (11 -> 1)
+            // Wenn der Gesamtwert > 21 ist, wird der Wert der Asse reduziert (11 → 1)
             while (totalValue > 21 && aceCount > 0) {
                 totalValue -= 10; // Ein Ass wird von 11 auf 1 reduziert
                 aceCount--;       // Ein Ass weniger mit Wert 11
