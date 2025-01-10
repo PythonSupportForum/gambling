@@ -128,6 +128,7 @@ public class GameThread implements Runnable {
 
         List<GameCard> dealerStack = new ArrayList<>();
         List<GameCard> playerStack = new ArrayList<>();
+        List<GameCard> playerSplitStack = new ArrayList<>();
         Stack<GameCard> deck = new Stack<>();
         setGameState(GameState.DEPOSIT);
         //region Geld umtauschen
@@ -201,7 +202,7 @@ public class GameThread implements Runnable {
 
         dealerStack.add(deck.pop());
         dealerStack.add(deck.pop());
-        if (dealerStack.get(1).getCoat() == 'a') {
+        if (dealerStack.get(1).getValueOfCard() == '0' || dealerStack.get(1).getValueOfCard() == 'j' || dealerStack.get(1).getValueOfCard() == 'q' || dealerStack.get(1).getValueOfCard() == 'k') {
             //region Insurance Bet
             setGameState(GameState.INSURANCE_BET);
             boolean input4 = false;
@@ -305,8 +306,12 @@ public class GameThread implements Runnable {
         } else {
             System.out.println("Ups??!? Ein Fehler ist aufgetreten!");
         }
-
-
+        if(insuranceBet > 0 && dealerStack.get(0).getValueOfCard() == 'a'){
+            coins += insuranceBet;
+            System.out.println("Du hast den Insurance Bet erhalten!");
+        }
+        bet = 0;
+        insuranceBet = 0;
 
         //Die Idee ist, das das Spiel direkt neustartet
         game(id);
