@@ -1,17 +1,18 @@
+package Slots.Backend.untitled.src.main.java;
+
 import java.io.File;
+import java.util.Random;
 
 
 
 
 public class SlotGen{
 
-    private static imageNumber;
 
     /**
-     * Addiert zwei Ganzzahlen und gibt das Ergebnis zurück.
-     * @param num1 Erste zu addierende Zahl
-     * @param num2 Zweite zu addierende Zahl
-     * @return Die Summe der beiden Zahlen
+     *Gibt ein Array mit den Pfaden zu drei zufälligen Bildern zurück.
+     * @param folder Der Pfad zu dem Ordner mit den Bildern.
+     * @return Das String-Array.
      */
     public static String[] getSlotArray(File folder) {
 
@@ -20,7 +21,8 @@ public class SlotGen{
         File[] files = folder.listFiles();
 
         for(int i = 0; i<3; i++){
-            rand.
+            assert files != null;
+            output[i] = files[rand.nextInt(files.length)].getPath();
         }
 
         return output;
