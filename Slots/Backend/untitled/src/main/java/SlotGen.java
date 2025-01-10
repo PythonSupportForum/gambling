@@ -1,12 +1,34 @@
 package Slots.Backend.untitled.src.main.java;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Random;
+
+
+
+class Main{
+
+    public static void main(String[] args){
+        System.out.println(Arrays.toString(SlotGen.getSlotArray(new File("../../../../assets/slot-machine-icons"))));
+
+
+
+    }
+
+
+
+}
+
+
 
 
 
 
 public class SlotGen{
+
+
+
+
 
 
     /**
