@@ -19,7 +19,7 @@ $isLoggedIn = isset($_SESSION['user']);
         <!-- Anmelden-Button nur anzeigen, wenn der Benutzer NICHT angemeldet ist -->
         <button id="Anmelden" onclick="window.location.href='/login.php'">
             <span class="text">Anmelden</span>
-            <div class="form">
+            <div class="form-container">
                 <form action="/" method="POST">
 
                 </form>

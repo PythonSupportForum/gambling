@@ -43,12 +43,28 @@
     border-bottom-color: #f8bb12;
     border-width: 15px;
     border-radius: 400px;
-    transition: 0.2s;
-    animation: buttonToSign 10s;
+    transition: all 0.2s;
 }
 #Anmelden:hover {
     transform: scale(0.95);
-
+}
+#Anmelden.form {
+    animation: buttonToSign 10s;
+}
+#Anmelden.form .form-container {
+    opacity: 0;
+}
+#Anmelden.form .form-container {
+    opacity: 1;
+}
+#Anmelden:not(.form) .form-container) {
+    opacity: 9;
+}
+#Anmelden:not(.form) .text {
+    opacity: 1;
+}
+#Anmelden.form .text {
+    opacity: 0;
 }
 
 #Guthaben {
@@ -65,11 +81,7 @@
 
 @keyframes buttonToSign {
     0% {
-        color: black;
         background-color: #00541d;
-    }
-    2% {
-        color: transparent;
     }
     10% {
         width: 80%;
@@ -83,7 +95,6 @@
         height: 60vh;
         transform: translate(10vw, 50vh);
         border-radius: 50px;
-        color: transparent;
         background-color: #00541d;
     }
 }
