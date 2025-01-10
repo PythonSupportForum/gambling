@@ -427,7 +427,7 @@ public class GameThread implements Runnable {
                     }
 
                     // Checken, ob mit dem Ass als 11 die 21 überschritten werden
-                    if (aceCounter > 0 && total > 21) {
+                    while (aceCounter > 0 && total > 21) {
                         total -= 10;
                         aceCounter -= 1; // Ass Counter einen herabsetzen
                     }
