@@ -21,10 +21,10 @@ $isLoggedIn = isset($_SESSION['user']);
             <span class="text">Anmelden</span>
             <div class="form-container">
                 <form action="/" method="POST">
-
+                    <input type="text" value="BENUTZERnarme">
+                    <input type="password" value="DRIN Passwormt">
                 </form>
             </div>
-
         </button>
     <?php else: ?>
         <!-- Konto-Daten anzeigen, wenn der Benutzer angemeldet ist -->
