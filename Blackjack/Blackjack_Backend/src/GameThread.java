@@ -58,7 +58,6 @@ public class GameThread implements Runnable {
     // Funktioniert als Hauptmethode für das Blackjack Spiel
     public void game(int client_ID) {
         //Start des Spiels
-        int id = client_ID;
         int coins = 0;
         double balance = 0.0;
         //Den Kontostand abfragen in der Datenbank
