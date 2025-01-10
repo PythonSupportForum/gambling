@@ -63,6 +63,8 @@
 }
 #Anmelden:not(.form) .form-container {
     opacity: 0;
+    pointer-events: none;
+    display: none;
 }
 #Anmelden:not(.form) .text {
     animation: fadeIn 2s forwards;
@@ -70,6 +72,7 @@
 }
 #Anmelden.form .text {
     animation: fadeOut 2s forwards;
+    pointer-events: none;
 }
 #Anmelden .text {
     color: #e6ac0c;
