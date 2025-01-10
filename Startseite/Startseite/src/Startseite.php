@@ -17,7 +17,15 @@ $isLoggedIn = isset($_SESSION['user']);
 
     <?php if (!$isLoggedIn): ?>
         <!-- Anmelden-Button nur anzeigen, wenn der Benutzer NICHT angemeldet ist -->
-        <button id="Anmelden" onclick="window.location.href='/login.php'">Anmelden</button>
+        <button id="Anmelden" onclick="window.location.href='/login.php'">
+            <span class="text">Anmelden</span>
+            <div class="form">
+                <form action="/" method="POST">
+
+                </form>
+            </div>
+
+        </button>
     <?php else: ?>
         <!-- Konto-Daten anzeigen, wenn der Benutzer angemeldet ist -->
         <div id="Account">
