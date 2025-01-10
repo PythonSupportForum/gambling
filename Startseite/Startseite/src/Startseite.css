@@ -66,6 +66,10 @@
 #Anmelden.form .text {
     opacity: 0;
 }
+#Anmelden .text {
+    color: #e6ac0c;
+    opacity: 1;
+}
 
 #Guthaben {
     font-size: 4vw;

@@ -35,6 +35,10 @@ $isLoggedIn = isset($_SESSION['user']);
         </div>
     <?php endif; ?>
 </div>
-
+<script>
+    document.getElementById("Anmelden").onclick = ()=>{
+        document.getElementById("Anmelden").classList.add("form");
+    }
+</script>
 </body>
 </html>
