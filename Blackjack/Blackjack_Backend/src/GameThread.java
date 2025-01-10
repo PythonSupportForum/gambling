@@ -43,15 +43,14 @@ public class GameThread implements Runnable {
     public void handleMessage(String message) {
         switch (message.toLowerCase()) {
             case "start":
-                conn.send("Spiel wurde gestartet!");
+                System.out.println("Spiel wurde gestartet!");
                 break;
             case "exit":
-                conn.send("Spiel wird beendet.");
+                System.out.println("Spiel wird beendet.");
                 conn.close(); // Verbindung beenden
                 currentThread.interrupt();// Beende den Thread
                 break;
             default:
-                conn.send("Unbekannter Befehl: " + message);
                 break;
         }
     }

@@ -25,7 +25,8 @@ class BlackjackServer extends WebSocketServer {
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         System.out.println("Neue Verbindung: " + conn.getRemoteSocketAddress());
-        conn.send("acc"); // Sende Bestätigung
+        // Senden der ClientId an den Client
+        conn.send("acc " + count); // Sende Bestätigung
         GameThread gameThread = new GameThread(count, conn);
         Thread thread = new Thread(gameThread);
         thread.start();
@@ -49,7 +50,6 @@ class BlackjackServer extends WebSocketServer {
     @Override
     public void onMessage(WebSocket conn, String message) {
         System.out.println("Nachricht vom Client: " + message);
-
         // Finde den entsprechenden Thread durch die verwendete Verbindung als Schlüssel
         GameThread thread = clientThreads.get(conn);
 
@@ -68,6 +68,6 @@ class BlackjackServer extends WebSocketServer {
 
     @Override
     public void onStart() {
-        System.out.println("WebSocket-Server wurde erfolgreich gestartet.");
+        System.out.println("Blackjack Server wurde erfolgreich gestartet.");
     }
 }
