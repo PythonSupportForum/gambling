@@ -333,8 +333,6 @@ public class GameThread implements Runnable {
 
             setGameState(GameState.PLAYER_DRAW);
 
-            String coat = "";
-
             GameCard card = deck.pop();
             playerStack.add(card);
             printCard(card);
