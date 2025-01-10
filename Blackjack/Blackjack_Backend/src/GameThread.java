@@ -27,7 +27,7 @@ public class GameThread implements Runnable {
     boolean wantsExchange;
     boolean exchangeInput;
     boolean betInput;
-    boolean insuranceInput;
+    boolean insuranceInput = false;
 
     boolean cardInput;
 
@@ -467,7 +467,7 @@ public class GameThread implements Runnable {
             int aceCount = 0;
 
             for (GameCard card : playerStack) {
-                char valueOfCard = card.getCoat();
+                char valueOfCard = card.getValue();
 
                 if (valueOfCard >= '2' && valueOfCard <= '9') {
                     // Numerische Karten: '2' bis '9'
