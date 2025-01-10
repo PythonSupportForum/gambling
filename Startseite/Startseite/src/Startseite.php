@@ -38,15 +38,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
             <span class="text">Anmelden</span>
             <div class="form-container">
                 <form action="" method="POST">
+                    <h1 <style="color: white;">>Anedlnen bei LETTS' GMLE</h1>
                     <?php if (isset($error) && $error): ?>
-                        <p class="error"><?= htmlspecialchars($error) ?></p>
+                        <p class="error" style="font-size: 16px;"><?= htmlspecialchars($error) ?></p>
                     <?php endif; ?>
                     <div class="form-group">
-                        <label for="username">Benutzername</label>
+                        <label for="username" style="color: white;">Benutzername</label>
                         <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($username); ?>" required placeholder="Benutzername">
                     </div>
                     <div class="form-group">
-                        <label for="password">Passwort</label>
+                        <label for="password" style="color: white;">Passwort</label>
                         <input type="password" id="password" name="password" value="<?php echo htmlspecialchars($password); ?>" required placeholder="Passwort">
                     </div>
                     <button type="submit" class="btn-submit">Einloggen</button>
