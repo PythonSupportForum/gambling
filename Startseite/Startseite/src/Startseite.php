@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
 
     <?php if (!$isLoggedIn): ?>
         <!-- Anmelden-Button nur anzeigen, wenn der Benutzer NICHT angemeldet ist -->
-        <div id="Anmelden" onclick="window.location.href='/login.php'" class="<?php if( isset($_POST['username'])) echo "form"; ?>">
+        <div id="Anmelden" class="<?php if( isset($_POST['username'])) echo "form"; ?>">
             <span class="text">Anmelden</span>
             <div class="form-container">
                 <form action="" method="POST">
