@@ -57,7 +57,7 @@
 #Anmelden.form .form-container {
     opacity: 1;
 }
-#Anmelden:not(.form) .form-container) {
+#Anmelden:not(.form) .form-container {
     opacity: 9;
 }
 #Anmelden:not(.form) .text {
