@@ -307,6 +307,8 @@ public class GameThread implements Runnable {
             //region Coins setzen
             while (!betInput) {
                 //ist nicht vollständig, nach mit Frontend lösen
+
+                System.out.println("Du hast " + coins + " Coins");
                 System.out.println("Wie viele Coins willst du setzen?");
 
                 String inputString = c.nextLine();
