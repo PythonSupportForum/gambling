@@ -1,17 +1,18 @@
 <?php
 session_start();
 $isLoggedIn = isset($_SESSION['user']);
+$error = null;
+$username = $_POST['username'] ?? '';
+$password = $_POST['password'] ?? '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
     // Überprüfen, ob die Anmeldedaten gesendet wurden
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
+
 
     if ($username === 'BENUTZERnarme' && $password === 'DRIN Passwormt') {
         $_SESSION['user'] = $username;
         $isLoggedIn = true;
-        header('Location: /login.php');
-        exit();
+
     } else {
         $error = 'Ungültige Anmeldedaten!';
     }
@@ -33,17 +34,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <?php if (!$isLoggedIn): ?>
         <!-- Anmelden-Button nur anzeigen, wenn der Benutzer NICHT angemeldet ist -->
-        <div id="Anmelden" onclick="window.location.href='/login.php'">
+        <div id="Anmelden" onclick="window.location.href='/login.php'" class="<?php if( isset($_POST['username'])) echo "form"; ?>">
             <span class="text">Anmelden</span>
             <div class="form-container">
                 <form action="" method="POST">
+                    <?php if (isset($error) && $error): ?>
+                        <p class="error"><?= htmlspecialchars($error) ?></p>
+                    <?php endif; ?>
                     <div class="form-group">
                         <label for="username">Benutzername</label>
-                        <input type="text" id="username" name="username" required placeholder="Benutzername">
+                        <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($username); ?>" required placeholder="Benutzername">
                     </div>
                     <div class="form-group">
                         <label for="password">Passwort</label>
-                        <input type="password" id="password" name="password" required placeholder="Passwort">
+                        <input type="password" id="password" name="password" value="<?php echo htmlspecialchars($password); ?>" required placeholder="Passwort">
                     </div>
                     <button type="submit" class="btn-submit">Einloggen</button>
                 </form>
