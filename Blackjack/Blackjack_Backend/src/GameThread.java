@@ -335,13 +335,16 @@ public class GameThread implements Runnable {
 
             if (getGameState() == GameState.PLAYER_WON){
                 // Spieler gewinnt, der Spieler erhält seinen Einsatz im Verhältnis 2:1 zurück
-                coins += 2*bet;
+                coins += 2 * bet;
+                System.out.println("Du hast " + bet + " Coins gewonnen");
             } else if (getGameState() == GameState.PLAYER_LOST) {
                 // Spieler verliert, es passiert nichts
+                System.out.println("Du hast " + bet + " Coins verloren!");
             }
             else if (getGameState() == GameState.PUSH) {
                 // Push, der Spieler erhält seine Coins zurück
                 coins += bet;
+                System.out.println("Du hast " + bet + " Coins zurück erhalten!");
             }
         }
 
