@@ -60,20 +60,16 @@
 #Anmelden.form .form-container {
     opacity: 1;
     cursor: auto;
-    animation: fadeIn 2s 1s forwards;
 }
 #Anmelden:not(.form) .form-container {
-    opacity: 0;
-    display: none;
+    animation: fadeOut 2s forwards;
 }
 #Anmelden:not(.form) .text {
-    opacity: 1;
-    animation: fadeIn 2s 1s forwards;
+    animation: fadeIn 2s forwards;
     position: absolute;
 }
 #Anmelden.form .text {
-    opacity: 0;
-    animation: fadeOut 2s 1s forwards;
+    animation: fadeOut 2s forwards;
 }
 #Anmelden .text {
     color: #e6ac0c;
