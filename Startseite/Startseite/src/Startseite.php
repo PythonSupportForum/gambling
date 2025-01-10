@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
             <span class="text">Anmelden</span>
             <div class="form-container">
                 <form action="" method="POST">
-                    <h1 <style="color: white;">>Anedlnen bei LETTS' GMLE</h1>
+                    <h1 style="color: white;">Anedlnen bei LETTS' GMLE</h1>
                     <?php if (isset($error) && $error): ?>
                         <p class="error" style="font-size: 16px;"><?= htmlspecialchars($error) ?></p>
                     <?php endif; ?>
