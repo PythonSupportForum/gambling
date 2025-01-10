@@ -1,0 +1,177 @@
+
+*{
+    font-family: Helvetica;
+    color: #15471c;
+}
+
+.Header {
+    position: fixed;
+    top: 0px;
+    bottom: 85%;
+    left: 0px;
+    right: 0px;
+    background-color: #00541d;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    text-align: center;
+    color: white;
+    padding-right: 10%;
+
+}
+
+#Logo {
+    position: fixed;
+    top: 3%;
+    left: 3%;
+    height: 20%;
+    aspect-ratio: 982 / 669;
+    transform: rotate(-10deg);
+}
+
+
+#Anmelden {
+    padding: 10px;
+    width: 20%;
+    font-size: 2vw;
+    color: #e6ac0c;
+    background-color: transparent;
+    border-style: solid;
+    border-top-color: #e6ac0c;
+    border-left-color: #e6ac0c;
+    border-right-color: #f8bb12;
+    border-bottom-color: #f8bb12;
+    border-width: 15px;
+    border-radius: 400px;
+    transition: all 0.2s;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    display: inline-block;
+    text-align: center;
+}
+#Anmelden:hover {
+    transform: scale(0.95);
+}
+#Anmelden.form {
+    animation: buttonToSign 10s forwards;
+}
+#Anmelden .form-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    padding: 10px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    color: white;
+}
+#Anmelden.form .form-container {
+    opacity: 1;
+    cursor: auto;
+}
+#Anmelden:not(.form) .form-container {
+    opacity: 0;
+    pointer-events: none;
+    display: none;
+}
+#Anmelden:not(.form) .text {
+    animation: fadeIn 2s forwards;
+}
+#Anmelden.form .text {
+    animation: fadeOut 2s forwards;
+    pointer-events: none;
+}
+#Anmelden .text {
+    color: #e6ac0c;
+    opacity: 1;
+}
+
+#Guthaben {
+    font-size: 4vw;
+    color: #e6ac0c;
+}
+#Taler {
+    position: fixed;
+    top: 5%;
+    right: 5%;
+    height: 5%;
+    aspect-ratio: 1 / 1;
+}
+
+@keyframes buttonToSign {
+    0% {
+        background-color: #00541d;
+    }
+    10% {
+        width: 80%;
+        height: 60vh;
+        transform: translate(10vw, 50vh);
+        border-radius: 50px;
+        background-color: #00541d;
+    }
+    100% {
+        width: 80%;
+        height: 60vh;
+        transform: translate(10vw, 50vh);
+        border-radius: 50px;
+        background-color: #00541d;
+    }
+}
+@keyframes fadeIn {
+    0% {
+        opacity: 0;  /* Zu Beginn unsichtbar */
+    }
+    100% {
+        opacity: 1;  /* Am Ende vollständig sichtbar */
+    }
+}
+@keyframes fadeOut {
+    0% {
+        opacity: 1;  /* Zu Beginn unsichtbar */
+    }
+    100% {
+        opacity: 0;  /* Am Ende vollständig sichtbar */
+    }
+}
+
+.form-group {
+    margin-bottom: 15px;
+    color: white;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.btn-submit:hover {
+    background-color: #45a049;
+}
+
+.error {
+    color: red;
+    font-size: 14px;
+    text-align: center;
+}
