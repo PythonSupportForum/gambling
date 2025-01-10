@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div id="Anmelden" onclick="window.location.href='/login.php'">
             <span class="text">Anmelden</span>
             <div class="form-container">
-                <form action="./" method="POST">
+                <form action="" method="POST">
                     <div class="form-group">
                         <label for="username">Benutzername</label>
                         <input type="text" id="username" name="username" required placeholder="Benutzername">
