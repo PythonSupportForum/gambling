@@ -3,14 +3,17 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-// Implementation der Websockets gegenüber der unterlegenen Native Sockets (Websockets sind zudem Standardimplementation für javasript clients)
+// Implementation der Websockets gegenüber der unterlegenen Native Sockets (Websockets sind zudem Standardimplementation für javascript clients)
 class BlackjackServer extends WebSocketServer {
 
-    // Funktioniert als Client_ID (intern). Mit jedem neuen Client wird diesem eine um 1 höhere ID zugewiesen
+    // Funktioniert als Client_ID (intern). Mit jedem neuen Client wird diesem eine um 1 höhere ID zugewiesen, da immer um 1 erhöht wird, erhält der erste client die id 0
     int count = -1;
 
     // "Dictionary" an Threads, Abfrage eines Threads mit Schlüssel Websocket, synchronizedMaps sind thread-sicher
