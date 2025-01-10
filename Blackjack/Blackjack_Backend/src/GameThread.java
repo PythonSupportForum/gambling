@@ -63,7 +63,7 @@ public class GameThread implements Runnable {
         double balance = 0.0;
         //Den Kontostand abfragen in der Datenbank
         int bet = 0;
-        // Kontostand abfragen in der Datenbank
+        int splitBet = 0;
         int insuranceBet = 0;
 
         List<GameCard> availableCards = new ArrayList<GameCard>();
@@ -231,22 +231,48 @@ public class GameThread implements Runnable {
         setGameState(GameState.PLAYER_DRAW);
         playerStack.add(deck.pop());
         playerStack.add(deck.pop());
+        if(playerStack.get(0).getValueOfCard() == playerStack.get(1).getValueOfCard()){
+            boolean input5 = false;
+            while (!input5) {
+                //ist nicht vollständig, nachher mit Frontend lösen
+                Scanner c = new Scanner(System.in);
+                String inputString = c.nextLine();
+                try
+                {
+                    if(Integer.parseInt(inputString) > 0){
+                       playerSplitStack.add(playerStack.get(1));
+                       playerStack.remove(1);
+                       splitBet = Integer.parseInt(inputString);
+                        input5 = true;
+                    } else {
+                        input5 = true;
+                    }
+                }
+                catch(NumberFormatException e)
+                {
+                    continue;
+                }
+
+            }
+        }
+
+        // Der Spieler wird imer weiter gefragt, bis er über die 21 kommt oder keine Karte mehr nehmen möchte
         boolean input3 = false;
         while (!input3) {
             //ist nicht vollständig, nachher mit Frontend lösen
-            if(currentValue(playerStack) > 21){
-                setGameState(GameState.PLAYER_LOST);
-                System.out.println("Bust! Du hast verloren!");
-                break;
-            }
-            if(currentValue(playerStack) == 21){
-                System.out.println("Herzlichen Glückwunsch! Du hast einen Blackjack!");
-                break;
-            }
             Scanner c = new Scanner(System.in);
             String inputString = c.nextLine();
             try
             {
+                if(currentValue(playerStack) > 21){
+                    setGameState(GameState.PLAYER_LOST);
+                    System.out.println("Bust! Du hast verloren!");
+                    break;
+                }
+                if(currentValue(playerStack) == 21){
+                    System.out.println("Herzlichen Glückwunsch! Du hast einen Blackjack!");
+                    break;
+                }
                 if(Boolean.parseBoolean(inputString)){
                     playerStack.add(deck.pop());
                     continue;
@@ -259,6 +285,38 @@ public class GameThread implements Runnable {
                 continue;
             }
 
+        }
+
+        //Der Spieler wird genau wie zuvor gefragt, ob er eine Karte nehmen möchte nur für den 2. gesplitteten Stapel
+        if(splitBet > 0){
+            while (!input3) {
+                //ist nicht vollständig, nachher mit Frontend lösen
+                Scanner c = new Scanner(System.in);
+                String inputString = c.nextLine();
+                try
+                {
+                    if(currentValue(playerSplitStack) > 21){
+                        setGameState(GameState.PLAYER_LOST);
+                        System.out.println("Bust! Dein zweiter Stapel ist über 21!");
+                        break;
+                    }
+                    if(currentValue(playerSplitStack) == 21){
+                        System.out.println("Herzlichen Glückwunsch! Du hast einen Blackjack!");
+                        break;
+                    }
+                    if(Boolean.parseBoolean(inputString)){
+                        playerSplitStack.add(deck.pop());
+                        continue;
+                    } else {
+                        input3 = true;
+                    }
+                }
+                catch(NumberFormatException e)
+                {
+                    continue;
+                }
+
+            }
         }
 
         setGameState(GameState.DEALER_DRAW);
@@ -317,8 +375,6 @@ public class GameThread implements Runnable {
         bet = 0;
         insuranceBet = 0;
 
-        //Die Idee ist, das das Spiel direkt neustartet
-        game(id);
 
     }
 
