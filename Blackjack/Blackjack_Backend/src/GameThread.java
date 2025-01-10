@@ -5,9 +5,33 @@ import java.util.*;
 // Implementiert das Runnable interface -> Nutzung der Java Implementation für Multithreading
 public class GameThread implements Runnable {
 
+    // Liste, aus welcher die Karten entnommen werden, welche dann in den Stacks landen
+    List<GameCard> temp = new ArrayList<GameCard>();
+
+    final List<GameCard> AVAILABLECARDS = new ArrayList<GameCard>();
+
     boolean running = true;
     WebSocket conn;
     int client_ID;
+
+    List<GameCard> dealerStack = new ArrayList<>();
+    List<GameCard> playerStack = new ArrayList<>();
+    List<GameCard> playerSplitStack = new ArrayList<>();
+    Stack<GameCard> deck = new Stack<>();
+
+    boolean exchangeInput = false;
+    boolean betInput = false;
+
+    boolean cardInput = false;
+
+    int coins = 0;
+    double balance = 0.0;
+    //Den Kontostand abfragen in der Datenbank
+    int bet = 0;
+    int splitBet = 0;
+    int insuranceBet = 0;
+    
+    int coinAmount = 0;
     // Ermöglicht Zugriff auf Thread Objekt, wenn GameThread Objekt gefunden wurde
     public Thread currentThread = Thread.currentThread();
 
@@ -20,8 +44,10 @@ public class GameThread implements Runnable {
         DEALER_START,
         INSURANCE_BET,
         PLAYER_DRAW,
+        PLAYER_SPLIT,
         DEALER_DRAW,
         PLAYER_WON,
+        PUSH,
         PLAYER_LOST,
         WITHDRAW
     }
@@ -33,6 +59,68 @@ public class GameThread implements Runnable {
     public GameThread(int id, WebSocket _conn) {
         client_ID = id;
         conn = _conn;
+
+        //region Karten hinzufügen
+        // Clubs (Kreuz)
+        AVAILABLECARDS.add(new GameCard('2', 'c'));
+        AVAILABLECARDS.add(new GameCard('3', 'c'));
+        AVAILABLECARDS.add(new GameCard('4', 'c'));
+        AVAILABLECARDS.add(new GameCard('5', 'c'));
+        AVAILABLECARDS.add(new GameCard('6', 'c'));
+        AVAILABLECARDS.add(new GameCard('7', 'c'));
+        AVAILABLECARDS.add(new GameCard('8', 'c'));
+        AVAILABLECARDS.add(new GameCard('9', 'c'));
+        AVAILABLECARDS.add(new GameCard('0', 'c')); // 10
+        AVAILABLECARDS.add(new GameCard('j', 'c')); // Bube
+        AVAILABLECARDS.add(new GameCard('q', 'c')); // Dame
+        AVAILABLECARDS.add(new GameCard('k', 'c')); // König
+        AVAILABLECARDS.add(new GameCard('a', 'c')); // Ass
+
+        // Diamonds (Karo)
+        AVAILABLECARDS.add(new GameCard('2', 'd'));
+        AVAILABLECARDS.add(new GameCard('3', 'd'));
+        AVAILABLECARDS.add(new GameCard('4', 'd'));
+        AVAILABLECARDS.add(new GameCard('5', 'd'));
+        AVAILABLECARDS.add(new GameCard('6', 'd'));
+        AVAILABLECARDS.add(new GameCard('7', 'd'));
+        AVAILABLECARDS.add(new GameCard('8', 'd'));
+        AVAILABLECARDS.add(new GameCard('9', 'd'));
+        AVAILABLECARDS.add(new GameCard('0', 'd')); // 10
+        AVAILABLECARDS.add(new GameCard('j', 'd')); // Bube
+        AVAILABLECARDS.add(new GameCard('q', 'd')); // Dame
+        AVAILABLECARDS.add(new GameCard('k', 'd')); // König
+        AVAILABLECARDS.add(new GameCard('a', 'd')); // Ass
+
+        // Hearts (Herz)
+        AVAILABLECARDS.add(new GameCard('2', 'h'));
+        AVAILABLECARDS.add(new GameCard('3', 'h'));
+        AVAILABLECARDS.add(new GameCard('4', 'h'));
+        AVAILABLECARDS.add(new GameCard('5', 'h'));
+        AVAILABLECARDS.add(new GameCard('6', 'h'));
+        AVAILABLECARDS.add(new GameCard('7', 'h'));
+        AVAILABLECARDS.add(new GameCard('8', 'h'));
+        AVAILABLECARDS.add(new GameCard('9', 'h'));
+        AVAILABLECARDS.add(new GameCard('0', 'h')); // 10
+        AVAILABLECARDS.add(new GameCard('j', 'h')); // Bube
+        AVAILABLECARDS.add(new GameCard('q', 'h')); // Dame
+        AVAILABLECARDS.add(new GameCard('k', 'h')); // König
+        AVAILABLECARDS.add(new GameCard('a', 'h')); // Ass
+
+        // Spades (Pik)
+        AVAILABLECARDS.add(new GameCard('2', 's'));
+        AVAILABLECARDS.add(new GameCard('3', 's'));
+        AVAILABLECARDS.add(new GameCard('4', 's'));
+        AVAILABLECARDS.add(new GameCard('5', 's'));
+        AVAILABLECARDS.add(new GameCard('6', 's'));
+        AVAILABLECARDS.add(new GameCard('7', 's'));
+        AVAILABLECARDS.add(new GameCard('8', 's'));
+        AVAILABLECARDS.add(new GameCard('9', 's'));
+        AVAILABLECARDS.add(new GameCard('0', 's')); // 10
+        AVAILABLECARDS.add(new GameCard('j', 's')); // Bube
+        AVAILABLECARDS.add(new GameCard('q', 's')); // Dame
+        AVAILABLECARDS.add(new GameCard('k', 's')); // König
+        AVAILABLECARDS.add(new GameCard('a', 's')); // Ass
+        // endregion
     }
 
     // Implementation der run() - Methode des Runnable Interfaces, erste Funktion die nach der Öffnung des Threads ausgeführt wird
@@ -43,124 +131,53 @@ public class GameThread implements Runnable {
 
     // Verarbeiten einer einkommenden Nachricht vom Client
     public void handleMessage(String message) {
-        switch (message.toLowerCase()) {
-            case "exchange":
-                    break;
-            case "accept":
-                break;
-            case "bet":
-                break;
-            case "insurance":
-                break;
-            case "end":
-                running = false;
-                break;
-            default:
-                System.out.println("Client Message: " + message);
-                break;
+//        switch (message.toLowerCase()) {
+//            case "exchange":
+//                    break;
+//            case "accept":
+//                break;
+//            case "bet":
+//                break;
+//            case "insurance":
+//                break;
+//            case "end":
+//                running = false;
+//                break;
+//            default:
+//                System.out.println("Client Message: " + message);
+//                break;
+//        }
+        if (message.startsWith("exchange")){
+            coinAmount = Integer.parseInt(message.substring(9));
+            exchangeInput = true;
+        } 
+        else if (message.startsWith("bet")) {
+            bet = message.substring(7).length();
+            betInput = true;
+        } else if (message.startsWith("insurance")) {
+            insuranceBet = message.substring(11).length();
+
         }
     }
 
     // Funktioniert als Hauptmethode für das Blackjack Spiel
     public void game(int client_ID) {
         //Start des Spiels
-        int coins = 0;
-        double balance = 0.0;
-        //Den Kontostand abfragen in der Datenbank
-        int bet = 0;
-        int splitBet = 0;
-        int insuranceBet = 0;
-
-        // unveränderte Liste aller Karten
-        List<GameCard> availableCards = new ArrayList<GameCard>();
-        // Liste, aus welcher die Karten entnommen werden, welche dann in den Stacks landen
-        List<GameCard> temp = new ArrayList<GameCard>();
-
-        //region Karten hinzufügen
-        // Clubs (Kreuz)
-        availableCards.add(new GameCard('2', 'c'));
-        availableCards.add(new GameCard('3', 'c'));
-        availableCards.add(new GameCard('4', 'c'));
-        availableCards.add(new GameCard('5', 'c'));
-        availableCards.add(new GameCard('6', 'c'));
-        availableCards.add(new GameCard('7', 'c'));
-        availableCards.add(new GameCard('8', 'c'));
-        availableCards.add(new GameCard('9', 'c'));
-        availableCards.add(new GameCard('0', 'c')); // 10
-        availableCards.add(new GameCard('j', 'c')); // Bube
-        availableCards.add(new GameCard('q', 'c')); // Dame
-        availableCards.add(new GameCard('k', 'c')); // König
-        availableCards.add(new GameCard('a', 'c')); // Ass
-
-        // Diamonds (Karo)
-        availableCards.add(new GameCard('2', 'd'));
-        availableCards.add(new GameCard('3', 'd'));
-        availableCards.add(new GameCard('4', 'd'));
-        availableCards.add(new GameCard('5', 'd'));
-        availableCards.add(new GameCard('6', 'd'));
-        availableCards.add(new GameCard('7', 'd'));
-        availableCards.add(new GameCard('8', 'd'));
-        availableCards.add(new GameCard('9', 'd'));
-        availableCards.add(new GameCard('0', 'd')); // 10
-        availableCards.add(new GameCard('j', 'd')); // Bube
-        availableCards.add(new GameCard('q', 'd')); // Dame
-        availableCards.add(new GameCard('k', 'd')); // König
-        availableCards.add(new GameCard('a', 'd')); // Ass
-
-        // Hearts (Herz)
-        availableCards.add(new GameCard('2', 'h'));
-        availableCards.add(new GameCard('3', 'h'));
-        availableCards.add(new GameCard('4', 'h'));
-        availableCards.add(new GameCard('5', 'h'));
-        availableCards.add(new GameCard('6', 'h'));
-        availableCards.add(new GameCard('7', 'h'));
-        availableCards.add(new GameCard('8', 'h'));
-        availableCards.add(new GameCard('9', 'h'));
-        availableCards.add(new GameCard('0', 'h')); // 10
-        availableCards.add(new GameCard('j', 'h')); // Bube
-        availableCards.add(new GameCard('q', 'h')); // Dame
-        availableCards.add(new GameCard('k', 'h')); // König
-        availableCards.add(new GameCard('a', 'h')); // Ass
-
-        // Spades (Pik)
-        availableCards.add(new GameCard('2', 's'));
-        availableCards.add(new GameCard('3', 's'));
-        availableCards.add(new GameCard('4', 's'));
-        availableCards.add(new GameCard('5', 's'));
-        availableCards.add(new GameCard('6', 's'));
-        availableCards.add(new GameCard('7', 's'));
-        availableCards.add(new GameCard('8', 's'));
-        availableCards.add(new GameCard('9', 's'));
-        availableCards.add(new GameCard('0', 's')); // 10
-        availableCards.add(new GameCard('j', 's')); // Bube
-        availableCards.add(new GameCard('q', 's')); // Dame
-        availableCards.add(new GameCard('k', 's')); // König
-        availableCards.add(new GameCard('a', 's')); // Ass
-
-        // endregion
-
-        List<GameCard> dealerStack = new ArrayList<>();
-        List<GameCard> playerStack = new ArrayList<>();
-        List<GameCard> playerSplitStack = new ArrayList<>();
-        Stack<GameCard> deck = new Stack<>();
 
         while (running) {
             setGameState(GameState.DEPOSIT);
 
             // füllt temp mit allen Karten
-            temp.addAll(availableCards);
+            temp.addAll(AVAILABLECARDS);
 
             //region Geld umtauschen
-            boolean input = false;
-            int coinAmount = 0;
-
-            while (!input) {
+            while (!exchangeInput) {
                 //ist nich vollständig, nach mit Frontend lösen
                 Scanner c = new Scanner(System.in);
                 String inputString = c.nextLine();
                 try {
                     coinAmount = Integer.parseInt(inputString);
-                    input = true;
+                    exchangeInput = true;
                 } catch (NumberFormatException e) {
                     continue;
                 }
@@ -179,8 +196,7 @@ public class GameThread implements Runnable {
 
             setGameState(GameState.BET);
             //region Geld setzen
-            boolean input2 = false;
-            while (!input2) {
+            while (!betInput) {
                 //ist nich vollständig, nach mit Frontend lösen
                 Scanner c = new Scanner(System.in);
                 String inputString = c.nextLine();
@@ -192,7 +208,7 @@ public class GameThread implements Runnable {
                     } else {
                         coins -= bet;
                         System.out.println("Du hast " + bet + " Coins gesetzt!");
-                        input2 = true;
+                        betInput = true;
                     }
                 } catch (NumberFormatException e) {
                     continue;
@@ -226,7 +242,8 @@ public class GameThread implements Runnable {
                     try {
                         insuranceBet = Integer.parseInt(inputString);
                         input4 = true;
-                    } catch (NumberFormatException e) {}
+                    } catch (NumberFormatException e) {
+                    }
                 }
                 //endregion
             }
@@ -234,95 +251,109 @@ public class GameThread implements Runnable {
             setGameState(GameState.PLAYER_DRAW);
             playerStack.add(deck.pop());
             playerStack.add(deck.pop());
-            boolean input3 = false;
-            while (!input3) {
+            checkValue();
+            while (!cardInput) {
                 //ist nicht vollständig, nachher mit Frontend lösen
-                if (currentValue(playerStack) > 21) {
-                    setGameState(GameState.PLAYER_LOST);
-                    System.out.println("Bust! Du hast verloren!");
-                    break;
-                }
-                if (currentValue(playerStack) == 21) {
-                    System.out.println("Herzlichen Glückwunsch! Du hast einen Blackjack!");
-                    break;
-                }
                 Scanner c = new Scanner(System.in);
                 String inputString = c.nextLine();
                 try {
                     if (Boolean.parseBoolean(inputString)) {
                         playerStack.add(deck.pop());
-                        continue;
                     } else {
-                        input3 = true;
+                        cardInput = true;
                     }
                 } catch (NumberFormatException e) {
                     continue;
                 }
-
+                checkValue();
             }
 
-            setGameState(GameState.DEALER_DRAW);
+            if (gameState == GameState.PLAYER_DRAW) {
 
-            int total = 0;
-            int aceCounter = 0;
-            if (dealerStack.get(0).getValueOfCard() == 'a') {
-                aceCounter += 1;
-            }
-            if (dealerStack.get(1).getValueOfCard() == 'a') {
-                aceCounter += 1;
-            }
-            total = currentValue(dealerStack);
+                setGameState(GameState.DEALER_DRAW);
 
-            // Weiter Karten nehmen bis eine neue Karte zu riskant ist
-            while (total < 17 || (total < 18 && aceCounter > 0)) {
-                GameCard newCard = deck.pop();
-                dealerStack.add(newCard);
-
-                if (newCard.getCoat() == 'a') {
+                int total = 0;
+                int aceCounter = 0;
+                if (dealerStack.get(0).getValueOfCard() == 'a') {
                     aceCounter += 1;
-                    total += 11;
-                } else if (newCard.getCoat() == 'j' || newCard.getCoat() == 'q' || newCard.getCoat() == 'k' || newCard.getCoat() == '0') {
-                    total += 10;
+                }
+                if (dealerStack.get(1).getValueOfCard() == 'a') {
+                    aceCounter += 1;
+                }
+                total = currentValue(dealerStack);
+
+                // Weiter Karten nehmen bis eine neue Karte zu riskant ist
+                while (total < 17 || (total < 18 && aceCounter > 0)) {
+                    GameCard newCard = deck.pop();
+                    dealerStack.add(newCard);
+
+                    if (newCard.getCoat() == 'a') {
+                        aceCounter += 1;
+                        total += 11;
+                    } else if (newCard.getCoat() == 'j' || newCard.getCoat() == 'q' || newCard.getCoat() == 'k' || newCard.getCoat() == '0') {
+                        total += 10;
+                    } else {
+                        total += Character.getNumericValue(newCard.getCoat());
+                    }
+
+                    // Checken, ob mit dem Ass als 11 die 21 überschritten werden
+                    if (aceCounter > 0 && total > 21) {
+                        total -= 10;
+                        aceCounter -= 1; // Ass Counter einen herabsetzen
+                    }
+                }
+
+                if (currentValue(dealerStack) < currentValue(playerStack)) {
+                    coins += (bet * 2);
+                    System.out.println("Du hast gewonnen!");
+                    // Unser Kontostand muss um den Wert der Coins verringert werden, also Anzahl der Coins * 100
+                    setGameState(GameState.PLAYER_WON);
+                } else if (currentValue(dealerStack) == currentValue(playerStack)) {
+                    coins += bet;
+                    System.out.println("Push!");
+                    setGameState(GameState.PUSH);
+                } else if (currentValue(dealerStack) > currentValue(playerStack)) {
+                    System.out.println("Du hast verloren!");
+                    setGameState(GameState.PLAYER_LOST);
                 } else {
-                    total += Character.getNumericValue(newCard.getCoat());
+                    System.out.println("Ups??!? Ein Fehler ist aufgetreten!");
                 }
-
-                // Checken, ob mit dem Ass als 11 die 21 überschritten werden
-                if (aceCounter > 0 && total > 21) {
-                    total -= 10;
-                    aceCounter -= 1; // Ass Counter einen herabsetzen
+                if (insuranceBet > 0 && dealerStack.get(0).getValueOfCard() == 'a') {
+                    coins += insuranceBet;
+                    System.out.println("Du hast den Insurance Bet erhalten!");
+                    setGameState(GameState.PLAYER_LOST);
                 }
             }
 
-            if (currentValue(dealerStack) < currentValue(playerStack)) {
-                coins += (bet * 2);
-                System.out.println("Du hast gewonnen!");
-                // Unser Kontostand muss um den Wert der Coins verringert werden, also Anzahl der Coins * 100
-                setGameState(GameState.PLAYER_WON);
-            } else if (currentValue(dealerStack) == currentValue(playerStack)) {
+            if (gameState == GameState.PLAYER_WON){
+                // Spieler gewinnt, der Spieler erhält seinen Einsatz im Verhältnis 2:1 zurück
+                coins += 2*bet;
+            } else if (gameState == GameState.PLAYER_LOST) {
+                // Spieler verliert, es passiert nichts
+            }
+            else if (gameState == GameState.PUSH) {
+                // Push, der Spieler erhält seine Coins zurück
                 coins += bet;
-                System.out.println("Unentschieden!");
-                setGameState(GameState.WITHDRAW);
-            } else if (currentValue(dealerStack) > currentValue(playerStack)) {
-                System.out.println("Du hast verloren!");
-                // Unser Kontostand muss um den Wert der Coins erhöht werden, also Anzahl der Coins * 100
-                setGameState(GameState.PLAYER_LOST);
-            } else {
-                System.out.println("Ups??!? Ein Fehler ist aufgetreten!");
             }
-            if (insuranceBet > 0 && dealerStack.get(0).getValueOfCard() == 'a') {
-                coins += insuranceBet;
-                System.out.println("Du hast den Insurance Bet erhalten!");
-            }
-            bet = 0;
-            insuranceBet = 0;
         }
 
             conn.close(); // Verbindung beenden
             currentThread.interrupt();// Beende den Thread
     }
 
-        //region currentValue-Methode
+    private void checkValue() {
+        if (currentValue(playerStack) > 21) {
+            setGameState(GameState.PLAYER_LOST);
+            System.out.println("Bust! Du hast verloren!");
+            cardInput = true;
+        }
+        else if (currentValue(playerStack) == 21) {
+            System.out.println("Herzlichen Glückwunsch! Du hast einen Blackjack!");
+            cardInput = true;
+        }
+    }
+
+    //region currentValue-Methode
         public int currentValue (List<GameCard> playerStack) {
             int totalValue = 0;
             int aceCount = 0;
