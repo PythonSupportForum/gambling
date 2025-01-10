@@ -403,7 +403,6 @@ public class GameThread implements Runnable {
                     // Unser Kontostand muss um den Wert der Coins verringert werden, also Anzahl der Coins * 100
                     setGameState(GameState.PLAYER_WON);
                 } else if (currentValue(dealerStack) == currentValue(playerStack)) {
-                    coins += bet;
                     System.out.println("Push!");
                     setGameState(GameState.PUSH);
                 } else if (currentValue(dealerStack) > currentValue(playerStack)) {
