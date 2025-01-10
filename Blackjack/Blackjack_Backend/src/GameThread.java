@@ -286,7 +286,6 @@ public class GameThread implements Runnable {
                         betInput = true;
                     }
                 } catch (NumberFormatException e) {}
-
             }
 
             //endregion
@@ -449,6 +448,7 @@ public class GameThread implements Runnable {
         }
         else if (currentValue(playerStack) == 21) {
             System.out.println("Herzlichen Glückwunsch! Du hast einen Blackjack!");
+            setGameState(GameState.PLAYER_WON);
             cardInput = true;
         }
     }
