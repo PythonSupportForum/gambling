@@ -125,6 +125,12 @@ public class GameThread implements Runnable {
         // endregion
     }
 
+    public GameThread(){
+        client_ID = -1;
+        conn = null;
+        balance = 1000.0;
+    }
+
     // Implementation der run() - Methode des Runnable Interfaces, erste Funktion die nach der Öffnung des Threads ausgeführt wird
     public void run() {
         System.out.print(client_ID + "\n");
