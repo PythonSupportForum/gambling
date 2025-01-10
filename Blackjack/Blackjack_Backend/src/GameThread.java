@@ -453,7 +453,6 @@ public class GameThread implements Runnable {
         }
     }
 
-    //region currentValue-Methode
         public int currentValue (List<GameCard> playerStack) {
             int totalValue = 0;
             int aceCount = 0;
@@ -482,7 +481,6 @@ public class GameThread implements Runnable {
 
             return totalValue;
         }
-        //endregion
 
         //region Getter and Setter
         public GameState getGameState () {

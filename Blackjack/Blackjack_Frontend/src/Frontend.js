@@ -24,3 +24,6 @@ socket.onerror = (error) => {
 socket.onclose = () => {
     console.log('Verbindung zum Server geschlossen.');
 };
+
+function handleStartButton() {
+}
