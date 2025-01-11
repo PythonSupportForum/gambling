@@ -272,6 +272,7 @@ public class GameThread implements Runnable {
 
             if(coins == 0 && balance == 0){
                 running = false;
+                System.out.println("Kein Geld mehr");
                 continue;
             }
 
@@ -329,7 +330,7 @@ public class GameThread implements Runnable {
                         System.out.println("Du hast " + bet + " Coins gesetzt!");
                         betInput = true;
                     }
-                } catch (NumberFormatException e) {}
+                } catch (NumberFormatException ignored) {}
             }
 
             //endregion
@@ -477,27 +478,19 @@ public class GameThread implements Runnable {
 
         setGameState(GameState.WITHDRAW);
         System.out.println("Wie viele Coins willst du in Tilotaler umwandeln?");
-        boolean isNumber = false;
-        while (!isNumber) {
-            try {
-                int input = Integer.parseInt(c.nextLine());
-                if (input > coins) {
-                    System.out.println("Du hast nicht genug Coins!");
-                } else {
-                    coins -= input;
-                    String query = "UPDATE Kunden SET Kontostand = " + (balance + input * 100) + " WHERE id = " + client_ID;
-                    database = getConnection();
-                    try{
-                        // Verbindung zur Datenbank, Veränderung des Kontostandes
-                        stmt = database.createStatement();
-                        stmt.executeUpdate(query);
-                        stmt.close();
-                        database.close();
-                    }catch(SQLException ignored){}
-                    System.out.println("Du hast " + input + " Coins umgewandelt!");
+
+        if (balance == 0 && coins == 0){
+            updateBalance(0);
+        }
+        else{
+            boolean isNumber = false;
+            while (!isNumber) {
+                try {
+                    int input = Integer.parseInt(c.nextLine());
+                    updateBalance(input);
                     isNumber = true;
-                }
-            } catch (NumberFormatException ignored) {}
+                } catch (NumberFormatException ignored) {}
+            }
         }
 
         setGameState(GameState.END);
@@ -598,6 +591,24 @@ public class GameThread implements Runnable {
             System.err.println("Datenbankverbindung fehlgeschlagen!");
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public void updateBalance(int coinAmount){
+        if (coinAmount > coins) {
+            System.out.println("Du hast nicht genug Coins!");
+        } else {
+            coins -= coinAmount;
+            String query = "UPDATE Kunden SET Kontostand = " + (balance + coinAmount * 100) + " WHERE id = " + client_ID;
+            database = getConnection();
+            try{
+                // Verbindung zur Datenbank, Veränderung des Kontostandes
+                stmt = database.createStatement();
+                stmt.executeUpdate(query);
+                stmt.close();
+                database.close();
+            }catch(SQLException ignored){}
+            System.out.println("Du hast " + coinAmount + " Coins umgewandelt!");
         }
     }
 
