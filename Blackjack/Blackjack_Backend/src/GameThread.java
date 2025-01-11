@@ -494,19 +494,18 @@ public class GameThread implements Runnable {
             updateBalance(0);
         }
         else{
-            boolean isNumber = false;
-            while (!isNumber) {
+            while (true) {
                 try {
                     int input = Integer.parseInt(c.nextLine());
                     updateBalance(input);
-                    isNumber = true;
+                    break;
                 } catch (NumberFormatException ignored) {}
             }
         }
 
         setGameState(GameState.END);
-
-        currentThread.interrupt();// Beende den Thread
+        handleQuit();
+        currentThread.interrupt(); // Beende den Thread
     }
 
     private void checkValue() {
@@ -624,16 +623,10 @@ public class GameThread implements Runnable {
 
     public void handleQuit(){
         if(running){
-            database = getConnection();
-            String query = "UPDATE Kunden SET Kontostand = " + (balance + coins * 100) + " WHERE id = " + client_ID;
-            try{
-                stmt = database.createStatement();
-                stmt.executeUpdate(query);
-                stmt.close();
-                database.close();
-            }catch(SQLException ignored){}
+            updateBalance(coins);
         }
-        conn.close();
-        currentThread.interrupt();
+        if(conn != null){
+            conn.close();
+        }
     }
 }
