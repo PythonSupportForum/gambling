@@ -270,6 +270,11 @@ public class GameThread implements Runnable {
             dealerStack.clear();
             deck.clear();
 
+            if(bet == 0 && balance == 0){
+                running = false;
+                continue;
+            }
+
             System.out.println("Dein Kontostand ist " + balance +" Willst du einzahlen?(true, false)");
             String wants = c.nextLine();
 
@@ -347,7 +352,7 @@ public class GameThread implements Runnable {
                 setGameState(GameState.INSURANCE_BET);
                 while (!insuranceInput) {
                     //ist nicht vollständig, nachher mit Frontend lösen
-                    System.out.print("Willst du eine Insurance bet ablegen?(false, true)");
+                    System.out.print("Willst du eine Insurance bet ablegen?(false, true)\n");
 
                     Scanner c = new Scanner(System.in);
                     String inputString = c.nextLine();
