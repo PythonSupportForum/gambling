@@ -474,10 +474,21 @@ public class GameThread implements Runnable {
                 coins += bet;
                 System.out.println("Du hast " + bet + " Coins zurück erhalten!");
             }
+
+            while(true){
+                System.out.println("Aufhören?(true, false)");
+                String input = c.nextLine();
+                try {
+                    if(Boolean.parseBoolean(input)){
+                        running = false;
+                    }
+                    break;
+                }catch(Exception ignored){}
+            }
         }
 
         setGameState(GameState.WITHDRAW);
-        System.out.println("Wie viele Coins willst du in Tilotaler umwandeln?");
+        System.out.println("Du hast " + balance +" Coins\nWie viele Coins willst du in Tilotaler umwandeln?");
 
         if (balance == 0 && coins == 0){
             updateBalance(0);
@@ -495,7 +506,6 @@ public class GameThread implements Runnable {
 
         setGameState(GameState.END);
 
-        conn.close(); // Verbindung beenden
         currentThread.interrupt();// Beende den Thread
     }
 
