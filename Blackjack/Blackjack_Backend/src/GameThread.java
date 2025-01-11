@@ -31,7 +31,8 @@ public class GameThread implements Runnable {
 
     boolean cardInput;
 
-    Connection database;
+    Connection clientDB;
+    Connection transactionDB;
 
     int coins = 0;
     double balance = 0.0;
@@ -69,12 +70,12 @@ public class GameThread implements Runnable {
         client_ID = id;
         conn = _conn;
 
-        database = getConnection();
+        clientDB = getConnection();
 
         String query = "SELECT Kontostand FROM Kunden WHERE id = " + client_ID;
         try{
-            assert database != null;
-            stmt = database.createStatement();
+            assert clientDB != null;
+            stmt = clientDB.createStatement();
             stmt.executeQuery(query);
             ResultSet rs = stmt.getResultSet();
             rs.next();
@@ -150,12 +151,12 @@ public class GameThread implements Runnable {
     public GameThread(){
         client_ID = -1;
         conn = null;
-        database = getConnection();
+        clientDB = getConnection();
 
         String query = "SELECT Kontostand FROM Kunden WHERE id = " + client_ID;
         try{
-            assert database != null;
-            stmt = database.createStatement();
+            assert clientDB != null;
+            stmt = clientDB.createStatement();
             stmt.executeQuery(query);
             ResultSet rs = stmt.getResultSet();
             rs.next();
@@ -608,14 +609,16 @@ public class GameThread implements Runnable {
             System.out.println("Du hast nicht genug Coins!");
         } else {
             coins -= coinAmount;
-            String query = "UPDATE Kunden SET Kontostand = " + (balance + coinAmount * 100) + " WHERE id = " + client_ID;
-            database = getConnection();
+            String clientQuery = "UPDATE Kunden SET Kontostand = " + (balance + coinAmount * 100) + " WHERE id = " + client_ID;
+            String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum) VALUES " + "" + "";
+            clientDB = getConnection();
             try{
                 // Verbindung zur Datenbank, Veränderung des Kontostandes
-                stmt = database.createStatement();
-                stmt.executeUpdate(query);
+                stmt = clientDB.createStatement();
+                stmt.executeUpdate(clientQuery);
+                stmt.executeUpdate(transactionQuery);
                 stmt.close();
-                database.close();
+                clientDB.close();
             }catch(SQLException ignored){}
             System.out.println("Du hast " + coinAmount + " Coins umgewandelt!");
         }
