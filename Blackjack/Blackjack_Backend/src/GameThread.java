@@ -270,7 +270,7 @@ public class GameThread implements Runnable {
             dealerStack.clear();
             deck.clear();
 
-            if(bet == 0 && balance == 0){
+            if(coins == 0 && balance == 0){
                 running = false;
                 continue;
             }
