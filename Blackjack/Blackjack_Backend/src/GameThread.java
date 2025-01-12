@@ -25,6 +25,7 @@ public class GameThread implements Runnable {
 
     Statement stmt;
 
+    boolean start = false;
     boolean wantsExchange;
     boolean exchangeInput;
     boolean betInput;
@@ -40,7 +41,9 @@ public class GameThread implements Runnable {
     int bet = 0;
     int splitBet = 0;
     int insuranceBet = 0;
-    
+
+    String s = "e";
+
     int coinAmount = 0;
     // Ermöglicht Zugriff auf Thread Objekt, wenn GameThread Objekt gefunden wurde
     public Thread currentThread = Thread.currentThread();
@@ -85,7 +88,7 @@ public class GameThread implements Runnable {
             rs.close();
             stmt.close();
         }
-        catch(SQLException e){}
+        catch(SQLException e){e.printStackTrace();}
 
         OLDBALANCE = balance;
 
@@ -238,15 +241,28 @@ public class GameThread implements Runnable {
     // Implementation der run() - Methode des Runnable Interfaces, erste Funktion die nach der Öffnung des Threads ausgeführt wird
     public void run() {
         System.out.print(client_ID + "\n");
+        System.out.println("rein");
+        // Warte auf Startsignal vom Client
+        while(!start){
+            try{
+            Thread.sleep(100);
+            }catch(Exception ignored){}
+        }
+        System.out.println("raus");
         game(); // ruft Hauptmethode des Spiels auf, beginnt Spiel mit dem Client
     }
 
     // Verarbeiten einer einkommenden Nachricht vom Client
     public void handleMessage(String message) {
-        if (message.startsWith("exchange")){
+        System.out.println("Nachricht von Client " + client_ID + "empfangen: " + message + "\n");
+        if (message.startsWith("start")){
+            s = "a";
+            start = true;
+        }
+        else if (message.startsWith("exchange")){
             coinAmount = Integer.parseInt(message.substring(9));
             exchangeInput = true;
-        } 
+        }
         else if (message.startsWith("bet")) {
             bet = message.substring(7).length();
             betInput = true;
@@ -260,6 +276,7 @@ public class GameThread implements Runnable {
 
     // Funktioniert als Hauptmethode für das Blackjack Spiel
     public void game() {
+        System.out.println("Start des Spiels");
         //Start der Spiellogik
         setGameState(GameState.START);
 
@@ -305,11 +322,9 @@ public class GameThread implements Runnable {
                             exchangeInput = true;
                             System.out.println("Du hast " + coinAmount + " Coins erworben!");
                         }
-                        //endregion
                     } catch (NumberFormatException e) {}
                 }
             }
-            //region Geld umtauschen
 
 
             // Start des Spiels
@@ -618,7 +633,7 @@ public class GameThread implements Runnable {
         } else {
             coins -= coinAmount;
             String clientQuery = "UPDATE Kunden SET Kontostand = " + (balance + coinAmount * 100) + " WHERE id = " + client_ID;
-            String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum) VALUES " + client_ID  + ", " + (OLDBALANCE - balance) + ", NOW()";
+            String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum) VALUES (" + client_ID  + ", " + (OLDBALANCE - balance) + ", NOW())";
             clientDB = getConnection();
             try{
                 // Verbindung zur Datenbank, Veränderung des Kontostandes
@@ -636,6 +651,7 @@ public class GameThread implements Runnable {
     public void handleQuit(){
         if(running){
             updateBalance(coins);
+            running = false;
         }
         if(conn != null){
             conn.close();

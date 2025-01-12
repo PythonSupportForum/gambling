@@ -33,7 +33,7 @@ class BlackjackServer extends WebSocketServer {
         GameThread gameThread = new GameThread(count, conn);
         Thread thread = new Thread(gameThread);
         thread.start();
-        // Einfügen in die HashMap ("Dictionary") -> Schlüssel ist die Verbindung
+        // Einfügen in die HashMap ("Dictionary") -> Schlüssel ist der Websocket
         clientThreads.put(conn, gameThread);
     }
 
@@ -49,7 +49,6 @@ class BlackjackServer extends WebSocketServer {
     // Beim Erhalten einer Benachrichtigung → Verteilung der Nachrichten auf die zugehörigen Threads
     @Override
     public void onMessage(WebSocket conn, String message) {
-        System.out.println("Nachricht vom Client: " + message);
         // Finde den entsprechenden Thread durch die verwendete Verbindung als Schlüssel
         GameThread thread = clientThreads.get(conn);
 
