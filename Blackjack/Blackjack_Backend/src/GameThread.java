@@ -12,6 +12,7 @@ public class GameThread implements Runnable {
     List<GameCard> temp = new ArrayList<>();
 
     final List<GameCard> AVAILABLECARDS = new ArrayList<>();
+    final double OLDBALANCE;
 
     boolean running = true;
     WebSocket conn;
@@ -80,10 +81,13 @@ public class GameThread implements Runnable {
             ResultSet rs = stmt.getResultSet();
             rs.next();
             balance = rs.getDouble("Kontostand");
+
             rs.close();
             stmt.close();
         }
         catch(SQLException e){}
+
+        OLDBALANCE = balance;
 
         //region Karten hinzufügen
         // Clubs (Kreuz)
@@ -165,6 +169,8 @@ public class GameThread implements Runnable {
             stmt.close();
         }
         catch(SQLException e){}
+
+        OLDBALANCE = balance;
 
         //region Karten hinzufügen
         // Clubs (Kreuz)
@@ -489,17 +495,18 @@ public class GameThread implements Runnable {
         }
 
         setGameState(GameState.WITHDRAW);
-        System.out.println("Du hast " + balance +" Coins\nWie viele Coins willst du in Tilotaler umwandeln?");
 
         if (balance == 0 && coins == 0){
             updateBalance(0);
         }
         else{
             while (true) {
+                System.out.println("Du hast " + coins +" Coins\nWie viele Coins willst du in Tilotaler umwandeln?");
                 try {
                     int input = Integer.parseInt(c.nextLine());
-                    updateBalance(input);
-                    break;
+                    if(updateBalance(input)){
+                        break;
+                    }
                 } catch (NumberFormatException ignored) {}
             }
         }
@@ -604,13 +611,14 @@ public class GameThread implements Runnable {
         }
     }
 
-    public void updateBalance(int coinAmount){
+    public boolean updateBalance(int coinAmount){
         if (coinAmount > coins) {
             System.out.println("Du hast nicht genug Coins!");
+            return false;
         } else {
             coins -= coinAmount;
             String clientQuery = "UPDATE Kunden SET Kontostand = " + (balance + coinAmount * 100) + " WHERE id = " + client_ID;
-            String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum) VALUES " + "" + "";
+            String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum) VALUES " + client_ID  + ", " + (OLDBALANCE - balance) + ", NOW()";
             clientDB = getConnection();
             try{
                 // Verbindung zur Datenbank, Veränderung des Kontostandes
@@ -619,8 +627,9 @@ public class GameThread implements Runnable {
                 stmt.executeUpdate(transactionQuery);
                 stmt.close();
                 clientDB.close();
-            }catch(SQLException ignored){}
+            }catch(SQLException e){ return false;}
             System.out.println("Du hast " + coinAmount + " Coins umgewandelt!");
+            return true;
         }
     }
 

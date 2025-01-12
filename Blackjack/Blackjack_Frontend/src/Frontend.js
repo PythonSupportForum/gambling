@@ -30,5 +30,6 @@ function handleStartButton() {
     console.log('Start Button clicked');
     const enableButton = document.getElementById('StartButton');
     enableButton.visibility = "hidden";
+    enableButton.enabled = false;
     enableButton.style.visibility = "hidden";
 }
