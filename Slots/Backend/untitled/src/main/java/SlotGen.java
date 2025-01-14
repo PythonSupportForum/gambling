@@ -6,21 +6,6 @@ import java.util.Random;
 
 
 
-class Main{
-
-    public static void main(String[] args){
-        System.out.println(Arrays.toString(SlotGen.getSlotArray(new File("../../../../assets/slot-machine-icons"))));
-
-
-
-    }
-
-
-
-}
-
-
-
 
 
 
@@ -50,6 +35,24 @@ public class SlotGen{
         return output;
     }
 
+    /**
+     *Gibt ein Array mit den Pfaden zu drei zufälligen Bildern zurück.
+     * @return Das String-Array.
+     */
+    public static String[] getSlotArray() {
+
+        folder = new File("slots_icons");
+        String[] output = new String[3];
+        Random rand = new Random();
+        File[] files = folder.listFiles();
+
+        for(int i = 0; i<3; i++){
+            assert files != null;
+            output[i] = files[rand.nextInt(files.length)].getPath();
+        }
+
+        return output;
+    }
 
 
 
