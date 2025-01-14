@@ -308,7 +308,7 @@ public class GameThread implements Runnable {
             if(wantsExchange){
                 while (!exchangeInput) {
                     //ist nicht vollständig, nach mit Frontend lösen
-                    System.out.print("Aktuell du hast " + balance + " TiloTaler\nWie viele Coins willst du erwerben?\n");
+                    System.out.print("Aktuell hast du" + balance + " TiloTaler\nWie viele Coins willst du erwerben?\n");
 
                     String inputString = c.nextLine();
                     try {
