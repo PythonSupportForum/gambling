@@ -527,7 +527,7 @@ public class GameThread implements Runnable {
         }
 
         setGameState(GameState.END);
-        handleQuit();
+        handleQuit();// Kümmert sich um die ausstehende Verbindung falls diese aktiv sind
         currentThread.interrupt(); // Beende den Thread
     }
 
