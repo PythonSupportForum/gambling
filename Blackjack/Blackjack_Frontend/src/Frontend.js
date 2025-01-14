@@ -2,7 +2,10 @@ const socket = new WebSocket('ws://127.0.0.1:8080');
 window.clientID = -1;
 
 // Verbindung geöffnet
-socket.onopen = () => {};
+socket.onopen = () => {
+    const text = document.getElementById('Connection Text');
+    text.style.visibility = "visible";
+};
 
 // Nachricht vom Server empfangen
 socket.onmessage = (event) => {
@@ -28,7 +31,6 @@ function handleStartButton() {
     console.log('Start Button clicked');
     socket.send('start');
     const enableButton = document.getElementById('StartButton');
-    enableButton.visibility = "hidden";
     enableButton.enabled = false;
     enableButton.style.visibility = "hidden";
 }
