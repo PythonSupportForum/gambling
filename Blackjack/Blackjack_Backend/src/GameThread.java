@@ -12,6 +12,7 @@ public class GameThread implements Runnable {
     List<GameCard> temp = new ArrayList<>();
 
     final List<GameCard> AVAILABLECARDS = new ArrayList<>();
+    final double OLDBALANCE;
 
     boolean running = true;
     WebSocket conn;
@@ -24,6 +25,7 @@ public class GameThread implements Runnable {
 
     Statement stmt;
 
+    boolean start = false;
     boolean wantsExchange;
     boolean exchangeInput;
     boolean betInput;
@@ -39,7 +41,9 @@ public class GameThread implements Runnable {
     int bet = 0;
     int splitBet = 0;
     int insuranceBet = 0;
-    
+
+    String s = "e";
+
     int coinAmount = 0;
     // Ermöglicht Zugriff auf Thread Objekt, wenn GameThread Objekt gefunden wurde
     public Thread currentThread = Thread.currentThread();
@@ -80,10 +84,13 @@ public class GameThread implements Runnable {
             ResultSet rs = stmt.getResultSet();
             rs.next();
             balance = rs.getDouble("Kontostand");
+
             rs.close();
             stmt.close();
         }
-        catch(SQLException e){}
+        catch(SQLException e){e.printStackTrace();}
+
+        OLDBALANCE = balance;
 
         //region Karten hinzufügen
         // Clubs (Kreuz)
@@ -166,6 +173,8 @@ public class GameThread implements Runnable {
         }
         catch(SQLException e){}
 
+        OLDBALANCE = balance;
+
         //region Karten hinzufügen
         // Clubs (Kreuz)
         AVAILABLECARDS.add(new GameCard('2', 'c'));
@@ -232,15 +241,28 @@ public class GameThread implements Runnable {
     // Implementation der run() - Methode des Runnable Interfaces, erste Funktion die nach der Öffnung des Threads ausgeführt wird
     public void run() {
         System.out.print(client_ID + "\n");
+        System.out.println("rein");
+        // Warte auf Startsignal vom Client
+        while(!start){
+            try{
+            Thread.sleep(100);
+            }catch(Exception ignored){}
+        }
+        System.out.println("raus");
         game(); // ruft Hauptmethode des Spiels auf, beginnt Spiel mit dem Client
     }
 
     // Verarbeiten einer einkommenden Nachricht vom Client
     public void handleMessage(String message) {
-        if (message.startsWith("exchange")){
+        System.out.println("Nachricht von Client " + client_ID + "empfangen: " + message + "\n");
+        if (message.startsWith("start")){
+            s = "a";
+            start = true;
+        }
+        else if (message.startsWith("exchange")){
             coinAmount = Integer.parseInt(message.substring(9));
             exchangeInput = true;
-        } 
+        }
         else if (message.startsWith("bet")) {
             bet = message.substring(7).length();
             betInput = true;
@@ -254,6 +276,7 @@ public class GameThread implements Runnable {
 
     // Funktioniert als Hauptmethode für das Blackjack Spiel
     public void game() {
+        System.out.println("Start des Spiels");
         //Start der Spiellogik
         setGameState(GameState.START);
 
@@ -285,7 +308,7 @@ public class GameThread implements Runnable {
             if(wantsExchange){
                 while (!exchangeInput) {
                     //ist nicht vollständig, nach mit Frontend lösen
-                    System.out.print("Aktuell du hast " + balance + " TiloTaler\nWie viele Coins willst du erwerben?\n");
+                    System.out.print("Aktuell hast du" + balance + " TiloTaler\nWie viele Coins willst du erwerben?\n");
 
                     String inputString = c.nextLine();
                     try {
@@ -299,11 +322,9 @@ public class GameThread implements Runnable {
                             exchangeInput = true;
                             System.out.println("Du hast " + coinAmount + " Coins erworben!");
                         }
-                        //endregion
                     } catch (NumberFormatException e) {}
                 }
             }
-            //region Geld umtauschen
 
 
             // Start des Spiels
@@ -489,23 +510,24 @@ public class GameThread implements Runnable {
         }
 
         setGameState(GameState.WITHDRAW);
-        System.out.println("Du hast " + balance +" Coins\nWie viele Coins willst du in Tilotaler umwandeln?");
 
         if (balance == 0 && coins == 0){
             updateBalance(0);
         }
         else{
             while (true) {
+                System.out.println("Du hast " + coins +" Coins\nWie viele Coins willst du in Tilotaler umwandeln?");
                 try {
                     int input = Integer.parseInt(c.nextLine());
-                    updateBalance(input);
-                    break;
+                    if(updateBalance(input)){
+                        break;
+                    }
                 } catch (NumberFormatException ignored) {}
             }
         }
 
         setGameState(GameState.END);
-        handleQuit();
+        handleQuit();// Kümmert sich um die ausstehende Verbindung falls diese aktiv sind
         currentThread.interrupt(); // Beende den Thread
     }
 
@@ -604,13 +626,14 @@ public class GameThread implements Runnable {
         }
     }
 
-    public void updateBalance(int coinAmount){
+    public boolean updateBalance(int coinAmount){
         if (coinAmount > coins) {
             System.out.println("Du hast nicht genug Coins!");
+            return false;
         } else {
             coins -= coinAmount;
             String clientQuery = "UPDATE Kunden SET Kontostand = " + (balance + coinAmount * 100) + " WHERE id = " + client_ID;
-            String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum) VALUES " + "" + "";
+            String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum) VALUES (" + client_ID  + ", " + (OLDBALANCE - balance) + ", NOW())";
             clientDB = getConnection();
             try{
                 // Verbindung zur Datenbank, Veränderung des Kontostandes
@@ -619,14 +642,16 @@ public class GameThread implements Runnable {
                 stmt.executeUpdate(transactionQuery);
                 stmt.close();
                 clientDB.close();
-            }catch(SQLException ignored){}
+            }catch(SQLException e){ return false;}
             System.out.println("Du hast " + coinAmount + " Coins umgewandelt!");
+            return true;
         }
     }
 
     public void handleQuit(){
         if(running){
             updateBalance(coins);
+            running = false;
         }
         if(conn != null){
             conn.close();
