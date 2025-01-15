@@ -34,3 +34,4 @@ function handleStartButton() {
     enableButton.enabled = false;
     enableButton.style.visibility = "hidden";
 }
+
