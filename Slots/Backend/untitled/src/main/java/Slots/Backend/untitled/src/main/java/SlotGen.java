@@ -1,7 +1,6 @@
 package Slots.Backend.untitled.src.main.java;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Random;
 
 
@@ -52,6 +51,20 @@ public class SlotGen{
         }
 
         return output;
+    }
+
+
+
+    public static boolean sendResult(){
+
+        String[] iconPaths = getSlotArray();
+        
+
+        if((iconPaths[0]==iconPaths[1]) && (iconPaths[0]==iconPaths[2])){
+            return true;
+        }
+        return false;
+
     }
 
 
