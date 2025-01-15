@@ -38,16 +38,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
             <span class="text">Anmelden</span>
             <div class="form-container">
                 <form action="" method="POST">
-                    <h1>Anmelden bei Lets Go Gambling</h1>
+                    <h1 style="color: white;">Anedlnen bei LETTS' GMLE</h1>
                     <?php if (isset($error) && $error): ?>
-                        <p class="error"><?= htmlspecialchars($error) ?></p>
+                        <p class="error" style="font-size: 16px;"><?= htmlspecialchars($error) ?></p>
                     <?php endif; ?>
                     <div class="form-group">
-                        <label for="username">Benutzername</label>
+                        <label for="username" style="color: white;">Benutzername</label>
                         <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($username); ?>" required placeholder="Benutzername">
                     </div>
                     <div class="form-group">
-                        <label for="password">Passwort</label>
+                        <label for="password" style="color: white;">Passwort</label>
                         <input type="password" id="password" name="password" value="<?php echo htmlspecialchars($password); ?>" required placeholder="Passwort">
                     </div>
                     <button type="submit" class="btn-submit">Einloggen</button>
@@ -64,16 +64,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
     <?php endif; ?>
 </div>
 
-<div id = "Blackjack">
-    <img id = "BlackjackImage" src="../../../Blackjack/Blackjack_Frontend/assets/Blackjack.jpg" height="1000" width="1500"/>
-    <button id = "BlackjackButton">BLACKJACK</button>
+<div class="main">
+    <?php
+    if($isLoggedIn) {
+        ?>
+        <h1>Hallo Du Huso, <?php echo htmlspecialchars($_SESSION['user']); ?></h1>
+        <?
+    }
+    ?>
 </div>
-<div id = "Slots">
-    <img id = "SlotsImage" src="../../../Slots/assets/Slots.png"/>
-    <button id = "SlotsButton">SLOTS</button>
-</div>
-
-<div id = "Footer"></div>
 <script>
     document.getElementById("Anmelden").onclick = ()=>{
         document.getElementById("Anmelden").classList.add("form");
