@@ -3,7 +3,8 @@ window.clientID = -1;
 
 // Verbindung geöffnet
 socket.onopen = () => {
-    socket.send('Hallo');
+    const text = document.getElementById('Connection Text');
+    text.style.visibility = "visible";
 };
 
 // Nachricht vom Server empfangen
@@ -28,7 +29,8 @@ socket.onclose = () => {
 
 function handleStartButton() {
     console.log('Start Button clicked');
+    socket.send('start');
     const enableButton = document.getElementById('StartButton');
-    enableButton.visibility = "hidden";
+    enableButton.enabled = false;
     enableButton.style.visibility = "hidden";
 }
