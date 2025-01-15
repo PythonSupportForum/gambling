@@ -31,7 +31,7 @@ public class GameServer {
         server.setExecutor(null);
         server.start();
     }
-    private static void addCORSHeaders(HttpExchange exchange) {
+    public static void addCORSHeaders(HttpExchange exchange) {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
@@ -41,8 +41,11 @@ public class GameServer {
     static class StartGameHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            addCORSHeaders(exchange);
-
+            GameServer.addCORSHeaders(exchange);
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(200, -1);
+                return;
+            }
             if ("POST".equals(exchange.getRequestMethod())) {
                 InputStream requestBody = exchange.getRequestBody();
                 HashMap<String, String> requestData = objectMapper.readValue(requestBody, HashMap.class);
@@ -63,6 +66,7 @@ public class GameServer {
 
                 sendJsonResponse(exchange, 200, response);
             } else {
+                System.out.println("Falsche Methode: "+exchange.getRequestMethod());
                 // Methode nicht erlaubt
                 sendJsonResponse(exchange, 405, "Method Not Allowed. Bitte verwenden Sie POST.");
             }
@@ -71,7 +75,7 @@ public class GameServer {
 
         private boolean isValidToken(String token) {
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                String sql = "SELECT COUNT(*) FROM users WHERE token = ?";
+                String sql = "SELECT COUNT(*) FROM Kunden WHERE token = ?";
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, token);
                     try (ResultSet rs = stmt.executeQuery()) {
@@ -93,7 +97,7 @@ public class GameServer {
 
         private void reduceBalance(String token, int amount) {
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                String sql = "UPDATE users SET balance = balance - ? WHERE token = ?";
+                String sql = "UPDATE Kunden SET Kontostand = Kontostand - ? WHERE token = ?";
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setInt(1, amount);
                     stmt.setString(2, token);
@@ -117,8 +121,11 @@ public class GameServer {
     static class StandHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            addCORSHeaders(exchange);
-
+            GameServer.addCORSHeaders(exchange);
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(200, -1);
+                return;
+            }
             if ("POST".equals(exchange.getRequestMethod())) {
                 InputStream requestBody = exchange.getRequestBody();
                 HashMap<String, String> requestData = objectMapper.readValue(requestBody, HashMap.class);
@@ -130,7 +137,7 @@ public class GameServer {
                     return;
                 }
 
-                int balance = getBalance(token);
+                long balance = getBalance(token);
 
                 HashMap<String, Object> response = new HashMap<>();
                 response.put("message", "Kontostand erfolgreich abgefragt.");
@@ -144,7 +151,7 @@ public class GameServer {
 
         private boolean isValidToken(String token) {
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                String sql = "SELECT COUNT(*) FROM users WHERE token = ?";
+                String sql = "SELECT COUNT(*) FROM Kunden WHERE token = ?";
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, token);
                     try (ResultSet rs = stmt.executeQuery()) {
@@ -159,14 +166,14 @@ public class GameServer {
             return false;
         }
 
-        private int getBalance(String token) {
+        private long getBalance(String token) {
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                String sql = "SELECT balance FROM users WHERE token = ?";
+                String sql = "SELECT Kontostand FROM Kunden WHERE token = ?";
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, token);
                     try (ResultSet rs = stmt.executeQuery()) {
                         if (rs.next()) {
-                            return rs.getInt("balance");
+                            return rs.getLong("Kontostand");
                         }
                     }
                 }

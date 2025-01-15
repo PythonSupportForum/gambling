@@ -10,7 +10,7 @@ import java.util.Random;
 
 
 
-public class SlotGen{
+public class SlotGen {
 
     //Nutzerbezogende Daten
     public int userID;
