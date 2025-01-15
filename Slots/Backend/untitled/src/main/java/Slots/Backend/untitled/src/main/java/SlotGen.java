@@ -41,7 +41,7 @@ public class SlotGen{
      */
     public static String[] getSlotArray() {
 
-        folder = new File("slots_icons");
+        File folder = new File("slots_icons");
         String[] output = new String[3];
         Random rand = new Random();
         File[] files = folder.listFiles();
