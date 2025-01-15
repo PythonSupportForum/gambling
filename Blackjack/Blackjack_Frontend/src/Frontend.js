@@ -1,5 +1,6 @@
 const socket = new WebSocket('ws://127.0.0.1:8080');
 window.clientID = -1;
+
 // Verbindung geöffnet
 socket.onopen = () => {
     socket.send('Hallo');
@@ -24,3 +25,10 @@ socket.onerror = (error) => {
 socket.onclose = () => {
     console.log('Verbindung zum Server geschlossen.');
 };
+
+function handleStartButton() {
+    console.log('Start Button clicked');
+    const enableButton = document.getElementById('StartButton');
+    enableButton.visibility = "hidden";
+    enableButton.style.visibility = "hidden";
+}
