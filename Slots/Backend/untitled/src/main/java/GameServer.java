@@ -13,6 +13,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.ArrayList;
+
 
 public class GameServer {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -24,6 +26,7 @@ public class GameServer {
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
         System.out.println("Server läuft auf http://localhost:8080");
 
+        server.createContext("/bilder", new BilderHandler());
         server.createContext("/start-game", new StartGameHandler());
         server.createContext("/stand", new StandHandler());
         server.createContext("/", new NotFoundHandler());
@@ -57,7 +60,7 @@ public class GameServer {
                     return;
                 }
 
-                int[] results = startGame();
+                int[] results = startGame(token);
                 reduceBalance(token, 1000);
 
                 HashMap<String, Object> response = new HashMap<>();
@@ -90,7 +93,7 @@ public class GameServer {
             return false;
         }
 
-        private int[] startGame() {
+        private int[] startGame(String token) {
             Random random = new Random();
             return new int[]{random.nextInt(100), random.nextInt(100), random.nextInt(100)};
         }
@@ -118,6 +121,54 @@ public class GameServer {
         }
     }
 
+    static class BilderHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            GameServer.addCORSHeaders(exchange);
+
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                exchange.sendResponseHeaders(200, -1);
+                return;
+            }
+
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+                String sql = "SELECT id, gewinn, bild FROM Rollen";
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        HashMap<String, Object>[] results = processResultSet(rs);
+
+                        sendJsonResponse(exchange, 200, results);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                sendJsonResponse(exchange, 500, "Interner Serverfehler.");
+            }
+
+        }
+
+        private HashMap<String, Object>[] processResultSet(ResultSet rs) throws Exception {
+            // Dynamisches Array für Ergebnisse
+            ArrayList<HashMap<String, Object>> results = new ArrayList<>();
+            while (rs.next()) {
+                HashMap<String, Object> row = new HashMap<>();
+                row.put("id", rs.getInt("id"));
+                row.put("gewinn", rs.getInt("gewinn"));
+                row.put("bild", rs.getString("bild")); // Bild als Data-URL
+                results.add(row);
+            }
+            return results.toArray(new HashMap[0]);
+        }
+
+        private void sendJsonResponse(HttpExchange exchange, int statusCode, Object data) throws IOException {
+            String response = objectMapper.writeValueAsString(data);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(statusCode, response.getBytes().length);
+            OutputStream os = exchange.getResponseBody();
+            os.write(response.getBytes());
+            os.close();
+        }
+    }
     static class StandHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
