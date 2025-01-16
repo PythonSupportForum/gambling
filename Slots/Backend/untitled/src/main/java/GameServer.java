@@ -40,7 +40,6 @@ public class GameServer {
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
     }
 
-    // Handler für das Starten des Spiels
     static class StartGameHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -60,21 +59,33 @@ public class GameServer {
                     return;
                 }
 
-                int[] results = startGame(token);
-                reduceBalance(token, 1000);
+                // Abziehen des Spieleinsatzes
+                int betAmount = 1000;
+                reduceBalance(token, betAmount);
+                recordTransaction(token, -betAmount, "Slots-Einsatz");
 
+                // Starten des Spiels
+                int[] results = startGame();
+                int winAmount = calculateWin(token, results);
+
+                if (winAmount > 0) {
+                    System.out.println("SLot Gewinn: "+winAmount);
+                    addBalance(token, winAmount);
+                    recordTransaction(token, winAmount, "Slots-Gewinn");
+                }
+
+                // Antwort vorbereiten
                 HashMap<String, Object> response = new HashMap<>();
-                response.put("message", "Spiel erfolgreich gestartet!");
+                response.put("message", winAmount > 0 ? "Gewonnen!" : "Verloren!");
                 response.put("results", results);
+                response.put("winAmount", winAmount);
 
                 sendJsonResponse(exchange, 200, response);
             } else {
-                System.out.println("Falsche Methode: "+exchange.getRequestMethod());
-                // Methode nicht erlaubt
+                System.out.println("Falsche Methode: " + exchange.getRequestMethod());
                 sendJsonResponse(exchange, 405, "Method Not Allowed. Bitte verwenden Sie POST.");
             }
         }
-
 
         private boolean isValidToken(String token) {
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
@@ -82,9 +93,7 @@ public class GameServer {
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, token);
                     try (ResultSet rs = stmt.executeQuery()) {
-                        if (rs.next() && rs.getInt(1) > 0) {
-                            return true;
-                        }
+                        return rs.next() && rs.getInt(1) > 0;
                     }
                 }
             } catch (Exception e) {
@@ -93,9 +102,48 @@ public class GameServer {
             return false;
         }
 
-        private int[] startGame(String token) {
+        private int[] startGame() {
+            int[] ids = getRoleIds();
             Random random = new Random();
-            return new int[]{random.nextInt(100), random.nextInt(100), random.nextInt(100)};
+            return new int[]{
+                    ids[random.nextInt(ids.length)],
+                    ids[random.nextInt(ids.length)],
+                    ids[random.nextInt(ids.length)]
+            };
+        }
+
+        private int[] getRoleIds() {
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+                String sql = "SELECT id FROM Rollen";
+                try (PreparedStatement stmt = conn.prepareStatement(sql);
+                     ResultSet rs = stmt.executeQuery()) {
+                    ArrayList<Integer> ids = new ArrayList<>();
+                    while (rs.next()) {
+                        ids.add(rs.getInt("id"));
+                    }
+                    return ids.stream().mapToInt(i -> i).toArray();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return new int[0];
+        }
+
+        private int calculateWin(String token, int[] results) {
+            if (results[0] == results[1] && results[1] == results[2]) {
+                try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+                    String sql = "SELECT gewinn FROM Rollen WHERE id = ?";
+                    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                        stmt.setInt(1, results[0]);
+                        try (ResultSet rs = stmt.executeQuery()) {
+                            if (rs.next()) return rs.getInt("gewinn");
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            return 0;
         }
 
         private void reduceBalance(String token, int amount) {
@@ -111,13 +159,40 @@ public class GameServer {
             }
         }
 
+        private void addBalance(String token, int amount) {
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+                String sql = "UPDATE Kunden SET Kontostand = Kontostand + ? WHERE token = ?";
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setInt(1, amount);
+                    stmt.setString(2, token);
+                    stmt.executeUpdate();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        private void recordTransaction(String token, int amount, String type) {
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+                String sql = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum, type) VALUES ((SELECT ID FROM Kunden WHERE token = ?), ?, NOW(), ?)";
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setString(1, token);
+                    stmt.setInt(2, amount);
+                    stmt.setString(3, type);
+                    stmt.executeUpdate();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         private void sendJsonResponse(HttpExchange exchange, int statusCode, Object data) throws IOException {
             String response = objectMapper.writeValueAsString(data);
             exchange.getResponseHeaders().set("Content-Type", "application/json");
             exchange.sendResponseHeaders(statusCode, response.getBytes().length);
-            OutputStream os = exchange.getResponseBody();
-            os.write(response.getBytes());
-            os.close();
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(response.getBytes());
+            }
         }
     }
 

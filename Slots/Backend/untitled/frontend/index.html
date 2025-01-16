@@ -1,188 +1,132 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slot-Spiel</title>
-    <script>
-        window.token = "1";
-    </script>
-    <script src="game.js"></script>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        html, body {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-        .feld {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
-            padding: 10px;
-            gap: 10px;
-        }
-        .header, .footer {
-            width: 100%;
-            flex-grow: 0;
-        }
-        .header {
-            height: 100px;
-            flex-basis: 100px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-        .footer {
-            height: 300px;
-            flex-basis: 300px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-            background-color: #f3f3f3;
-        }
-
-        .slot-machine {
-            display: flex;
-            border: 2px solid #333;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 50px;
-            background-color: #fff;
-            width: 100%;
-            height: 100px;
-            flex-basis: 100px;
-            flex-grow: 1;
-        }
-
-        .reel {
-            width: 100px;
-            height: 100%;
-            flex-basis: 100px;
-            flex-grow: 1;
-            border-right: 1px solid #333;
-            background-color: #f4f4f4;
-            line-height: 100px;
-            color: #333;
-            font-size: 160px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-
-        .reel:last-child {
-            border-right: none;
-        }
-
-        .button {
-            margin-top: 30px;
-            padding: 10px 20px;
-            font-size: 18px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .button:hover {
-            background-color: #45a049;
-        }
-
-        .result {
-            margin-top: 20px;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .win {
-            color: green;
-        }
-
-        .lose {
-            color: red;
-        }
-    </style>
-</head>
-<body>
-
-<div class="feld">
-    <div class="header">
-        <h1>Slot Glücksspiel</h1>
-    </div>
-    <div class="slot-machine">
-        <div class="reel" id="reel1"></div>
-        <div class="reel" id="reel2"></div>
-        <div class="reel" id="reel3"></div>
-    </div>
-    <div class="footer">
-        <button class="button" onclick="spin()">Drehen</button>
-
-        <div class="result" id="result"></div>
-    </div>
-
-</div>
-
-
-<script>
-    const symbols = ['🍒', '🍋', '🍊', '🍉', '🍓']; // Die Symbole für die Walzen
-    let reels = ['reel1', 'reel2', 'reel3']; // IDs der Walzen
-    let isSpinning = false; // Verhindert mehrere Drehungen gleichzeitig
-
-    // Funktion zum Drehen der Walzen
-    function spin() {
-        if (isSpinning) return; // Verhindert doppelte Klicks während des Drehens
-        isSpinning = true;
-        document.getElementById("result").innerHTML = ""; // Setzt das Ergebnis zurück
-
-        // Zufällige Symbole für jede Walze
-        let reelResults = [];
-        for (let i = 0; i < reels.length; i++) {
-            let reel = document.getElementById(reels[i]);
-            reel.style.transition = "transform 1s ease-out";
-            reel.style.transform = "rotateX(360deg)";
-            reelResults.push(getRandomSymbol());
-        }
-
-        // Wartezeit für Animation, bevor das Ergebnis gezeigt wird
-        setTimeout(() => {
-            for (let i = 0; i < reels.length; i++) {
-                document.getElementById(reels[i]).innerHTML = reelResults[i];
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gambling Website | Slot-Spiel</title>
+        <script>
+            window.token = "1";
+        </script>
+        <script src="game.js"></script>
+        <style>
+            * {
+                box-sizing: border-box;
             }
-            evaluateResult(reelResults);
-            isSpinning = false;
-        }, 1000);
-    }
+            html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                background-color: black;
+            }
+            body {
+                overflow-x: auto;
+            }
+            .top {
+                width: 100%;
+                height: 100vh;
+                min-height: 600px;
+                display: flex;
+                flex-direction: column;
+            }
+            .header {
+                flex-basis: 100px;
+                width: 100%;
+                flex-grow: 0;
+                display: flex;
+                justify-content: center;
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+                background-color: darkblue;
+                border-bottom: 5px solid orchid;
+            }
+            .header * {
+                margin: 0;
+                padding: 0;
+            }
+            .header h1 {
+                color: greenyellow;
+            }
+            .header h2 {
+                color: #33e50d;
+            }
+            .machine-container {
+                width: 100%;
+                flex-basis: 400px;
+                flex-grow: 1;
+                padding: 15px;
+                overflow: hidden;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .machine-container .machine {
+                width: 700px;
+                max-width: 100%;
+                height: 100%;
+                background-color: #9d8a8a;
+                border-radius: 20px 10px 10px 10px;
+                border: 3px solid #29377a;
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+                box-shadow: #679128;
+            }
+            .machine-container .machine > .t {
+                width: 100%;
+                flex-basis: 170px;
+                font-family: Chiller,emoji;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                justify-content: center;
+                align-items: center;
+                border-bottom: 2px dotted #d2b0b0;
+            }
+            .machine-container .machine > .t > span.a {
+                font-size: 110px;
+                margin: 0;
+                padding: 0;
+            }
+            .machine-container .machine > .t > span.b {
+                font-family: "Arial Black",system-ui;
+                font-size: 24px;
+                margin: 0;
+                padding: 0;
+                color: goldenrod;
+            }
+            .machine-container .machine > .row {
+                width: 100%;
+                flex-basis: 200px;
+                border-bottom: 2px dotted #d2b0b0;
+                flex-grow: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="top">
+            <div class="header">
+                <h1>Gambling | Sloti-Maschie - Play and WINN!!!!!!!</h1>
+                <h2>Glücksspiel aus dem Informatik Unterricht bei Herrn Engels! Bei uns wierd jeder Reich!</h2>
+            </div>
+            <div class="machine-container">
+                <div class="machine">
+                    <div class="t">
+                        <span class="a">SLOTI</span>
+                        <span class="b">One Rount Only 4TT</span>
+                    </div>
+                    <div class="row">
+                        <div class="rad">
 
-    // Zufälliges Symbol auswählen
-    function getRandomSymbol() {
-        return symbols[Math.floor(Math.random() * symbols.length)];
-    }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="info">
 
-    // Ergebnis bewerten
-    function evaluateResult(reelResults) {
-        if (reelResults[0] === reelResults[1] && reelResults[1] === reelResults[2]) {
-            document.getElementById("result").innerHTML = "Gewonnen! 🎉";
-            document.getElementById("result").className = "result win";
-        } else {
-            document.getElementById("result").innerHTML = "Leider verloren. 😞";
-            document.getElementById("result").className = "result lose";
-        }
-    }
-</script>
+        </div>
+    </body>
 
-</body>
 </html>
