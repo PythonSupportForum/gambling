@@ -101,6 +101,40 @@
                 flex-basis: 200px;
                 border-bottom: 2px dotted #d2b0b0;
                 flex-grow: 0;
+                background-color: black;
+                padding: 1px;
+                display: flex;
+                gap: 1px;
+            }
+            .machine-container .machine > .row > .rad {
+                flex-basis: 100px;
+                flex-grow: 1;
+                height: 100%;
+                background-color: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 12px;
+                font-size: 100px;
+            }
+            .machine-container .machine > .c {
+                width: 100%;
+                flex-basis: 150px;
+                flex-grow: 1;
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                align-items: center;
+                justify-content: center;
+            }
+            .machine-container .machine > .c > button {
+                padding: 15px;
+                background-color: gold;
+                color: darkolivegreen;
+                font-size: 30px;
+                border: 3px solid #3a5209;
+                border-radius: 20px;
             }
         </style>
     </head>
@@ -117,9 +151,12 @@
                         <span class="b">One Rount Only 4TT</span>
                     </div>
                     <div class="row">
-                        <div class="rad">
-
-                        </div>
+                        <div class="rad">x</div>
+                        <div class="rad">x</div>
+                        <div class="rad">x</div>
+                    </div>
+                    <div class="c">
+                        <button>Rolle NOW</button>
                     </div>
                 </div>
             </div>
