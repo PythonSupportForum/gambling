@@ -19,8 +19,7 @@ public class GameThread implements Runnable {
     int client_ID;
 
     List<GameCard> dealerStack = new ArrayList<>();
-    List<GameCard> playerStack = new ArrayList<>();
-    List<GameCard> playerSplitStack = new ArrayList<>();
+    ArrayList<ArrayList<GameCard>> playerStack = new ArrayList<ArrayList<>()>();
     Stack<GameCard> deck = new Stack<>();
 
     Statement stmt;
@@ -39,11 +38,9 @@ public class GameThread implements Runnable {
     int coins = 0;
     double balance = 0.0;
     int bet = 0;
-    int splitBet = 0;
+    int splitCount = 0;
     int insuranceBet = 0;
-
-    String s = "e";
-
+    
     int coinAmount = 0;
     // Ermöglicht Zugriff auf Thread Objekt, wenn GameThread Objekt gefunden wurde
     public Thread currentThread = Thread.currentThread();
@@ -84,7 +81,6 @@ public class GameThread implements Runnable {
             ResultSet rs = stmt.getResultSet();
             rs.next();
             balance = rs.getDouble("Kontostand");
-
             rs.close();
             stmt.close();
         }
@@ -254,7 +250,6 @@ public class GameThread implements Runnable {
     public void handleMessage(String message) {
         System.out.println("Nachricht von Client " + client_ID + "empfangen: " + message + "\n");
         if (message.startsWith("start")){
-            s = "a";
             start = true;
         }
         else if (message.startsWith("exchange")){
@@ -287,7 +282,6 @@ public class GameThread implements Runnable {
             cardInput = false;
             wantsExchange = false;
 
-            playerSplitStack.clear();
             playerStack.clear();
             dealerStack.clear();
             deck.clear();
@@ -320,9 +314,11 @@ public class GameThread implements Runnable {
                             exchangeInput = true;
                             System.out.println("Du hast " + coinAmount + " Coins erworben!");
                         }
+                        //endregion
                     } catch (NumberFormatException e) {}
                 }
             }
+            //region Geld umtauschen
 
 
             // Start des Spiels
@@ -398,32 +394,59 @@ public class GameThread implements Runnable {
             setGameState(GameState.PLAYER_DRAW);
 
             GameCard card = deck.pop();
-            playerStack.add(card);
+            playerStack.get(0).add(card);
             printCard(card);
 
             card = deck.pop();
-            playerStack.add(card);
+            playerStack.get(0).add(card);
             printCard(card);
 
-            checkValue();
-            while (!cardInput) {
-                //ist nicht vollständig, nachher mit Frontend lösen
-                System.out.println("Willst du noch eine Karte nehmen?(false, true)");
 
-                Scanner c = new Scanner(System.in);
-                String inputString = c.nextLine();
-                try {
-                    if (Boolean.parseBoolean(inputString)) {
-                        card = deck.pop();
-                        playerStack.add(card);
-                        printCard(card);
-                    } else {
-                        cardInput = true;
+            for(int i = 0; i > -1; i--) {
+                checkValue(playerStack.get(0));
+
+                if(playerStack.get(i).get(0).getValue() == playerStack.get(i).get(1).getValue()){
+                    while (!cardInput) {
+                        //ist nicht vollständig, nachher mit Frontend lösen
+                        System.out.println("Willst du dein Deck splitten?(false, true)");
+
+                        Scanner c = new Scanner(System.in);
+                        String inputString = c.nextLine();
+                        try {
+                            if (Boolean.parseBoolean(inputString)) {
+                                playerStack.get(1).add(playerStack.get(i).get(1));
+                                playerStack.get(i).remove(1);
+                                i++;
+
+                            } else {
+                                cardInput = true;
+                            }
+                        } catch (NumberFormatException e) {
+                            continue;
+                        }
+                        checkValue(playerStack.get(0));
                     }
-                } catch (NumberFormatException e) {
-                    continue;
                 }
-                checkValue();
+
+                while (!cardInput) {
+                    //ist nicht vollständig, nachher mit Frontend lösen
+                    System.out.println("Willst du noch eine Karte nehmen?(false, true)");
+
+                    Scanner c = new Scanner(System.in);
+                    String inputString = c.nextLine();
+                    try {
+                        if (Boolean.parseBoolean(inputString)) {
+                            card = deck.pop();
+                            playerStack.get(0).add(card);
+                            printCard(card);
+                        } else {
+                            cardInput = true;
+                        }
+                    } catch (NumberFormatException e) {
+                        continue;
+                    }
+                    checkValue(playerStack.get(0));
+                }
             }
 
             if (getGameState() == GameState.PLAYER_DRAW) {
@@ -461,14 +484,14 @@ public class GameThread implements Runnable {
                     }
                 }
 
-                if (currentValue(dealerStack) < currentValue(playerStack)) {
+                if (currentValue(dealerStack) < currentValue(playerStack.get(0))) {
                     System.out.println("Du hast gewonnen!");
                     // Unser Kontostand muss um den Wert der Coins verringert werden, also Anzahl der Coins * 100
                     setGameState(GameState.PLAYER_WON);
-                } else if (currentValue(dealerStack) == currentValue(playerStack)) {
+                } else if (currentValue(dealerStack) == currentValue(playerStack.get(0))) {
                     System.out.println("Push!");
                     setGameState(GameState.PUSH);
-                } else if (currentValue(dealerStack) > currentValue(playerStack)) {
+                } else if (currentValue(dealerStack) > currentValue(playerStack.(0))) {
                     System.out.println("Du hast verloren!");
                     setGameState(GameState.PLAYER_LOST);
                 } else {
@@ -529,24 +552,24 @@ public class GameThread implements Runnable {
         currentThread.interrupt(); // Beende den Thread
     }
 
-    private void checkValue() {
-        if (currentValue(playerStack) > 21) {
+    private void checkValue(List<GameCard> cardStack) {
+        if (currentValue(cardStack) > 21) {
             setGameState(GameState.PLAYER_LOST);
             System.out.println("Bust! Du hast verloren!");
             cardInput = true;
         }
-        else if (currentValue(playerStack) == 21) {
+        else if (currentValue(cardStack) == 21) {
             System.out.println("Herzlichen Glückwunsch! Du hast einen Blackjack!");
             setGameState(GameState.PLAYER_WON);
             cardInput = true;
         }
     }
 
-        public int currentValue (List<GameCard> playerStack) {
+        public int currentValue (List<GameCard> cardStack) {
             int totalValue = 0;
             int aceCount = 0;
 
-            for (GameCard card : playerStack) {
+            for (GameCard card : cardStack) {
                 char valueOfCard = card.getValue();
 
                 if (valueOfCard >= '2' && valueOfCard <= '9') {
