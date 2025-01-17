@@ -241,14 +241,12 @@ public class GameThread implements Runnable {
     // Implementation der run() - Methode des Runnable Interfaces, erste Funktion die nach der Öffnung des Threads ausgeführt wird
     public void run() {
         System.out.print(client_ID + "\n");
-        System.out.println("rein");
         // Warte auf Startsignal vom Client
         while(!start){
             try{
             Thread.sleep(100);
             }catch(Exception ignored){}
         }
-        System.out.println("raus");
         game(); // ruft Hauptmethode des Spiels auf, beginnt Spiel mit dem Client
     }
 
@@ -314,11 +312,11 @@ public class GameThread implements Runnable {
                     try {
                         coinAmount = Integer.parseInt(inputString);
                         // Umtauschen: Tilotaler zu Coins
-                        if (balance - (coinAmount * 100) < 0) {
+                        if ((balance - (double)(coinAmount / 100)) < 0) {
                             System.out.println("Du hast nicht genug Tilotaler um diesen Betrag zu erwerben!");
                         } else {
                             coins += coinAmount;
-                            balance -= coinAmount * 100;
+                            balance -= (double)coinAmount / 100;
                             exchangeInput = true;
                             System.out.println("Du hast " + coinAmount + " Coins erworben!");
                         }
@@ -632,7 +630,7 @@ public class GameThread implements Runnable {
             return false;
         } else {
             coins -= coinAmount;
-            String clientQuery = "UPDATE Kunden SET Kontostand = " + (balance + coinAmount * 100) + " WHERE id = " + client_ID;
+            String clientQuery = "UPDATE Kunden SET Kontostand = " + (balance + coinAmount / 100) + " WHERE id = " + client_ID;
             String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum) VALUES (" + client_ID  + ", " + (OLDBALANCE - balance) + ", NOW())";
             clientDB = getConnection();
             try{
