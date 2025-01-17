@@ -74,6 +74,8 @@ public class GameServer {
                     recordTransaction(token, winAmount, "Slots-Gewinn");
                 }
 
+                System.out.println("Playint... "+winAmount);
+
                 // Antwort vorbereiten
                 HashMap<String, Object> response = new HashMap<>();
                 response.put("message", winAmount > 0 ? "Gewonnen!" : "Verloren!");

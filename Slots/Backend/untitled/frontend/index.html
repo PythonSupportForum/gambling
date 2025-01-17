@@ -60,6 +60,14 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
+                position: relative;
+            }
+            .machine-container .balance {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                font-size: 24px;
+                color: red;
             }
             .machine-container .machine {
                 width: 700px;
@@ -135,6 +143,7 @@
                 font-size: 30px;
                 border: 3px solid #3a5209;
                 border-radius: 20px;
+                cursor: pointer;
             }
         </style>
     </head>
@@ -156,9 +165,10 @@
                         <div class="rad">x</div>
                     </div>
                     <div class="c">
-                        <button>Rolle NOW</button>
+                        <button id="play" onclick="play();">Rolle NOW</button>
                     </div>
                 </div>
+                <div class="balance" id="balance">---</div>
             </div>
         </div>
         <div class="info">

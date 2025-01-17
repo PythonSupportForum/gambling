@@ -16,6 +16,7 @@ async function startGame(token) {
 
         const data = await response.json();
         console.log('Spiel gestartet:', data);
+        return data;
     } catch (error) {
         console.error('Fehler:', error);
     }
@@ -35,11 +36,45 @@ async function fetchBalance(token) {
         }
         const data = await response.json();
         console.log('Kontostand:', data.balance);
+        return data.balance;
     } catch (error) {
         console.error('Fehler:', error);
     }
 }
 
+let isU = false;
+let nU = false;
+window.balance = -1;
+window.showBalance = 0;
+let lastR = Date.now();
+window.updateBRunner = ()=>{
+    if(Date.now()-lastR < 50) return setTimeout(updateBRunner, 50-(Date.now()-lastR));
+    lastR = Date.now();
+    window.showBalance += (balance>showBalance) ? Math.ceil((balance-showBalance)/10) : -Math.ceil((showBalance-balance)/10);
+    document.getElementById("balance").innerText = showBalance.toString()+" TT";
+    if(showBalance === balance) return;
+    updateBRunner();
+}
+window.updateB = async ()=>{
+    if(isU) {
+        nU = true;
+        return;
+    }
+    isU = true;
+    nU = false;
+    try {
+        const r = await fetchBalance(token);
+        if(r && r !== balance) {
+            window.balance = r;
+            document.getElementById("balance").innerText = showBalance.toString()+" TT";
+            updateBRunner();
+        }
+        else nU = true;
+    } catch(e) {
+        console.log(e);
+    }
+    if(nU) updateB().then(()=>{});
+}
 function startConfetti() {
     const canvas = document.createElement('canvas');
     document.body.appendChild(canvas);
@@ -104,6 +139,24 @@ function startConfetti() {
     setTimeout(() => canvas.remove(), 15000); // Stop after 15 seconds
 }
 
+updateB().then(()=>{});
+setInterval(updateB, 5*1000);
+
+window.play = async ()=>{
+    console.log("Start Game...");
+    document.getElementById("play").disabled = true;
+
+    const {results, winAmount} = await  startGame(token);
+
+    if(winAmount > 0) {
+        startConfetti();
+    }
+
+    console.log("R:", {results, winAmount});
+
+    await updateB();
 
 
-startGame(token).then(console.log);
+    document.getElementById("play").disabled = false;
+}
+
