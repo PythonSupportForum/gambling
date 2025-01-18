@@ -274,6 +274,9 @@ public class GameThread implements Runnable {
         //Start der Spiellogik
         setGameState(GameState.START);
 
+        playerStack.add(new ArrayList<GameCard>());
+
+
         // Loop zum erneuten Spielen
         while (running) {
             setGameState(GameState.DEPOSIT);
@@ -283,7 +286,9 @@ public class GameThread implements Runnable {
             cardInput = false;
             wantsExchange = false;
 
-            playerStack.clear();
+            for(ArrayList<GameCard> stack : playerStack){
+                stack.clear();
+            }
             dealerStack.clear();
             deck.clear();
 
@@ -406,7 +411,6 @@ public class GameThread implements Runnable {
             splitCheck(0);
             for(int i = 0; i <= splitCount; i++) {
                 karteZiehen(i);
-                splitCheck(i);
             }
 
             if (getGameState() == GameState.PLAYER_DRAW) {
@@ -598,8 +602,8 @@ public class GameThread implements Runnable {
                     if (Boolean.parseBoolean(inputString)) {
                         card = deck.pop();
                         playerStack.get(index).add(card);
-                        splitCheck(index);
                         printCard(card);
+                        splitCheck(index);
                     } else {
                         cardInput = true;
                     }
@@ -616,14 +620,16 @@ public class GameThread implements Runnable {
             if(playerStack.get(index).get(0).getValue() == playerStack.get(index).get(1).getValue()){
                 while (moechteSplit) {
                         //ist nicht vollständig, nachher mit Frontend lösen
-                    System.out.println("Willst du deinen Stapel splitten?(false, true)\n");
+                    System.out.println("Willst du deinen Stapel splitten?(false, true)");
                     Scanner c = new Scanner(System.in);
                     String inputString = c.nextLine();
                     try {
                         if (Boolean.parseBoolean(inputString)) {
-                            playerStack.get(1).add(playerStack.get(index).get(1));
+                            playerStack.add(new ArrayList<GameCard>());
+                            playerStack.get(index + 1).add(playerStack.get(index).get(1));
                             playerStack.get(index).remove(1);
                             splitCount++;
+                            moechteSplit = false;
                         } else {
                             moechteSplit = false;
                         }
