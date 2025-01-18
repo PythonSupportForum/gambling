@@ -19,7 +19,7 @@ public class GameThread implements Runnable {
     int client_ID;
 
     List<GameCard> dealerStack = new ArrayList<>();
-    ArrayList<ArrayList<GameCard>> playerStack = new ArrayList<ArrayList<>()>();
+    ArrayList<ArrayList<GameCard>> playerStack = new ArrayList<>();
     Stack<GameCard> deck = new Stack<>();
     GameCard card;
 
@@ -451,7 +451,7 @@ public class GameThread implements Runnable {
                 } else if (currentValue(dealerStack) == currentValue(playerStack.get(0))) {
                     System.out.println("Push!");
                     setGameState(GameState.PUSH);
-                } else if (currentValue(dealerStack) > currentValue(playerStack.(0))) {
+                } else if (currentValue(dealerStack) > currentValue(playerStack.get(0))) {
                     System.out.println("Du hast verloren!");
                     setGameState(GameState.PLAYER_LOST);
                 } else {
@@ -598,6 +598,7 @@ public class GameThread implements Runnable {
                     if (Boolean.parseBoolean(inputString)) {
                         card = deck.pop();
                         playerStack.get(index).add(card);
+                        splitCheck(index);
                         printCard(card);
                     } else {
                         cardInput = true;
