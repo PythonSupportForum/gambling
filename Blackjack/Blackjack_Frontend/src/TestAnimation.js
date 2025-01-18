@@ -15,22 +15,37 @@ cardImg3.src = '../assets/karten/club/3.svg';
 let cardWidth = 66;
 let cardHeight = 100;
 
+let canvas;
+
+window.addEventListener('resize', resizeCanvas);
+
 window.onload = function (){
-    const canvas = document.getElementById("canvas");
+    canvas = document.getElementById("canvas");
+    resizeCanvas();
+
     if (canvas.getContext) {
         ctx = canvas.getContext("2d");
 
         last = Date.now();
 
-        animationObjects.push(new animationObject("#ff0000", {startx:500, starty:500}, {endx:300, endy:300}, 0.15));
-        animationObjects.push(new animationObject("#00ffd7", {startx:100, starty:100}, {endx:300, endy:300}, 0.15));
+        animationObjects.push(new animationObject("rgba(255,0,0,0.5)", {startx:canvas.width - 100, starty:canvas.height - 100}, {endx:canvas.width / 2, endy:canvas.height / 2}, 1));
+        animationObjects.push(new animationObject("rgba(0,102,255,0.5)", {startx:100, starty:100}, {endx:canvas.width / 2, endy:canvas.height / 2}, 1));
+        animationObjects.push(new animationObject("rgba(255,250,0,0.5)", {startx:canvas.width - 100, starty:100}, {endx:canvas.width / 2, endy:canvas.height / 2}, 1));
+        animationObjects.push(new animationObject("rgba(255,255,255,0.5)", {startx:100, starty:canvas.height - 100}, {endx:canvas.width / 2, endy:canvas.height / 2}, 1));
 
         for(let anim of animationObjects){
-            newMoving(anim, {x1:anim.start.x, y1:anim.start.y}, {x2:anim.end.x, y2:anim.end.y});
+            newMoving(anim);
         }
 
         draw();
     }
+}
+
+function resizeCanvas(){
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 }
 
 // Frame Generation
@@ -44,13 +59,19 @@ function draw() {
     last = Date.now();
 
     for (let anim of animationObjects){
-        if(anim.moving){
-            anim.currentPos = sinVel(anim, {x:anim.currentPos.x, y:anim.currentPos.y});
+        if(anim.moves){
+            sinVel(anim, {x:anim.pos.x, y:anim.pos.y});
+        }
+        else{
+            let temp = anim.startPoint;
+            anim.startPoint = anim.endPoint;
+            anim.endPoint = temp;
+            newMoving(anim);
         }
 
         ctx.beginPath();
-        ctx.arc(anim.currentPos.x, anim.currentPos.y, 20 , 0, Math.PI * 2);
-        ctx.fillStyle = anim.color;
+        ctx.arc(anim.pos.x, anim.pos.y, 20 , 0, Math.PI * 2);
+        ctx.fillStyle = anim.colour;
         ctx.fill();
         ctx.closePath();
     }
@@ -59,38 +80,36 @@ function draw() {
 }
 
 // Deklariert eine neue Animation
-function newMoving(anim, {x:x1, y:y1}, {x:x2, y:y2}) {
-    anim.moving = true;
+function newMoving(anim) {
+    anim.moves = true;
 
-    anim.start = {x:x1,y:y1};
-    anim.end = {x:x2,y:y2};
-
-    anim.dx = (anim.end.x - anim.start.x) / anim.time;
-    anim.dy = (anim.end.y - anim.start.y) / anim.time;
+    anim.dx = (anim.endPoint.x - anim.startPoint.x) / anim.time;
+    anim.dy = (anim.endPoint.y - anim.startPoint.y) / anim.time;
 }
 
 // Funktion zur Berechnung der nächsten Koordinaten, jedoch mit einer Beschleunigung des Objekts mithilfe einer phasenverschobenen Sinuswelle
-function sinVel(anim, {x, y}){
+function sinVel(anim){
 
     // Prozentualer Anteil des Weges der zurückgelegt wurde
-    let part = 1 - ((anim.end.x - x) / (anim.end.x - anim.start.x));
+    let part = 1 - ((anim.endPoint.x - anim.pos.x) / (anim.endPoint.x - anim.startPoint.x));
 
     // Faktor zur Beschleunigung: Die Geschwindigkeit verändert sich im Verlauf einer um 0,1 phasenverschobenen Sinuskurve, ermöglicht weichere Animation
-    part = Math.sin(part * Math.PI + 0.1);
+    part = Math.sin(part * Math.PI) + 0.1;
 
-    let currentDistance = calculateDistance({x1:anim.currentPos.x, y1:anim.currentPos.y}, {x2:anim.start.x, y2:anim.start.y});
-    let netDistance = calculateDistance({x1:anim.start.x, y1:anim.start.y}, {x2:anim.end.x, y2:anim.end.y});
+    let currentDistance = calculateDistance({x1:anim.pos.x, y1:anim.pos.y}, {x2:anim.startPoint.x, y2:anim.startPoint.y});
+    let netDistance = calculateDistance({x1:anim.startPoint.x, y1:anim.startPoint.y}, {x2:anim.endPoint.x, y2:anim.endPoint.y});
 
     // Test nach Ende der Animation, sonst Verschiebung des Objekts um den Geschwindigkeitswert, angeglichen mit der Zeit zwischen den Frames
     if(currentDistance < netDistance){
-        x += anim.dx * part * deltaTime;
-        y += anim.dy * part * deltaTime;
+        anim.pos.x += anim.dx * part * deltaTime;
+        anim.pos.y += anim.dy * part * deltaTime;
+        console.log(currentDistance, netDistance, anim.dx * part * deltaTime);
     }
     else{
-        anim.moving = false;
+        anim.pos.x = anim.endPoint.x;
+        anim.pos.y = anim.endPoint.y;
+        anim.moves = false;
     }
-
-    return {x, y};
 }
 
 function calculateDistance({x1, y1}, {x2, y2}) {
@@ -100,20 +119,20 @@ function calculateDistance({x1, y1}, {x2, y2}) {
 class animationObject{
 
     colour;
-    moving = false;
+    moves = false;
     time = 0;
-    start = {x:0, y:0};
-    end = {x:0,y:0};
-    currentPos = {x:0,y:0};
+    startPoint = {x:0,y:0};
+    endPoint = {x:0,y:0};
+    pos = {x:0,y:0};
     dx = 0;
     dy = 0;
 
     constructor(colour, {startx, starty}, {endx, endy}, _time) {
-        this.moving = false;
+        this.moves = false;
         this.time = _time;
-        this.start = {x:startx, y:starty};
-        this.end = {x:endx,y:endy};
-        this.currentPos = {x:0,y:0};
+        this.startPoint = {x:startx, y:starty};
+        this.endPoint = {x:endx,y:endy};
+        this.pos = {x:startx,y:starty};
         this.colour = colour;
     }
 }
