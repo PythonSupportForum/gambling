@@ -15,17 +15,23 @@ cardImg3.src = '../assets/karten/club/3.svg';
 let cardWidth = 66;
 let cardHeight = 100;
 
+let canvas;
+
+window.addEventListener('resize', resizeCanvas);
+
 window.onload = function (){
-    const canvas = document.getElementById("canvas");
+    canvas = document.getElementById("canvas");
+    resizeCanvas();
+
     if (canvas.getContext) {
         ctx = canvas.getContext("2d");
 
         last = Date.now();
 
-        animationObjects.push(new animationObject("rgba(255,0,0,0.5)", {startx:500, starty:500}, {endx:300, endy:300}, 1));
-        animationObjects.push(new animationObject("rgba(0,102,255,0.5)", {startx:100, starty:100}, {endx:300, endy:300}, 1));
-        animationObjects.push(new animationObject("rgba(255,250,0,0.5)", {startx:500, starty:100}, {endx:300, endy:300}, 1));
-        animationObjects.push(new animationObject("rgba(255,255,255,0.5)", {startx:100, starty:500}, {endx:300, endy:300}, 1));
+        animationObjects.push(new animationObject("rgba(255,0,0,0.5)", {startx:canvas.width - 100, starty:canvas.height - 100}, {endx:canvas.width / 2, endy:canvas.height / 2}, 1));
+        animationObjects.push(new animationObject("rgba(0,102,255,0.5)", {startx:100, starty:100}, {endx:canvas.width / 2, endy:canvas.height / 2}, 1));
+        animationObjects.push(new animationObject("rgba(255,250,0,0.5)", {startx:canvas.width - 100, starty:100}, {endx:canvas.width / 2, endy:canvas.height / 2}, 1));
+        animationObjects.push(new animationObject("rgba(255,255,255,0.5)", {startx:100, starty:canvas.height - 100}, {endx:canvas.width / 2, endy:canvas.height / 2}, 1));
 
         for(let anim of animationObjects){
             newMoving(anim);
@@ -33,6 +39,13 @@ window.onload = function (){
 
         draw();
     }
+}
+
+function resizeCanvas(){
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 }
 
 // Frame Generation
