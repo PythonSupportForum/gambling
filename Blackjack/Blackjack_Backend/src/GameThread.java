@@ -19,8 +19,9 @@ public class GameThread implements Runnable {
     int client_ID;
 
     List<GameCard> dealerStack = new ArrayList<>();
-    ArrayList<ArrayList<GameCard>> playerStack = new ArrayList<ArrayList<>()>();
+    ArrayList<ArrayList<GameCard>> playerStack = new ArrayList<>();
     Stack<GameCard> deck = new Stack<>();
+    GameCard card;
 
     Statement stmt;
 
@@ -300,7 +301,7 @@ public class GameThread implements Runnable {
             if(wantsExchange){
                 while (!exchangeInput) {
                     //ist nicht vollständig, nach mit Frontend lösen
-                    System.out.print("Aktuell hast du" + balance + " TiloTaler\nWie viele Coins willst du erwerben?\n");
+                    System.out.print("Aktuell hast du " + balance + " TiloTaler\nWie viele Coins willst du erwerben?\n");
 
                     String inputString = c.nextLine();
                     try {
@@ -393,7 +394,7 @@ public class GameThread implements Runnable {
 
             setGameState(GameState.PLAYER_DRAW);
 
-            GameCard card = deck.pop();
+            card = deck.pop();
             playerStack.get(0).add(card);
             printCard(card);
 
@@ -401,52 +402,11 @@ public class GameThread implements Runnable {
             playerStack.get(0).add(card);
             printCard(card);
 
-
-            for(int i = 0; i > -1; i--) {
-                checkValue(playerStack.get(0));
-
-                if(playerStack.get(i).get(0).getValue() == playerStack.get(i).get(1).getValue()){
-                    while (!cardInput) {
-                        //ist nicht vollständig, nachher mit Frontend lösen
-                        System.out.println("Willst du dein Deck splitten?(false, true)");
-
-                        Scanner c = new Scanner(System.in);
-                        String inputString = c.nextLine();
-                        try {
-                            if (Boolean.parseBoolean(inputString)) {
-                                playerStack.get(1).add(playerStack.get(i).get(1));
-                                playerStack.get(i).remove(1);
-                                i++;
-
-                            } else {
-                                cardInput = true;
-                            }
-                        } catch (NumberFormatException e) {
-                            continue;
-                        }
-                        checkValue(playerStack.get(0));
-                    }
-                }
-
-                while (!cardInput) {
-                    //ist nicht vollständig, nachher mit Frontend lösen
-                    System.out.println("Willst du noch eine Karte nehmen?(false, true)");
-
-                    Scanner c = new Scanner(System.in);
-                    String inputString = c.nextLine();
-                    try {
-                        if (Boolean.parseBoolean(inputString)) {
-                            card = deck.pop();
-                            playerStack.get(0).add(card);
-                            printCard(card);
-                        } else {
-                            cardInput = true;
-                        }
-                    } catch (NumberFormatException e) {
-                        continue;
-                    }
-                    checkValue(playerStack.get(0));
-                }
+            // Main Split Logic
+            splitCheck(0);
+            for(int i = 0; i <= splitCount; i++) {
+                karteZiehen(i);
+                splitCheck(i);
             }
 
             if (getGameState() == GameState.PLAYER_DRAW) {
@@ -491,7 +451,7 @@ public class GameThread implements Runnable {
                 } else if (currentValue(dealerStack) == currentValue(playerStack.get(0))) {
                     System.out.println("Push!");
                     setGameState(GameState.PUSH);
-                } else if (currentValue(dealerStack) > currentValue(playerStack.(0))) {
+                } else if (currentValue(dealerStack) > currentValue(playerStack.get(0))) {
                     System.out.println("Du hast verloren!");
                     setGameState(GameState.PLAYER_LOST);
                 } else {
@@ -552,7 +512,8 @@ public class GameThread implements Runnable {
         currentThread.interrupt(); // Beende den Thread
     }
 
-    private void checkValue(List<GameCard> cardStack) {
+    private void checkValue(int index) {
+        List<GameCard> cardStack = playerStack.get(index);
         if (currentValue(cardStack) > 21) {
             setGameState(GameState.PLAYER_LOST);
             System.out.println("Bust! Du hast verloren!");
@@ -624,6 +585,54 @@ public class GameThread implements Runnable {
                     break;
             }
             System.out.print("Farbe: " + coat + "\n");
+        }
+
+        public void karteZiehen(int index){
+            while (!cardInput) {
+                //ist nicht vollständig, nachher mit Frontend lösen
+                System.out.println("Willst du noch eine Karte nehmen?(false, true)");
+
+                Scanner c = new Scanner(System.in);
+                String inputString = c.nextLine();
+                try {
+                    if (Boolean.parseBoolean(inputString)) {
+                        card = deck.pop();
+                        playerStack.get(index).add(card);
+                        splitCheck(index);
+                        printCard(card);
+                    } else {
+                        cardInput = true;
+                    }
+                } catch (NumberFormatException e) {
+                    continue;
+                }
+                checkValue(index);
+            }
+        }
+
+        public void splitCheck(int index){
+            checkValue(index);
+            boolean moechteSplit = true;
+            if(playerStack.get(index).get(0).getValue() == playerStack.get(index).get(1).getValue()){
+                while (moechteSplit) {
+                        //ist nicht vollständig, nachher mit Frontend lösen
+                    System.out.println("Willst du deinen Stapel splitten?(false, true)\n");
+                    Scanner c = new Scanner(System.in);
+                    String inputString = c.nextLine();
+                    try {
+                        if (Boolean.parseBoolean(inputString)) {
+                            playerStack.get(1).add(playerStack.get(index).get(1));
+                            playerStack.get(index).remove(1);
+                            splitCount++;
+                        } else {
+                            moechteSplit = false;
+                        }
+                    } catch (NumberFormatException e) {
+                        continue;
+                    }
+                    checkValue(index);
+                }
+            }
         }
 
     // Methode zum Erstellen der Verbindung
