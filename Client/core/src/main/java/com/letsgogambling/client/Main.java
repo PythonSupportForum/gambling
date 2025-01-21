@@ -2,6 +2,7 @@ package com.letsgogambling.client;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -15,11 +16,7 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create() {
-        //Create Assetmanager to handle assets
-        AssetManager manager = new AssetManager();
-        //load assets using manager
-        manager.load("tilotaler.png", Texture.class);
-        manager.load("logo.png", Texture.class);
+       image = new Texture("tilotaler.png");
 
 
         batch = new SpriteBatch();
