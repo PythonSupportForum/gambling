@@ -63,6 +63,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
         </div>
     <?php endif; ?>
 </div>
+
+<div class="main">
+    <?php
+    if($isLoggedIn) {
+        ?>
+        <h1>Hallo Du Huso, <?php echo htmlspecialchars($_SESSION['user']); ?></h1>
+        <?
+    }
+    ?>
+</div>
 <script>
     document.getElementById("Anmelden").onclick = ()=>{
         document.getElementById("Anmelden").classList.add("form");
