@@ -5,7 +5,6 @@ let deltaTime = 0;
 
 let animationObjects = [];
 
-let mouseX, mouseY;
 let backgroundImg = new Image();
 backgroundImg.src = '/../assets/Blackjack.jpg';
 let cardImg2 = new Image();
