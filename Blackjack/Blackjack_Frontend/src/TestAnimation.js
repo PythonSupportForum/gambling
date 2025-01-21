@@ -1,42 +1,168 @@
 let ctx;
-let x,y;
-let mouseX, mouseY;
+
+let last = 0;
+let deltaTime = 0;
+
+let animationObjects = [];
+
 let backgroundImg = new Image();
 backgroundImg.src = '/../assets/Blackjack.jpg';
-let cardImg = new Image();
-cardImg.src = '/../assets/karten/club/2.svg';
-let cardWidth = 132;
-let cardHeight = 200;
+let cardImg2 = new Image();
+cardImg2.src = '../assets/karten/club/2.svg';
+let cardImg3 = new Image();
+cardImg3.src = '../assets/karten/club/3.svg';
+let cardWidth = 66;
+let cardHeight = 100;
+
+let canvas;
+
+const socket = new WebSocket('ws://127.0.0.1:8080');
+let clientID = -1;
+
+// Verbindung geöffnet
+socket.onopen = () => {
+    const text = document.getElementById('Connection Text');
+    text.style.visibility = "visible";
+};
+
+// Nachricht vom Server empfangen
+socket.onmessage = (event) => {
+    console.log(event);
+    const msg = event.data.toString();
+    if(event.data.toString().indexOf('acc') === 0)
+    {
+        clientID = Number(msg.substring(4, msg.length));
+    }
+};
+
+// Fehlerbehandlung
+socket.onerror = (error) => {
+    console.error('WebSocket-Fehler:', error);
+};
+
+// Verbindung geschlossen
+socket.onclose = () => {
+    console.log('Verbindung zum Server geschlossen.');
+};
+
+
+
+window.addEventListener('resize', resizeCanvas);
 
 window.onload = function (){
-    const canvas = document.getElementById("canvas");
+    canvas = document.getElementById("canvas");
+    resizeCanvas();
+
     if (canvas.getContext) {
         ctx = canvas.getContext("2d");
-        [x,y] = [0,ctx.canvas.height/2];
-        canvas.addEventListener('mousemove', function (event) {
-            mouseX = event.clientX - canvas.getBoundingClientRect().left;
-            mouseY = event.clientY - canvas.getBoundingClientRect().top;
-        });
-        ctx.moveTo(x,y);
+
+        last = Date.now();
+
+        animationObjects.push(new animationObject("rgba(255,0,0,0.5)", {startx:canvas.width - 100, starty:canvas.height - 100}, {endx:canvas.width / 2, endy:canvas.height / 2}, 1));
+        animationObjects.push(new animationObject("rgba(0,102,255,0.5)", {startx:100, starty:100}, {endx:canvas.width / 2, endy:canvas.height / 2}, 1));
+        animationObjects.push(new animationObject("rgba(255,250,0,0.5)", {startx:canvas.width - 100, starty:100}, {endx:canvas.width / 2, endy:canvas.height / 2}, 1));
+        animationObjects.push(new animationObject("rgba(255,255,255,0.5)", {startx:100, starty:canvas.height - 100}, {endx:canvas.width / 2, endy:canvas.height / 2}, 1));
+
+        for(let anim of animationObjects){
+            newMoving(anim);
+        }
+
         draw();
     }
 }
 
+function resizeCanvas(){
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+// Frame Generation
 function draw() {
-    ctx.beginPath();
-    ctx.moveTo(x,y);
-    [x,y] = [x + 1, sinVel(x,1)];
-    ctx.lineTo(x, y);
-    ctx.stroke();
-    ctx.closePath();
+    // Malt Hintergrund auf den vorherigen Frame
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    // Zeit zwischen den Frames in Sekunden
+    deltaTime = (Date.now() - last) / 1000;
+    last = Date.now();
+
+    for (let anim of animationObjects){
+        if(anim.moves){
+            sinVel(anim, {x:anim.pos.x, y:anim.pos.y});
+        }
+        else{
+            let temp = anim.startPoint;
+            anim.startPoint = anim.endPoint;
+            anim.endPoint = temp;
+            newMoving(anim);
+        }
+
+        ctx.beginPath();
+        ctx.arc(anim.pos.x, anim.pos.y, 20 , 0, Math.PI * 2);
+        ctx.fillStyle = anim.colour;
+        ctx.fill();
+        ctx.closePath();
+    }
 
     requestAnimationFrame(draw);
 }
 
-function sinVel({x:x1, y:y1}, xstep){
-    let dx = xstep + x1/600;
+// Deklariert eine neue Animation
+function newMoving(anim) {
+    anim.moves = true;
 
-    let rety = Math.sin(dx * Math.PI);
+    anim.dx = (anim.endPoint.x - anim.startPoint.x) / anim.time;
+    anim.dy = (anim.endPoint.y - anim.startPoint.y) / anim.time;
+}
 
-    return rety;
+// Funktion zur Berechnung der nächsten Koordinaten, jedoch mit einer Beschleunigung des Objekts mithilfe einer phasenverschobenen Sinuswelle
+function sinVel(anim){
+
+    // Prozentualer Anteil des Weges der zurückgelegt wurde
+    let part = 1 - ((anim.endPoint.x - anim.pos.x) / (anim.endPoint.x - anim.startPoint.x));
+
+    // Faktor zur Beschleunigung: Die Geschwindigkeit verändert sich im Verlauf einer um 0,1 phasenverschobenen Sinuskurve, ermöglicht weichere Animation
+    part = Math.sin(part * Math.PI) + 0.1;
+
+    let currentDistance = calculateDistance({x1:anim.pos.x, y1:anim.pos.y}, {x2:anim.startPoint.x, y2:anim.startPoint.y});
+    let netDistance = calculateDistance({x1:anim.startPoint.x, y1:anim.startPoint.y}, {x2:anim.endPoint.x, y2:anim.endPoint.y});
+
+    // Test nach Ende der Animation, sonst Verschiebung des Objekts um den Geschwindigkeitswert, angeglichen mit der Zeit zwischen den Frames
+    if(currentDistance < netDistance){
+        anim.pos.x += anim.dx * part * deltaTime;
+        anim.pos.y += anim.dy * part * deltaTime;
+        console.log(currentDistance, netDistance, anim.dx * part * deltaTime);
+    }
+    else{
+        anim.pos.x = anim.endPoint.x;
+        anim.pos.y = anim.endPoint.y;
+        anim.moves = false;
+    }
+}
+
+function calculateDistance({x1, y1}, {x2, y2}) {
+    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+}
+
+class animationObject{
+
+    colour;
+    moves = false;
+    time = 0;
+    startPoint = {x:0,y:0};
+    endPoint = {x:0,y:0};
+    pos = {x:0,y:0};
+    dx = 0;
+    dy = 0;
+
+    constructor(colour, {startx, starty}, {endx, endy}, _time) {
+        this.moves = false;
+        this.time = _time;
+        this.startPoint = {x:startx, y:starty};
+        this.endPoint = {x:endx,y:endy};
+        this.pos = {x:startx,y:starty};
+        this.colour = colour;
+    }
 }
