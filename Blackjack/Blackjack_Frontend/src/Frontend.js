@@ -5,4 +5,3 @@ function handleStartButton() {
     enableButton.style.visibility = "hidden";
     window.location.href = 'Test.html';
 }
-
