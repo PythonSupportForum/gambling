@@ -63,7 +63,6 @@ public class GameServer {
 
                 // Abziehen des Spieleinsatzes
                 int betAmount = 1000;
-                reduceBalance(token, betAmount);
                 recordTransaction(token, -betAmount, "Slots-Einsatz");
 
                 // Starten des Spiels
@@ -72,7 +71,6 @@ public class GameServer {
 
                 if (winAmount > 0) {
                     System.out.println("SLot Gewinn: "+winAmount);
-                    addBalance(token, winAmount);
                     recordTransaction(token, winAmount, "Slots-Gewinn");
                 }
 
