@@ -1,3 +1,4 @@
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -35,6 +36,7 @@ public class GameServer {
         server.start();
     }
     public static void addCORSHeaders(HttpExchange exchange) {
+        //Damit Browser der Aufruf fremder URLs erlaubt wird => HTTP Header Setzen
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
@@ -61,7 +63,6 @@ public class GameServer {
 
                 // Abziehen des Spieleinsatzes
                 int betAmount = 1000;
-                reduceBalance(token, betAmount);
                 recordTransaction(token, -betAmount, "Slots-Einsatz");
 
                 // Starten des Spiels
@@ -70,7 +71,6 @@ public class GameServer {
 
                 if (winAmount > 0) {
                     System.out.println("SLot Gewinn: "+winAmount);
-                    addBalance(token, winAmount);
                     recordTransaction(token, winAmount, "Slots-Gewinn");
                 }
 
@@ -146,32 +146,6 @@ public class GameServer {
                 }
             }
             return 0;
-        }
-
-        private void reduceBalance(String token, int amount) {
-            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                String sql = "UPDATE Kunden SET Kontostand = Kontostand - ? WHERE token = ?";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setInt(1, amount);
-                    stmt.setString(2, token);
-                    stmt.executeUpdate();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        private void addBalance(String token, int amount) {
-            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                String sql = "UPDATE Kunden SET Kontostand = Kontostand + ? WHERE token = ?";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setInt(1, amount);
-                    stmt.setString(2, token);
-                    stmt.executeUpdate();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
 
         private void recordTransaction(String token, int amount, String type) {
@@ -296,7 +270,10 @@ public class GameServer {
 
         private long getBalance(String token) {
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                String sql = "SELECT Kontostand FROM Kunden WHERE token = ?";
+                String sql = "SELECT SUM(t.Betrag) as Kontostand " +
+                        "FROM Transaktionen t " +
+                        "JOIN Kunden k ON t.Kunden_ID = k.id " +
+                        "WHERE k.token = ?";
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, token);
                     try (ResultSet rs = stmt.executeQuery()) {

@@ -1,6 +1,7 @@
 package Slots.Backend.untitled.src.main.java;
 
 import java.io.File;
+import java.sql.*;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -9,29 +10,28 @@ import java.util.Random;
 
 
 
-public class SlotGen{
+public class SlotGen {
 
     //Nutzerbezogende Daten
     public int userID;
     public int einsatz;
-    public int balance;
+    public double balance;
     public boolean valid;
 
     //Verbindung mit Server
     Statement stmt;
     Connection conn;
 
-    //Constructor, dem der Ordner
+    //Constructor, dem der Ordner der Bilddateien, die ID des Spielenden und sein Einsatz übermittelt wird
     public SlotGen(File folder, int id, int pEinsatz) {
-        getSlotArray(File folder);
+        getSlotArray(folder);
         userID = id;
         einsatz = pEinsatz;
 
-        clientDB = getConnection();
+        Connection clientDB = getConnection();
 
-        //Der Kontostand des Nutzers wird aufgerufen und in balance gespeichert
-        String query = "SELECT Kontostand FROM Kunden WHERE id = " + userID;
-        String queryTwo = "SELECT verifiziert FROM Kunden WHERE id = " + userID;
+        //Der Kontostand und die Verifizierung des Nutzers wird aufgerufen und in balance, valid gespeichert
+        String query = "SELECT * FROM Kunden WHERE id = " + userID;
         try{
             assert clientDB != null;
             stmt = clientDB.createStatement();
@@ -39,11 +39,7 @@ public class SlotGen{
             ResultSet rs = stmt.getResultSet();
             rs.next();
             balance = rs.getDouble("Kontostand");
-
-            stmt.executeQuery(queryTwo);
-            rs = stmt.getResultSet();
-            rs.
-
+            valid = rs.getBoolean("verifiziert");
             rs.close();
             stmt.close();
         }
@@ -60,27 +56,7 @@ public class SlotGen{
      * @return Das String-Array.
      */
     public static String[] getSlotArray(File folder) {
-        
-            String[] output = new String[3];
-            Random rand = new Random();
-            File[] files = folder.listFiles();
 
-            for(int i = 0; i<3; i++){
-                assert files != null;
-                output[i] = files[rand.nextInt(files.length)].getPath();
-            }
-
-            return output;
-        }
-    }
-
-    /**
-     *Gibt ein Array mit den Pfaden zu drei zufälligen Bildern zurück.
-     * @return Das String-Array.
-     */
-    public static String[] getSlotArray() {
-
-        folder = new File("slots_icons");
         String[] output = new String[3];
         Random rand = new Random();
         File[] files = folder.listFiles();
@@ -93,8 +69,24 @@ public class SlotGen{
         return output;
     }
 
-    public Connection getConnection(){
-        String addr = "jdbc:mariadb:"
+
+    /**
+     *Gibt ein Array mit den Pfaden zu drei zufälligen Bildern zurück.
+     * @return Das String-Array.
+     */
+    public static String[] getSlotArray() {
+
+        File folder = new File("slots_icons");
+        String[] output = new String[3];
+        Random rand = new Random();
+        File[] files = folder.listFiles();
+
+        for(int i = 0; i<3; i++){
+            assert files != null;
+            output[i] = files[rand.nextInt(files.length)].getPath();
+        }
+
+        return output;
     }
 
     public Connection getConnection() {
@@ -116,4 +108,5 @@ public class SlotGen{
             return null;
         }
     }
+
 }

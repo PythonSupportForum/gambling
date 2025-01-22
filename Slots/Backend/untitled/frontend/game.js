@@ -1,3 +1,35 @@
+async function loadAndSortImages(url) {
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // Extrahiere und dekodiere die Bild-Data-URLs
+        const images = await Promise.all(data.map(async (item, index) => {
+            const img = new Image();
+            img.src = item.bild;
+
+            // Warte, bis das Bild vollständig geladen ist
+            await new Promise((resolve) => {
+                img.onload = resolve;
+            });
+
+            return { img, index };
+        }));
+
+        // Sortiere die Bilder nach Index
+        images.sort((a, b) => a.index - b.index);
+
+        return images.map(item => item.img);
+    } catch (error) {
+        console.error('Fehler beim Laden der Bilder:', error);
+        throw error;
+    }
+}
+
+const url = 'http://localhost:8080/bilder';
+window.bilder = loadAndSortImages(url);
+
+
 async function startGame(token) {
     try {
         const response = await fetch('http://localhost:8080/start-game', {
@@ -156,6 +188,24 @@ window.play = async ()=>{
 
     await updateB();
 
+    const b = await bilder;
+    const canvasContainers = [...document.getElementsByClassName("rad")];
+    for (let i = 0; (i < canvasContainers.length && i < b.length); i++) {
+        let canvas = canvasContainers[i].querySelector('canvas');
+        if (!canvas) {
+            canvas = document.createElement('canvas');
+            canvasContainers[i].appendChild(canvas);
+        }
+        try {
+            const context = canvas.getContext('2d');
+            const img = b[results[i]-1];
+            canvas.width = canvasContainers[i].clientWidth;
+            canvas.height = canvasContainers[i].clientHeight;
+            context.drawImage(img, 0, 0, canvas.width, canvas.height);
+        } catch(e) {
+            console.log(e, i, b, results);
+        }
+    }
 
     document.getElementById("play").disabled = false;
 }
