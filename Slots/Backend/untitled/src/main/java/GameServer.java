@@ -150,32 +150,6 @@ public class GameServer {
             return 0;
         }
 
-        private void reduceBalance(String token, int amount) {
-            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                String sql = "UPDATE Kunden SET Kontostand = Kontostand - ? WHERE token = ?";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setInt(1, amount);
-                    stmt.setString(2, token);
-                    stmt.executeUpdate();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        private void addBalance(String token, int amount) {
-            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                String sql = "UPDATE Kunden SET Kontostand = Kontostand + ? WHERE token = ?";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setInt(1, amount);
-                    stmt.setString(2, token);
-                    stmt.executeUpdate();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
         private void recordTransaction(String token, int amount, String type) {
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
                 String sql = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum, type) VALUES ((SELECT ID FROM Kunden WHERE token = ?), ?, NOW(), ?)";
@@ -298,7 +272,10 @@ public class GameServer {
 
         private long getBalance(String token) {
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                String sql = "SELECT Kontostand FROM Kunden WHERE token = ?";
+                String sql = "SELECT SUM(t.Betrag) as Kontostand " +
+                        "FROM Transaktionen t " +
+                        "JOIN Kunden k ON t.Kunden_ID = k.id " +
+                        "WHERE k.token = ?";
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, token);
                     try (ResultSet rs = stmt.executeQuery()) {
