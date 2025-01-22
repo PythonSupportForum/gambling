@@ -190,7 +190,7 @@ window.play = async ()=>{
 
     const b = await bilder;
     const canvasContainers = [...document.getElementsByClassName("rad")];
-    async function animateWheel(canvas, context, images, duration, finalImageIndexPromise) {
+    async function animateWheel(canvas, context, images, duration, finalImageIndexPromise, onIrre = ()=>{}) {
         let finalImageIndex = -1;
         finalImageIndexPromise.then(i => {
             finalImageIndex = i;
@@ -204,117 +204,27 @@ window.play = async ()=>{
         let speed = 0;
         let fertig = false;
 
-        let randomFaktor = 0;
         let randomReachSpeed = Math.random()*50;
-
-        let wackeln = 1;
-        let wechselTo = -1;
-        let endZiel = null;
 
         function step(timestamp) {
             if (!startTime) startTime = timestamp;
             const elapsed = timestamp - startTime;
-            let vorherSpeed = speed;
-            if(randomReachSpeed < 3000 && wackeln > 0.95) speed += 0.1;
-            if(elapsed < 2000 && wackeln > 0.95) speed += speed < randomReachSpeed ? 0.3 : -0.3;
-            if(elapsed < 5000 || finalImageIndex < 0) {
-                if((!finalImageIndex || elapsed < duration) && speed < maxSpeed) {
-                    speed += Math.min(Math.max(Math.abs(duration-elapsed)/50000, 0.2), 1);
-                } else if(finalImageIndex) {
-                    const zielOffset = finalImageIndex*imageHeight;
-                    speed += currentOffset > zielOffset ? -0.3 : 0.2;
-                    if((elapsed/duration > 3) && speed > 0 && currentOffset > zielOffset) speed -= Math.abs(Math.max(speed/(50*(elapsed/duration)), 0.5));
-                    if((elapsed/duration > 2) && speed > 0 && currentOffset > zielOffset) speed -= Math.abs(speed/(50*(elapsed/duration)));
-                    if(Math.abs(speed) < 1 && Math.round(currentOffset) < Math.round(zielOffset)+1 && Math.round(currentOffset) > Math.round(zielOffset)-1) {
-                        setTimeout(()=>{
-                            fertig = true;
-                        }, 5000);
-                    }
-                    if(elapsed/duration > 3) {
-                        if((elapsed/duration)%2 < 1 && speed < 0) speed -= 0.2;
-                        if((elapsed/duration)%2 >= 1 && speed > 0) speed -= 0.2;
-                    }
-                    if(elapsed/duration > 5) {
-                        if(speed > 10) {
-                            speed -= 1;
-                        } else if(speed < -10) {
-                            speed += 1;
-                        } else if(Math.abs(speed) < 11) {
-                            speed += speed > 0 ? -0.5 : 0.5;
-                        } else if(Math.abs(speed) < 1) {
-                            speed += currentOffset > zielOffset ? -0.3 : 0.2;
-                        }
-                    }
-                    if(elapsed/duration > 10 && Math.abs(speed) > 10) {
-                        speed -= randomFaktor;
-                        randomFaktor += Math.random()*0.01;
-                        if(randomFaktor > 1) randomFaktor -= Math.random();
-                    }
-                } else speed -= (speed/100);
-                console.log("A");
-            } else if(Math.abs(speed) > 10) {
-                console.log("B");
-                speed += (speed > 0 ? -0.5 : 0.5)/(elapsed/5000);
-            } else if(!fertig) {
-                const zielOffset = (finalImageIndex*imageHeight)%(totalImages*imageHeight);
-                if(!endZiel) endZiel = currentOffset;
-                if((Math.abs(zielOffset-endZiel)%(totalImages*imageHeight)) > 10) {
-                    for(let i = 1500; i < elapsed; i += 1000) {
-                        const vorwaertsAbstand = (zielOffset - currentOffset + totalImages * imageHeight) % (totalImages * imageHeight);
-                        const rueckwaertsAbstand = (currentOffset - zielOffset + totalImages * imageHeight) % (totalImages * imageHeight);
-                        const richtung = vorwaertsAbstand <= rueckwaertsAbstand ? 1 : -1;
-                        currentOffset += -richtung*((zielOffset-endZiel)%(totalImages*imageHeight))/100;
-                        speed -= speed/100;
-                    }
-                }
-                if(Math.abs(currentOffset - zielOffset) < 10 && elapsed > 12000 && Math.abs(speed) < 1.8) fertig = true;
-                if(Math.abs(speed) > 3.5) {
-                    console.log("D");
-                    speed += ((speed > 0 ? -1 : 1) * ((Math.abs(currentOffset - zielOffset) < 2 * imageHeight) ? 1.5 : 0.5))/(elapsed/5000);
-                    if(elapsed > 21000 && elapsed < 22000 && speed > -1000) speed -= 10;
-                } else if(Math.abs(speed) > 5) {
-                    console.log("E", speed);
-                    speed += (speed > 0 ? -0.35 : 0.2)/(elapsed/5000);
-                    speed += (currentOffset > zielOffset ? -0.86 : 0.4)/(elapsed/20000);
-                    if(elapsed > 20000 && elapsed < 30000 && Math.abs(currentOffset-zielOffset) > 50) speed += speed > 0 ? -0.95 : 0.9;
-                } else {
-                    speed += ((((zielOffset-currentOffset) < 0 ? -1 : 1 )*Math.abs(1-speed))/(elapsed/1000))*wackeln;
-                    wackeln *= 1.06;
 
-                    let maxSpeed = 10;
-                    if (Math.abs(speed) > maxSpeed) {
-                        speed = maxSpeed * Math.sign(speed);
-                    } else if (elapsed > 20000) {
-                        speed *= 0.995;
-                    }
-                }
-                if(elapsed > 10000 && elapsed < 15000 && Math.abs(zielOffset-currentOffset) > 100 && wechselTo < 0) {
-                    if(Math.random() < 0.2) {
-                        wechselTo = Math.random() < 0.5 ? 1 : 2;
-                    } else {
-                        wechselTo = speed > 0 ? 1 : 2;
-                    }
-                    console.log("AUSLÖSEN VON WECHSEL!!!!");
-                }
-                if(elapsed > 20000 && elapsed < 25000 && Math.abs(zielOffset-currentOffset) > 100 && wechselTo < 0) {
-                    wechselTo = speed > 0 ? 1 : 2;
-                }
-                if(elapsed > 28000 && elapsed < 29000 && Math.abs(zielOffset-currentOffset) > 100 && wechselTo < 0) {
-                    speed -= 5;
-                }
-                if(wechselTo === 1 && speed > -5) speed -= 0.5;
-                else if(wechselTo === 2 && speed < 5) speed += 0.5;
-                else if(elapsed > 13000) wechselTo = -1;
+            if(finalImageIndex < 0 || elapsed < duration) {
+                if(speed < 100) speed += 0.2;
+                if(speed < randomReachSpeed) speed += 0.1;
+            } else {
+                let ziel = finalImageIndex*imageHeight;
+                if(ziel < currentOffset-0.1) ziel += totalImages*imageHeight;
 
+                const strecke = ziel-currentOffset;
+                let speedProTime = strecke/1000;
+                if(Math.abs(speedProTime) < 5) speedProTime *= 10;
+
+                speed += speedProTime-speed > 0 ? 0.05 : -0.05;
             }
-            const diff = speed-vorherSpeed;
-            speed = vorherSpeed+diff/Math.min(Math.max(elapsed/300, 30), 5);
 
-            if(elapsed < 14000) currentOffset = (currentOffset+speed)%(totalImages*imageHeight);
-            else {
-                currentOffset += speed;
-                endZiel = currentOffset%(totalImages*imageHeight);
-            }
+            currentOffset = (currentOffset+speed)%(totalImages*imageHeight);
 
             context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -322,10 +232,11 @@ window.play = async ()=>{
 
             const startIndex = Math.floor((currentOffset%(totalImages*imageHeight)) / imageHeight) % totalImages;
 
+            let realOffset = currentOffset;
             for (let i = 0; i < 2; i++) {
                 try {
                     const imageIndex = (startIndex + i) % totalImages;
-                    const yOffset = (currentOffset%(totalImages*imageHeight)) % imageHeight - i * imageHeight;
+                    const yOffset = (realOffset%(totalImages*imageHeight)) % imageHeight - i * imageHeight;
                     if(images[imageIndex]) {
                         context.drawImage(
                             images[imageIndex],
@@ -358,9 +269,8 @@ window.play = async ()=>{
 
         requestAnimationFrame(step);
     }
+
     for (let i = 0; i < canvasContainers.length && i < b.length; i++) {
-
-
         let canvas = canvasContainers[i].querySelector("canvas");
         if (!canvas) {
             canvas = document.createElement("canvas");
@@ -374,7 +284,10 @@ window.play = async ()=>{
             await animateWheel(canvas, context, b, 1000*(2+(3-i)*0.2+Math.random()), new Promise(async (resolve) => {
                 const results = await ergebnisPromise;
                 resolve(results[i]-1);
-            }));
+            }), ()=>{
+                canvasContainers[i].classList.add("irre");
+                play();
+            });
         } catch (e) {
             console.log(e, i, b);
         }

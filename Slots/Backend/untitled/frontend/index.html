@@ -126,6 +126,16 @@
                 font-size: 100px;
                 position: relative;
                 overflow: hidden;
+                transition: all 500s;
+            }
+            .machine-container .machine > .row > .rad.irre {
+                transform: rotate3d(1, 1, 1, 4500deg) scale(5.5) translateZ(40px);
+            }
+            .machine-container .machine > .row > .rad.irre:hover {
+                opacity: 0.5;
+            }
+            .machine-container .machine > .row > .rad.irre:hover canvas {
+                background-color: pink !important;
             }
             .machine-container .machine > .row > .rad canvas {
                 position: absolute;
