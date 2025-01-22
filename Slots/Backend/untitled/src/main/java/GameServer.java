@@ -1,3 +1,4 @@
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -35,6 +36,7 @@ public class GameServer {
         server.start();
     }
     public static void addCORSHeaders(HttpExchange exchange) {
+        //Damit Browser der Aufruf fremder URLs erlaubt wird => HTTP Header Setzen
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");

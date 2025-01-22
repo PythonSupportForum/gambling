@@ -124,6 +124,15 @@
                 align-items: center;
                 padding: 12px;
                 font-size: 100px;
+                position: relative;
+                overflow: hidden;
+            }
+            .machine-container .machine > .row > .rad canvas {
+                position: absolute;
+                top: 0;
+                left:0;
+                height: 100%;
+                width: 100%;
             }
             .machine-container .machine > .c {
                 width: 100%;
@@ -160,12 +169,18 @@
                         <span class="b">One Rount Only 4TT</span>
                     </div>
                     <div class="row">
-                        <div class="rad">x</div>
-                        <div class="rad">x</div>
-                        <div class="rad">x</div>
+                        <div class="rad">
+                            <span>x</span>
+                        </div>
+                        <div class="rad">
+                            <span>x</span>
+                        </div>
+                        <div class="rad">
+                            <span>x</span>
+                        </div>
                     </div>
                     <div class="c">
-                        <button id="play" onclick="play();">Rolle NOW</button>
+                        <button id="play" onclick="play();">Roll NOW</button>
                     </div>
                 </div>
                 <div class="balance" id="balance">---</div>
