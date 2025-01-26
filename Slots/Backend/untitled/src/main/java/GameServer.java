@@ -80,7 +80,7 @@ public class GameServer {
                 HashMap<String, Object> response = new HashMap<>();
                 response.put("message", winAmount > 0 ? "Gewonnen!" : "Verloren!");
                 response.put("results", results);
-                response.put("winAmount", winAmount);
+                response.put("winAmount", winAmount-betAmount);
 
                 sendJsonResponse(exchange, 200, response);
             } else {

@@ -105,6 +105,7 @@ window.updateB = async ()=>{
     } catch(e) {
         console.log(e);
     }
+    isU = false;
     if(nU) updateB().then(()=>{});
 }
 function startConfetti() {
@@ -178,32 +179,117 @@ window.play = async ()=>{
     console.log("Start Game...");
     document.getElementById("play").disabled = true;
 
-    const {results, winAmount} = await  startGame(token);
-
-    if(winAmount > 0) {
-        startConfetti();
+    const gamePromise = async () => {
+        const {results, winAmount} = await  startGame(token);
+        if(winAmount > 0) startConfetti();
+        console.log("R:", {results, winAmount});
+        await updateB();
+        return results;
     }
-
-    console.log("R:", {results, winAmount});
-
-    await updateB();
+    const ergebnisPromise = gamePromise();
 
     const b = await bilder;
     const canvasContainers = [...document.getElementsByClassName("rad")];
-    for (let i = 0; (i < canvasContainers.length && i < b.length); i++) {
-        let canvas = canvasContainers[i].querySelector('canvas');
+    async function animateWheel(canvas, context, images, duration, finalImageIndexPromise, onIrre = ()=>{}) {
+        let finalImageIndex = -1;
+        finalImageIndexPromise.then(i => {
+            finalImageIndex = i;
+            console.log("GOT INDEX:", i);
+        });
+        const imageHeight = canvas.height;
+        const totalImages = images.length;
+        let startTime = null;
+        let currentOffset = 0;
+        const maxSpeed = 20;
+        let speed = 0;
+        let fertig = false;
+
+        let randomReachSpeed = Math.random()*50;
+
+        function step(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const elapsed = timestamp - startTime;
+
+            if(finalImageIndex < 0 || elapsed < duration) {
+                if(speed < 100) speed += 0.2;
+                if(speed < randomReachSpeed) speed += 0.1;
+            } else {
+                let ziel = finalImageIndex*imageHeight;
+                if(ziel < currentOffset-0.1) ziel += totalImages*imageHeight;
+
+                const strecke = ziel-currentOffset;
+                let speedProTime = strecke/1000;
+                if(Math.abs(speedProTime) < 5) speedProTime *= 10;
+
+                speed += speedProTime-speed > 0 ? 0.05 : -0.05;
+            }
+
+            currentOffset = (currentOffset+speed)%(totalImages*imageHeight);
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            if(currentOffset < 0) currentOffset += (totalImages*imageHeight);
+
+            const startIndex = Math.floor((currentOffset%(totalImages*imageHeight)) / imageHeight) % totalImages;
+
+            let realOffset = currentOffset;
+            for (let i = 0; i < 2; i++) {
+                try {
+                    const imageIndex = (startIndex + i) % totalImages;
+                    const yOffset = (realOffset%(totalImages*imageHeight)) % imageHeight - i * imageHeight;
+                    if(images[imageIndex]) {
+                        context.drawImage(
+                            images[imageIndex],
+                            0,
+                            yOffset,
+                            canvas.width,
+                            canvas.height
+                        );
+                    } else {
+                        console.log("Error!", imageIndex, images);
+                    }
+                } catch(e) {
+                    console.log(e);
+                }
+            }
+
+            if (!fertig) {
+                requestAnimationFrame(step);
+            } else {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(
+                    images[finalImageIndex],
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height
+                );
+            }
+        }
+
+        requestAnimationFrame(step);
+    }
+
+    for (let i = 0; i < canvasContainers.length && i < b.length; i++) {
+        let canvas = canvasContainers[i].querySelector("canvas");
         if (!canvas) {
-            canvas = document.createElement('canvas');
+            canvas = document.createElement("canvas");
             canvasContainers[i].appendChild(canvas);
         }
         try {
-            const context = canvas.getContext('2d');
-            const img = b[results[i]-1];
+            const context = canvas.getContext("2d");
             canvas.width = canvasContainers[i].clientWidth;
             canvas.height = canvasContainers[i].clientHeight;
-            context.drawImage(img, 0, 0, canvas.width, canvas.height);
-        } catch(e) {
-            console.log(e, i, b, results);
+
+            await animateWheel(canvas, context, b, 1000*(2+(3-i)*0.2+Math.random()), new Promise(async (resolve) => {
+                const results = await ergebnisPromise;
+                resolve(results[i]-1);
+            }), ()=>{
+                canvasContainers[i].classList.add("irre");
+                play();
+            });
+        } catch (e) {
+            console.log(e, i, b);
         }
     }
 
