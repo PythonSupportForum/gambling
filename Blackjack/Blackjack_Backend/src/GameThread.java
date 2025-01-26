@@ -32,6 +32,8 @@ public class GameThread implements Runnable {
     boolean exchangeInput;
     boolean betInput;
     boolean insuranceInput = false;
+    boolean wantsDoubleDown;
+    boolean doubleDown;
 
     boolean[] cardInput = new boolean[4];
 
@@ -295,8 +297,9 @@ public class GameThread implements Runnable {
             cardInput[1] = false;
             cardInput[2] = false;
             cardInput[3] = false;
-
+            wantsDoubleDown = false;
             wantsExchange = false;
+            doubleDown = false;
 
             for(ArrayList<GameCard> stack : playerStack){
                 stack.clear();
@@ -419,14 +422,36 @@ public class GameThread implements Runnable {
             playerStack.get(0).add(card);
             printCard(card);
 
-            // Main Split Logic
-            splitCheck(0);
-            for(int i = 0; i <= splitCount; i++) {
-                karteZiehen(i);
+            if((balance - bet) < 0) { wantsDoubleDown = true;}
+            while (!wantsDoubleDown) {
+                System.out.println("Willst du einen DoubleDown machen?(false, true)(1. Stapel)");
+                Scanner c = new Scanner(System.in);
+                String inputString = c.nextLine();
+                try {
+                    if (Boolean.parseBoolean(inputString)) {
+                        card = deck.pop();
+                        playerStack.get(0).add(card);
+                        printCard(card);
+                        balance -= bet;
+                        bet *= 2;
+                        wantsDoubleDown = true;
+                        doubleDown = true;
+                        checkGameState();
+                        setGameState(GameState.GAME_END);
+                    } else {
+                        wantsDoubleDown = true;
+                    }
+                } catch (NumberFormatException e) {
+                    continue;
+                }
             }
 
             if (getGameState() == GameState.PLAYER_DRAW) {
-
+                // Main Split Logic
+                splitCheck(0);
+                for(int i = 0; i <= splitCount; i++) {
+                    karteZiehen(i);
+                }
                 setGameState(GameState.DEALER_DRAW);
 
                 int total = 0;
@@ -459,35 +484,9 @@ public class GameThread implements Runnable {
                         aceCounter -= 1; // Ass Counter einen herabsetzen
                     }
                 }
+                //Methode zur Bestimmung wer gewonnen oder verloren hat nach unten ausgelagert
+                checkGameState();
             }
-
-
-            if (insuranceBet > 0 && dealerStack.get(0).getValue() == 'a') {
-                coins += insuranceBet;
-                System.out.println("Du hast den Insurance Bet erhalten!");
-            }
-
-            for(int i = 0; i <= splitCount; i++) {
-                ArrayList<GameCard> a = new ArrayList<>();
-                if (currentValue(dealerStack) < currentValue(playerStack.get(i))) {
-                    System.out.println("Auf Stapel " + (i + 1) + " hast du gewonnen!");
-                    coins += 2 * bet;
-                    states.put(a, StackState.WON);
-                    System.out.println("Du hast " + bet + " Coins gewonnen");
-                } else if(currentValue(dealerStack) == currentValue(playerStack.get(i))){
-                    System.out.println("Push auf Stapel " + (i + 1) + "!");
-                    coins += bet;
-                    states.put(a, StackState.PUSH);
-                    System.out.println("Du hast " + bet + " Coins zurück erhalten!");
-                } else if (currentValue(dealerStack) > currentValue(playerStack.get(i))) {
-                    System.out.println("Du hast auf Stapel " + (i + 1) + " verloren!");
-                    System.out.println("Du hast " + bet + " Coins verloren!");
-                    states.put(a, StackState.LOST);
-                } else {
-                    System.out.println("Ups??!? Ein Fehler ist aufgetreten!");
-                }
-            }
-            setGameState(GameState.GAME_END);
 
             while(true){
                 System.out.println("Aufhören?(true, false)");
@@ -647,7 +646,35 @@ public class GameThread implements Runnable {
                 }
             }
         }
+        public void checkGameState(){
 
+            if (insuranceBet > 0 && dealerStack.get(0).getValue() == 'a') {
+                coins += insuranceBet;
+                System.out.println("Du hast den Insurance Bet erhalten!");
+            }
+
+            for(int i = 0; i <= splitCount; i++) {
+                ArrayList<GameCard> a = new ArrayList<>();
+                if (currentValue(dealerStack) < currentValue(playerStack.get(i))) {
+                    System.out.println("Auf Stapel " + (i + 1) + " hast du gewonnen!");
+                    coins += 2 * bet;
+                    states.put(a, StackState.WON);
+                    System.out.println("Du hast " + bet + " Coins gewonnen");
+                } else if(currentValue(dealerStack) == currentValue(playerStack.get(i))){
+                    System.out.println("Push auf Stapel " + (i + 1) + "!");
+                    coins += bet;
+                    states.put(a, StackState.PUSH);
+                    System.out.println("Du hast " + bet + " Coins zurück erhalten!");
+                } else if (currentValue(dealerStack) > currentValue(playerStack.get(i))) {
+                    System.out.println("Du hast auf Stapel " + (i + 1) + " verloren!");
+                    System.out.println("Du hast " + bet + " Coins verloren!");
+                    states.put(a, StackState.LOST);
+                } else {
+                    System.out.println("Ups??!? Ein Fehler ist aufgetreten!");
+                }
+            }
+            setGameState(GameState.GAME_END);
+        }
     // Methode zum Erstellen der Verbindung
     public static Connection getConnection() {
         // Verknüpfung zur Datenbank
