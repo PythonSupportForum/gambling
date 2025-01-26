@@ -6,10 +6,14 @@ let deltaTime = 0;
 let stationaryObjects = [];
 let animationObjects = [];
 
+let dealerStack = [];
+let playerStack = [];
+
 let growFactor = 0.7;
 let cardWidth = 200;
 let cardHeight = 300;
 
+// region Assets
 let toLoad = {
     "a_c": "https://gambling.megdb.de/assets/karten/club/A.svg",
     "2_c": "https://gambling.megdb.de/assets/karten/club/2.svg",
@@ -65,9 +69,12 @@ let toLoad = {
     "10_s": "https://gambling.megdb.de/assets/karten/spade/10.svg",
     "j_s": "https://gambling.megdb.de/assets/karten/spade/J.svg",
     "q_s": "https://gambling.megdb.de/assets/karten/spade/Q.svg",
-    "k_s": "https://gambling.megdb.de/assets/karten/spade/K.svg"
-}
+    "k_s": "https://gambling.megdb.de/assets/karten/spade/K.svg",
 
+    "back": "https://gambling.megdb.de/assets/Kartenrücken.png",
+    "table": "https://gambling.megdb.de/assets/table.png"
+}
+// endregion
 
 
 window.imgData = {};
@@ -99,6 +106,8 @@ const loader = async ()=>{
 window.bilder = loader();
 
 let canvas;
+
+let b;
 
 const socket = new WebSocket('ws://127.0.0.1:8080');
 let clientID = -1;
@@ -137,20 +146,31 @@ window.onload = async function (){
     canvas = document.getElementById("canvas");
     resizeCanvas();
 
+    document.getElementById("button").addEventListener("click", reveal);
+
     if (canvas.getContext) {
         ctx = canvas.getContext("2d");
 
         last = Date.now();
 
-        const b = (await bilder);
+        b = (await bilder);
 
-        animationObjects.push(new animationObject(b.a_c, {startx:canvas.width - 100, starty:canvas.height - 100}, {endx:canvas.width / 2, endy:canvas.height / 2}, 0.5));
+        let temp = new GameCard(b.a_s, "spades", "a")
+        playerStack.push(temp);
+        animationObjects.push(new animationObject(temp.img, {startx:canvas.width - 100, starty:canvas.height - 100},
+            {endx:canvas.width / 2, endy:canvas.height / 2}, 0.5, false));
 
         for(let anim of animationObjects){
             newMoving(anim);
         }
 
         draw();
+    }
+}
+
+function reveal(){
+    for (let index = 0; index < stationaryObjects.length; ++index) {
+        stationaryObjects[index].flipping = true;
     }
 }
 
@@ -164,8 +184,7 @@ function resizeCanvas(){
 // Frame Generation
 function draw() {
     // Malt Hintergrund auf den vorherigen Frame
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.drawImage(b.table, 0, 0, ctx.canvas.width, ctx.canvas.height);
 
     // Zeit zwischen den Frames in Sekunden
     deltaTime = (Date.now() - last) / 1000;
@@ -177,17 +196,50 @@ function draw() {
             sinVel(anim, {x:anim.pos.x, y:anim.pos.y});
         }
         else{
-            let temp = animationObjects[i];
-            stationaryObjects.push(new stationaryObject(temp.img, {posx:temp.pos.x, posy:temp.pos.y}));
+            stationaryObjects.push(new stationaryObject(anim.img, {posx:anim.pos.x, posy:anim.pos.y}, anim.rev));
+            animationObjects.splice(i, 1);
         }
 
-        ctx.drawImage(anim.img, anim.pos.x - (growFactor * cardWidth) / 2, anim.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth, growFactor * cardHeight);
+        if(anim.rev){
+            ctx.drawImage(anim.img, anim.pos.x - (growFactor * cardWidth) / 2, anim.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth, growFactor * cardHeight);
+        }
+        else{
+            ctx.drawImage(b.back, anim.pos.x - (growFactor * cardWidth) / 2, anim.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth, growFactor * cardHeight);
+        }
     }
 
     for(let i = 0; i < stationaryObjects.length; i++) {
-        console.log(stationaryObjects.length);
         let stat = stationaryObjects[i];
-        ctx.drawImage(stat.img, stat.pos.x - (growFactor * cardWidth) / 2, stat.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth, growFactor * cardHeight);
+        if (stat.flipping) {
+            if (stat.rev) {
+                stat.width += 1000 * deltaTime;
+                console.log("true",stat.width,stat.height);
+
+                if (stat.width >= cardWidth) {
+                    stat.flipping = false;
+                    stat.width = cardWidth;
+                }
+
+                ctx.drawImage(stat.img, stat.pos.x - (growFactor * stat.width) / 2, stat.pos.y - (growFactor * cardHeight) / 2, growFactor * stat.width, growFactor * cardHeight);
+            } else {
+                stat.width -= 1000 * deltaTime;
+                console.log("false",stat.width);
+
+                if (stat.width <= 0) {
+                    stat.rev = true;
+                    stat.width = 1;
+                }
+
+                ctx.drawImage(b.back, stat.pos.x - (growFactor * stat.width) / 2, stat.pos.y - (growFactor * cardHeight) / 2, growFactor * stat.width, growFactor * cardHeight);
+            }
+        }
+        else {
+            if (stat.rev) {
+                ctx.drawImage(stat.img, stat.pos.x - (growFactor * cardWidth) / 2, stat.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth, growFactor * cardHeight);
+            } else {
+                ctx.drawImage(b.back, stat.pos.x - (growFactor * cardWidth) / 2, stat.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth, growFactor * cardHeight);
+            }
+        }
     }
 
     requestAnimationFrame(draw);
@@ -230,9 +282,9 @@ function calculateDistance({x1, y1}, {x2, y2}) {
 }
 
 class animationObject{
-
     img;
     moves = false;
+    rev;
     time = 0;
     startPoint = {x:0,y:0};
     endPoint = {x:0,y:0};
@@ -240,22 +292,40 @@ class animationObject{
     dx = 0;
     dy = 0;
 
-    constructor(img, {startx, starty}, {endx, endy}, _time) {
+    constructor(img, {startx, starty}, {endx, endy}, _time, rev) {
         this.moves = false;
         this.time = _time;
         this.startPoint = {x:startx, y:starty};
         this.endPoint = {x:endx,y:endy};
         this.pos = {x:startx,y:starty};
         this.img = img;
+        this.rev = rev;
     }
 }
 
 class stationaryObject{
     img;
     pos = {x:0,y:0}
+    rev;
+    flipping = false;
+    width = cardWidth;
+    height = cardHeight;
 
-    constructor(img, {posx, posy}) {
+    constructor(img, {posx, posy}, rev) {
         this.img = img;
         this.pos = {x:posx, y:posy};
+        this.rev = rev;
+    }
+}
+
+class GameCard{
+    img;
+    coat;
+    val;
+
+    constructor(img, coat, val) {
+        this.img = img;
+        this.coat = coat;
+        this.val = val;
     }
 }
