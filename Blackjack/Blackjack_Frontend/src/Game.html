@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blackjack | Let's go Gambling!</title>
+  <link rel="stylesheet" href="Frontend.css">
+  <link rel="stylesheet" href="../../Startseite/Startseite/src/Startseite.css">
+  <link rel="apple-touch-icon" sizes="180x180" href="../../Startseite/Startseite/assets/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../Startseite/Startseite/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../Startseite/Startseite/assets/favicon-16x16.png">
+  <script src="Frontend.js"></script>
+  <script src="messages.js"></script>
+</head>
+  <body>
+    <div class="container">
+      <h1>Blackjack Online</h1>
+      <p>Ein SPiel von Carli Göb für den Informatik Unterricht bei Herrn Engels!</p>
+      <button id="startGameButton">Start Game</button>
+    </div>
+    <div class="GameContainer" id="GameContainer">
+      <div class="elements-container">
+        <div class="overlay" id="overlay"></div>
+        <div class="message-container">
+          <div class="message-box" id="messageBox"></div>
+        </div>
+        <div class="buttons">
+          <button id="button">reveal</button>
+        </div>
+        <canvas id="canvas"></canvas>
+      </div>
+    </div>
+  </body>
+</html>

@@ -6,9 +6,6 @@ let deltaTime = 0;
 let stationaryObjects = [];
 let animationObjects = [];
 
-let dealerStack = [];
-let playerStack = [];
-
 let growFactor = 0.7;
 let cardWidth = 200;
 let cardHeight = 300;
@@ -76,7 +73,6 @@ let toLoad = {
 }
 // endregion
 
-
 window.imgData = {};
 const loader = async ()=>{
     if(Object.keys(toLoad).length === 0) return;
@@ -92,15 +88,12 @@ const loader = async ()=>{
             await loader();
             resolve(imgData);
         };
-
         i.onerror = async()=>{
             console.log("Müllen", i.src);
             await loader();
             resolve(imgData);
         }
-    })
-
-
+    });
 }
 
 window.bilder = loader();
@@ -141,7 +134,6 @@ socket.onclose = () => {
 
 
 window.addEventListener('resize', resizeCanvas);
-
 window.onload = async function (){
     canvas = document.getElementById("canvas");
     resizeCanvas();
@@ -150,19 +142,7 @@ window.onload = async function (){
 
     if (canvas.getContext) {
         ctx = canvas.getContext("2d");
-
         last = Date.now();
-
-        b = (await bilder);
-
-        let temp = new GameCard(b.a_s, "spades", "a")
-        playerStack.push(temp);
-        animationObjects.push(new animationObject(temp.img, {startx:canvas.width - 100, starty:canvas.height - 100},
-            {endx:canvas.width / 2, endy:canvas.height / 2}, 0.5, false));
-
-        for(let anim of animationObjects){
-            newMoving(anim);
-        }
 
         draw();
     }
@@ -182,54 +162,47 @@ function resizeCanvas(){
 }
 
 // Frame Generation
-function draw() {
-    // Malt Hintergrund auf den vorherigen Frame
-    ctx.drawImage(b.table, 0, 0, ctx.canvas.width, ctx.canvas.height);
 
-    // Zeit zwischen den Frames in Sekunden
+window.gameDrawThreads = {};
+window.addDrawingThread = (callback = ()=>{}) => {
+    const id = Math.random().toString();
+    gameDrawThreads[id] = callback;
+    return {remove: ()=>delete gameDrawThreads[id]};
+};
+
+function draw() {
     deltaTime = (Date.now() - last) / 1000;
     last = Date.now();
+    Object.values(gameDrawThreads).forEach(c => c(ctx));
 
     for (let i = 0; i < animationObjects.length; i++){
-        let anim  = animationObjects[i];
-        if(anim.moves){
-            sinVel(anim, {x:anim.pos.x, y:anim.pos.y});
-        }
-        else{
+        let anim = animationObjects[i];
+        if(anim.moves) sinVel(anim, {x:anim.pos.x, y:anim.pos.y});
+        else {
             stationaryObjects.push(new stationaryObject(anim.img, {posx:anim.pos.x, posy:anim.pos.y}, anim.rev));
             animationObjects.splice(i, 1);
         }
-
-        if(anim.rev){
-            ctx.drawImage(anim.img, anim.pos.x - (growFactor * cardWidth) / 2, anim.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth, growFactor * cardHeight);
-        }
-        else{
-            ctx.drawImage(b.back, anim.pos.x - (growFactor * cardWidth) / 2, anim.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth, growFactor * cardHeight);
-        }
+        if(anim.rev) ctx.drawImage(anim.img, anim.pos.x - (growFactor * cardWidth) / 2, anim.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth, growFactor * cardHeight);
+        else ctx.drawImage(b.back, anim.pos.x - (growFactor * cardWidth) / 2, anim.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth, growFactor * cardHeight);
     }
-
     for(let i = 0; i < stationaryObjects.length; i++) {
         let stat = stationaryObjects[i];
         if (stat.flipping) {
             if (stat.rev) {
                 stat.width += 1000 * deltaTime;
                 console.log("true",stat.width,stat.height);
-
                 if (stat.width >= cardWidth) {
                     stat.flipping = false;
                     stat.width = cardWidth;
                 }
-
                 ctx.drawImage(stat.img, stat.pos.x - (growFactor * stat.width) / 2, stat.pos.y - (growFactor * cardHeight) / 2, growFactor * stat.width, growFactor * cardHeight);
             } else {
                 stat.width -= 1000 * deltaTime;
                 console.log("false",stat.width);
-
                 if (stat.width <= 0) {
                     stat.rev = true;
                     stat.width = 1;
                 }
-
                 ctx.drawImage(b.back, stat.pos.x - (growFactor * stat.width) / 2, stat.pos.y - (growFactor * cardHeight) / 2, growFactor * stat.width, growFactor * cardHeight);
             }
         }
@@ -241,14 +214,12 @@ function draw() {
             }
         }
     }
-
     requestAnimationFrame(draw);
 }
 
 // Deklariert eine neue Animation
 function newMoving(anim) {
     anim.moves = true;
-
     anim.dx = (anim.endPoint.x - anim.startPoint.x) / anim.time;
     anim.dy = (anim.endPoint.y - anim.startPoint.y) / anim.time;
 }
@@ -281,18 +252,8 @@ function calculateDistance({x1, y1}, {x2, y2}) {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
-class animationObject{
-    img;
-    moves = false;
-    rev;
-    time = 0;
-    startPoint = {x:0,y:0};
-    endPoint = {x:0,y:0};
-    pos = {x:0,y:0};
-    dx = 0;
-    dy = 0;
-
-    constructor(img, {startx, starty}, {endx, endy}, _time, rev) {
+class animationObject {
+    constructor(img, {x: startx, y: starty}, {x: endx, y: endy}, _time, rev) {
         this.moves = false;
         this.time = _time;
         this.startPoint = {x:startx, y:starty};
@@ -300,6 +261,9 @@ class animationObject{
         this.pos = {x:startx,y:starty};
         this.img = img;
         this.rev = rev;
+    }
+    update() {
+
     }
 }
 
@@ -318,14 +282,17 @@ class stationaryObject{
     }
 }
 
-class GameCard{
-    img;
-    coat;
-    val;
+window.GameCard = class GameCard {
 
-    constructor(img, coat, val) {
+    constructor(img, coat, val, pos = {x: -200, y: -200}) {
         this.img = img;
         this.coat = coat;
         this.val = val;
+        this.pos = pos
+    }
+    moveTo(posTo, time = 0.5) {
+        const a = new animationObject(this.img, this.pos, posTo, time, false);
+        newMoving(a);
+        animationObjects.push(a);
     }
 }
