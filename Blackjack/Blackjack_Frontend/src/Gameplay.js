@@ -110,6 +110,10 @@ const showZweiDealerKarten = async ()=>{
     console.log("SHOW:", b["4_d"]);
 
     dealerLinkerStappel.getOberste().changeSide(b["4_d"]);
+
+    console.log("Dealer hat gezogen!");
+
+    
 }
 
 
