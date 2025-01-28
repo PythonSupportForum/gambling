@@ -1,0 +1,18 @@
+-Ziel des Spiels: Erreiche eine Hand mit einem Wert von 21 oder so nah wie möglich an 21, ohne diese Zahl zu überschreiten.
+-Kartenwerte:
+  - Zahlenkarten (2-10): Entsprechen ihrem Zahlenwert.
+  - Bildkarten (König, Dame, Bube): Jeweils 10 Punkte.
+  - Asse: Entweder 1 oder 11 Punkte, je nachdem, was für den Spieler vorteilhafter ist.
+-Spielverlauf:
+  1. Jeder Spieler erhält zwei Karten, der Dealer ebenfalls, wobei eine Karte des Dealers offen ist.
+  2. Spieler entscheiden, ob sie eine weitere Karte ("Hit") nehmen oder bei ihrer Hand bleiben ("Stand").
+  3. Wenn die Hand eines Spielers über 21 geht, verliert der Spieler automatisch ("Bust").
+  4. Wenn alle Spieler fertig sind, zeigt der Dealer seine zweite Karte. Der Dealer muss bei 16 oder weniger eine Karte ziehen, bei 17 oder mehr muss er stehen bleiben.
+  5. Der Spieler gewinnt, wenn seine Hand näher an 21 ist als die des Dealers oder wenn der Dealer über 21 geht.
+-Blackjack: Ein Ass und eine 10-Punkte-Karte in den ersten beiden Karten, was eine sofortige Gewinnkombination ist (außer gegen ein Blackjack des Dealers).
+-Verdopplung (Double Down): Der Spieler kann seinen Einsatz verdoppeln und erhält nur eine weitere Karte.
+-Teilen (Split): Wenn die ersten beiden Karten des Spielers den gleichen Wert haben, kann er sie in zwei separate Hände aufteilen und für jede Hand einen neuen Einsatz platzieren.
+
+
+
+https://www.spielbanken-bayern.de/storage/filemanager/files/shares/Spielregeln/Deutsch/Spielregeln_Black_Jack_2018.pdf
