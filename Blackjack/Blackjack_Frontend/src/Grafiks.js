@@ -1,9 +1,15 @@
+console.log("Loaded Test Animation.js!");
+
+
 let ctx;
 
 let growFactor = 0.7;
 let cardWidth = 200;
 let cardHeight = 300;
 let flippingTime = 1000;
+let faecherStappelCardAbstand = 20;
+
+let normalMoveTime = 0.5; //Pre Einstellung => einezlen Anis weischen ab
 
 // region Assets
 let toLoad = {
@@ -69,10 +75,9 @@ let toLoad = {
 // endregion
 
 window.imgData = {};
-const loader = async ()=>{
+const loader = ()=>{
     if(Object.keys(toLoad).length === 0) return;
-
-    return await new Promise((resolve)=>{
+    return new Promise((resolve)=>{
         const i = new Image();
         const k = Object.keys(toLoad).shift();
         i.src = toLoad[k];
@@ -91,7 +96,14 @@ const loader = async ()=>{
     });
 }
 
-window.bilder = loader();
+window.getGrafiksData = async ()=>{
+    if(b) return b;
+    if(!("bilder" in window)) window.bilder = loader(); //Erst Loader, dann auch bei vielen Aufrufen
+    b = await bilder;
+    console.log("Alle Assets (ilder) Sehen breit!");
+    return b;
+}
+
 
 let canvas;
 let b; //Enthält Aufgelöstes promise oBjekt => Nach abgeschlosenen Laden
@@ -109,10 +121,7 @@ socket.onopen = () => {
 socket.onmessage = (event) => {
     console.log(event);
     const msg = event.data.toString();
-    if(event.data.toString().indexOf('acc') === 0)
-    {
-        clientID = Number(msg.substring(4, msg.length));
-    }
+    if(event.data.toString().indexOf('acc') === 0) clientID = Number(msg.substring(4, msg.length));
 };
 
 // Fehlerbehandlung
@@ -125,32 +134,22 @@ socket.onclose = () => {
     console.log('Verbindung zum Server geschlossen.');
 };
 
+window.overlaySetStatus = (s = true) => document.getElementById("overlay").classList[s ? "remove" : "add"]("hide");
+
 
 window.addEventListener('resize', resizeCanvas);
-window.onload = async function (){
+window.addEventListener("load", async function () {
+    console.log("Loaded Game Content & Variables!");
     canvas = document.getElementById("canvas");
     resizeCanvas();
-
-    document.getElementById("button").addEventListener("click", reveal);
-
-    b = await bilder; //Warten auf Promise => Alle Bilder geladen
-
-    const card = new GameCard(null, b.back, {x: 400, y: 200});
-
-
     if (canvas.getContext) {
         ctx = canvas.getContext("2d");
         last = Date.now();
-
         draw();
-    }
-}
-
-function reveal(){
-    for (let index = 0; index < stationaryObjects.length; ++index) {
-        stationaryObjects[index].flipping = true;
-    }
-}
+        console.log("Started Drawing...");
+    } else console.log("Error! No Canvas!");
+    getGrafiksData().then(()=>{});
+});
 
 function resizeCanvas(){
     canvas.style.width = "100%";
@@ -160,7 +159,6 @@ function resizeCanvas(){
 }
 
 // Frame Generation
-
 
 
 function parabelfunktion(x, xMax) { //Die Funktion erstellt eine gestrauchte Parabel => Damit Dreh Bewegung der karte, F(x) gibt Anteil der Normalbreite an. Bei  = 1000 und bei x = 1 ist sie 1. Der zweite parameter gibt die Stauchung in Millisekunden an
@@ -189,7 +187,7 @@ function sinVel(anim){
     } else{
         anim.pos.x = anim.endPoint.x;
         anim.pos.y = anim.endPoint.y;
-        anim.isMoving = false;
+        anim.endMove();
     }
 }
 
@@ -197,18 +195,32 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
     constructor(img, pos = {x: -100, y: -100}) {
         this.isMoving = false;
         this.isFlipping = false;
+        this.onMoveEnd = [];
         this.pos = pos;
         this.img = img;
         this.widthAnteil = 1;
-        animationObjects.push(this);
+        this.id = Math.random().toString(); //Um Effizient key => Vlaue zugriff in objects
+        animationObjects[this.id] = this;
+        this.allgemeinScale = 1; //Um Karte in Vordergrund bringen zu kömnen
     }
-    moveTo(posB, _time) {
-        this.startPoint = {...this.pos}; //Gleifsetzen reicht nicht, da sont nur Object Poiter und nicht Werte kopiert. Durch JS Funktion werden alle werte einzelnt geklont also x und y
-        this.time = _time;
-        this.endPoint = posB;
-        this.dx = (this.endPoint.x - this.startPoint.x) / this.time;
-        this.dy = (this.endPoint.y - this.startPoint.y) / this.time;
-        this.isMoving = true; // Updater Erkennt Handlungsgedarf
+    moveTo(posB, _time = 0.5) {
+        return new Promise((resolve)=>{ //Wenn Bewegung Beended ist, damit für Gameplay
+            this.onMoveEnd.push(resolve);
+            this.startPoint = {...this.pos}; //Gleifsetzen reicht nicht, da sont nur Object Poiter und nicht Werte kopiert. Durch JS Funktion werden alle werte einzelnt geklont also x und y
+            this.time = _time;
+            this.endPoint = posB;
+            this.dx = (this.endPoint.x - this.startPoint.x) / this.time;
+            this.dy = (this.endPoint.y - this.startPoint.y) / this.time;
+            this.isMoving = true; // Updater Erkennt Handlungsgedarf
+
+            delete animationObjects[this.id];
+            animationObjects[this.id] = this; //an oberste Stelle, über die anderen Karten!
+        });
+    }
+    endMove() {
+        console.log("Move End! => Promise!");
+        this.onMoveEnd.forEach(c => c()); //Promise Auflösen
+        this.isMoving = false;
     }
     async changeSide(img = null) {
         if(!img) img = b.back;
@@ -229,11 +241,11 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
             }
             if(this.img === this.imgVorher && timeVerstrichen >= flippingTime/2) this.img = this.imgNacher;
         }
-        ctx.drawImage(this.img, this.pos.x - (growFactor * this.widthAnteil * cardWidth) / 2, this.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth * this.widthAnteil, growFactor * cardHeight);
+        ctx.drawImage(this.img, this.pos.x - (growFactor * this.widthAnteil * cardWidth * this.allgemeinScale) / 2, this.pos.y - (growFactor * cardHeight * this.allgemeinScale) / 2, growFactor * cardWidth * this.allgemeinScale * this.widthAnteil, growFactor * cardHeight * this.allgemeinScale);
     }
 }
 
-window.animationObjects = [];
+window.animationObjects = {};
 window.gameDrawThreads = {};
 
 window.addDrawingThread = (callback = ()=>{}) => {
@@ -247,8 +259,13 @@ let deltaTime = 0;
 function draw() {
     deltaTime = (Date.now() - last) / 1000;
     last = Date.now();
-    Object.values(gameDrawThreads).forEach(c => c(ctx));
-    animationObjects.forEach(o => o.update(ctx, deltaTime));
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    try {
+        Object.values(gameDrawThreads).forEach(c => c(ctx));
+        Object.values(animationObjects).forEach(o => o.update(ctx, deltaTime));
+    } catch(e) {
+        console.log(e);
+    }
     requestAnimationFrame(draw);
 }
 
@@ -259,8 +276,54 @@ window.GameCard = class GameCard extends AnimationObject {
     constructor(kartenwert = null, img, pos = {x: -200, y: -200}) {
         super(img, pos);
         this.kartenwert = kartenwert; //Um was für eine Karte hanelt es  sich ist Null wenn Srerver noch nicht geantowrtet.
+        this.stappelReferenze = null; //Auf welchem Stappel ist die Karte => Hat nur Grafische Auswirkungne nix Gameplay
     }
     moveTo(...p) {
-        super.moveTo(...p); //Einfach alle Paramzer Kopieren, weil eh gleich
+        return super.moveTo(...p); //Einfach alle Paramzer Kopieren, weil eh gleich
+    }
+    putOnStappel(stappel, time = normalMoveTime) { //Auf einen Stappel bewegen => Fächereffekt Möglich!
+        console.log("PUT ON STAPEL:", this.stappelReferenze);
+        if(this.stappelReferenze) this.stappelReferenze.remove(); //Falls auf Altem Erst Weg!
+        this.stappelReferenze = stappel._add(this, time);
+        return this.stappelReferenze.promise;
+    }
+}
+
+window.Stappel = class Stappel {
+    constructor(pos = {x: 0, y: 0}, type = "faecher") {
+        this.pos = pos;
+        this.cards = {};
+        this.type = type;
+    }
+    getOberste() {
+        console.log("Get Oberste:", this, this.cards);
+        return Object.keys(this.cards).length === 0 ? null : Object.values(this.cards)[Object.values(this.cards).length-1];
+    }
+    add(card, time = normalMoveTime) {
+        return card.putOnStappel(this, time);
+    }
+    _add(card, time = normalMoveTime) {
+        const id = Math.random().toString();
+        const cardPos = {y: this.pos.y, x: this.type === "faecher" ? this.pos.x+faecherStappelCardAbstand*Object.keys(this.cards).length : this.pos.x}
+        console.log("Add To Stappel:", this, id);
+        this.cards[id] = card;
+        const promise = card.moveTo(cardPos, time);
+        return {remove: ()=>{
+            console.log("Remove From Stappel!", this, id);
+            delete this.cards[id]
+        }, promise};
+    }
+    async copyStappel(andererStappel, count = -1, reverse = true) { //Um Ganzen Stappel auf anderen Stappel zu bewegen. Reverse Gibt an ob der Stappel umgedreht werden soll  oder niht
+        if(andererStappel === this) return; //Soll nicht auf sich selber sondt => Unsendlich Loop
+        console.log("Copy:", this, andererStappel);
+        if(reverse) {
+            while(this.getOberste() && count !== 0) {
+                console.log("Put One...");
+                const p = this.getOberste().putOnStappel(andererStappel);
+                await p;
+                count--;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        } else await Promise.all(count < 0 ? Object.values(this.cards) : (Object.values(this.cards).slice(-count)).map(card => card.putOnStappel(andererStappel))); //Warten bis alle Zielort erreicht haben
     }
 }

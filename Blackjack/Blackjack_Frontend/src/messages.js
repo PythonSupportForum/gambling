@@ -5,6 +5,7 @@ class MessageQueue {
         this.isProcessing = false; // Gibt an, ob gerade eine Nachricht angezeigt wird
     }
     addMessage(text) {
+        overlaySetStatus(true);
         return new Promise((resolve) => {
             this.queue.push({ text, resolve });
             this.processQueue(); // Versuche die Warteschlange zu verarbeiten
