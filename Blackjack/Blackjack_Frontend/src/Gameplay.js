@@ -47,9 +47,9 @@ const mischeAnimationDelaler = () => {
 
         setTimeout(async ()=> {
             console.log("Start Copy!");
-            await aS.copyStappel(bS);
+            await aS.copyStappel(bS, -1, true, 0.2);
             console.log("Copy to Ziehen!");
-            await aS.copyStappel(ziehenStappel, -1, false); //Am Ende der Einleitungs Animation fliegen alle Karten zu dem Ziehstappel
+            await bS.copyStappel(ziehenStappel, -1, false); //Am Ende der Einleitungs Animation fliegen alle Karten zu dem Ziehstappel
             console.log("Cpoied to ziehen!");
             resolve();
         }, 1000);
@@ -57,7 +57,6 @@ const mischeAnimationDelaler = () => {
 }
 
 const welcome = async ()=>{
-
     await Promise.all([
         messageQueue.mehrneMesagesAnzeigen([
             "Hallo!",
@@ -75,14 +74,45 @@ const welcome = async ()=>{
 
    // window.card = new GameCard(null, b.back, {x: 400, y: 200});
 
+    overlaySetStatus(false); //Hell Machen, Scwarzes Di weg bzw. Unsichtbar opayisty:0
 
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
-    overlaySetStatus(false);
+    await showZweiDealerKarten();
 
    // card.moveTo(700, 400);
 
 }
 
+const showZweiDealerKarten = async ()=>{
+    function calculateCardPositions(screenWidth = window.innerWidth, screenHeight = window.innerHeight) { //Um Posotion für Dealer Karten auf dem Bildschirm
+        const upperHalfHeight = screenHeight / 2;
+        const y = upperHalfHeight / 2; // Mittig in der oberen Hälfte
+        const gap = cardWidth + 30; // Abstand zwischen den Karten
+
+        const x1 = screenWidth / 2 - gap / 2; // Linke Karte
+        const x2 = screenWidth / 2 + gap / 2; // Rechte Karte
+
+        return [
+            { x: x1, y: y }, // Position der linken Karte
+            { x: x2, y: y }, // Position der rechten Karte
+        ];
+    }
+    const positions = calculateCardPositions();
+
+    const links = positions[0];
+    window.dealerLinkerStappel = new Stappel(links);
+
+    await ziehenStappel.copyStappel(dealerLinkerStappel, 2);
+
+    const b = await getGrafiksData();
+
+    console.log("SHOW:", b["4_d"]);
+
+    dealerLinkerStappel.getOberste().changeSide(b["4_d"]);
+}
+
+
 const initVariables = ()=>{
-    window.ziehenStappel = new Stappel({x: window.innerWidth-cardWidth-30, y: 30}, "normal");
+    window.ziehenStappel = new Stappel({x: window.innerWidth-cardWidth, y: 120}, "normal");
 }

@@ -162,9 +162,17 @@ function resizeCanvas(){
 
 
 function parabelfunktion(x, xMax) { //Die Funktion erstellt eine gestrauchte Parabel => Damit Dreh Bewegung der karte, F(x) gibt Anteil der Normalbreite an. Bei  = 1000 und bei x = 1 ist sie 1. Der zweite parameter gibt die Stauchung in Millisekunden an
-    const x0 = xMax / 2; // Der Scheitelpunkt liegt in der Mitte zwischen 0 und xMax
-    const a = -4 / (xMax ** 2); // Der Streckungsfaktor der Parabel
-    return Math.max(0, Math.min(1, a * (x - x0) ** 2 + 1));
+    // Der Scheitelpunkt liegt in der Mitte zwischen 0 und xMax
+    const x0 = xMax / 2;
+
+    // Der Streckungsfaktor der Parabel (positiv, damit sie nach oben geöffnet ist)
+    const a = 4 / (xMax ** 2);
+
+    // Berechne den Wert der Parabelgleichung
+    const y = a * (x - x0) ** 2;
+
+    // Stelle sicher, dass der Wert zwischen 0 und 1 liegt
+    return Math.max(0, Math.min(1, y));
 }
 
 function sinVel(anim){
@@ -234,12 +242,12 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
         if(this.isFlipping) {
             const timeVerstrichen = Date.now()-this.startFlippingTime; //Seid beginn des Drehens der Karte
             this.widthAnteil = parabelfunktion(timeVerstrichen, flippingTime);  //Weil Wenn noch das alte dann schmaler werden wenn schon neue wieder breiter
+            if(this.img === this.imgVorher && timeVerstrichen >= flippingTime/2) this.img = this.imgNacher; //Die hälfe also ganz weg neues bild zeichen
             if(this.widthAnteil >= 1) { //Drehen Abgeschlossen!
                 this.isFlipping = false;
                 this.widthAnteil = 1;
                 console.log("Drehen Abgeschlossen!");
             }
-            if(this.img === this.imgVorher && timeVerstrichen >= flippingTime/2) this.img = this.imgNacher;
         }
         ctx.drawImage(this.img, this.pos.x - (growFactor * this.widthAnteil * cardWidth * this.allgemeinScale) / 2, this.pos.y - (growFactor * cardHeight * this.allgemeinScale) / 2, growFactor * cardWidth * this.allgemeinScale * this.widthAnteil, growFactor * cardHeight * this.allgemeinScale);
     }
@@ -313,17 +321,22 @@ window.Stappel = class Stappel {
             delete this.cards[id]
         }, promise};
     }
-    async copyStappel(andererStappel, count = -1, reverse = true) { //Um Ganzen Stappel auf anderen Stappel zu bewegen. Reverse Gibt an ob der Stappel umgedreht werden soll  oder niht
+    async copyStappel(andererStappel, count = -1, reverse = true, time = normalMoveTime) { //Um Ganzen Stappel auf anderen Stappel zu bewegen. Reverse Gibt an ob der Stappel umgedreht werden soll  oder niht
         if(andererStappel === this) return; //Soll nicht auf sich selber sondt => Unsendlich Loop
         console.log("Copy:", this, andererStappel);
         if(reverse) {
             while(this.getOberste() && count !== 0) {
                 console.log("Put One...");
-                const p = this.getOberste().putOnStappel(andererStappel);
+                const p = this.getOberste().putOnStappel(andererStappel, time);
                 await p;
                 count--;
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
-        } else await Promise.all(count < 0 ? Object.values(this.cards) : (Object.values(this.cards).slice(-count)).map(card => card.putOnStappel(andererStappel))); //Warten bis alle Zielort erreicht haben
+        } else {
+            const pList = (count < 0 ? Object.values(this.cards) : (Object.values(this.cards).slice(-count))).map(card => card.putOnStappel(andererStappel, time));
+            console.log("Copy without Reverse..", count, pList, this.cards);
+
+            await Promise.all(pList);
+        } //Warten bis alle Zielort erreicht haben
     }
 }
