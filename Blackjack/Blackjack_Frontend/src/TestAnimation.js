@@ -9,6 +9,8 @@ let animationObjects = [];
 let dealerStack = [];
 let playerStack = [];
 
+let deckCoord;
+
 let growFactor = 0.7;
 let cardWidth = 200;
 let cardHeight = 300;
@@ -155,10 +157,12 @@ window.onload = async function (){
 
         b = (await bilder);
 
+        deckCoord = {x:canvas.width / 2, y:7 * canvas.height / 10};
+
         let temp = new GameCard(b.a_s, "spades", "a")
         playerStack.push(temp);
         animationObjects.push(new animationObject(temp.img, {startx:canvas.width - 100, starty:canvas.height - 100},
-            {endx:canvas.width / 2, endy:canvas.height / 2}, 0.5, false));
+            {endx:deckCoord.x, endy:deckCoord.y}, 0.5, false));
 
         for(let anim of animationObjects){
             newMoving(anim);
@@ -259,7 +263,7 @@ function sinVel(anim){
     // Prozentualer Anteil des Weges der zurückgelegt wurde
     let part = 1 - ((anim.endPoint.x - anim.pos.x) / (anim.endPoint.x - anim.startPoint.x));
 
-    // Faktor zur Beschleunigung: Die Geschwindigkeit verändert sich im Verlauf einer um 0,1 phasenverschobenen Sinuskurve, ermöglicht weichere Animation
+    // Faktor zur Beschleunigung: Die Geschwindigkeit verändert sich im Verlauf einer um 0,1 nach oben verschoben Sinuskurve, ermöglicht weichere Animation
     part = Math.sin(part * Math.PI) + 0.1;
 
     let currentDistance = calculateDistance({x1:anim.pos.x, y1:anim.pos.y}, {x2:anim.startPoint.x, y2:anim.startPoint.y});
