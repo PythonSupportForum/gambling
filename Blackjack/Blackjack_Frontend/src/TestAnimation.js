@@ -1,14 +1,9 @@
 let ctx;
 
-let last = 0;
-let deltaTime = 0;
-
-let stationaryObjects = [];
-let animationObjects = [];
-
 let growFactor = 0.7;
 let cardWidth = 200;
 let cardHeight = 300;
+let flippingTime = 1000;
 
 // region Assets
 let toLoad = {
@@ -99,8 +94,7 @@ const loader = async ()=>{
 window.bilder = loader();
 
 let canvas;
-
-let b;
+let b; //Enthält Aufgelöstes promise oBjekt => Nach abgeschlosenen Laden
 
 const socket = new WebSocket('ws://127.0.0.1:8080');
 let clientID = -1;
@@ -132,13 +126,17 @@ socket.onclose = () => {
 };
 
 
-
 window.addEventListener('resize', resizeCanvas);
 window.onload = async function (){
     canvas = document.getElementById("canvas");
     resizeCanvas();
 
     document.getElementById("button").addEventListener("click", reveal);
+
+    b = await bilder; //Warten auf Promise => Alle Bilder geladen
+
+    const card = new GameCard(null, b.back, {x: 400, y: 200});
+
 
     if (canvas.getContext) {
         ctx = canvas.getContext("2d");
@@ -163,70 +161,18 @@ function resizeCanvas(){
 
 // Frame Generation
 
-window.gameDrawThreads = {};
-window.addDrawingThread = (callback = ()=>{}) => {
-    const id = Math.random().toString();
-    gameDrawThreads[id] = callback;
-    return {remove: ()=>delete gameDrawThreads[id]};
-};
 
-function draw() {
-    deltaTime = (Date.now() - last) / 1000;
-    last = Date.now();
-    Object.values(gameDrawThreads).forEach(c => c(ctx));
 
-    for (let i = 0; i < animationObjects.length; i++){
-        let anim = animationObjects[i];
-        if(anim.moves) sinVel(anim, {x:anim.pos.x, y:anim.pos.y});
-        else {
-            stationaryObjects.push(new stationaryObject(anim.img, {posx:anim.pos.x, posy:anim.pos.y}, anim.rev));
-            animationObjects.splice(i, 1);
-        }
-        if(anim.rev) ctx.drawImage(anim.img, anim.pos.x - (growFactor * cardWidth) / 2, anim.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth, growFactor * cardHeight);
-        else ctx.drawImage(b.back, anim.pos.x - (growFactor * cardWidth) / 2, anim.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth, growFactor * cardHeight);
-    }
-    for(let i = 0; i < stationaryObjects.length; i++) {
-        let stat = stationaryObjects[i];
-        if (stat.flipping) {
-            if (stat.rev) {
-                stat.width += 1000 * deltaTime;
-                console.log("true",stat.width,stat.height);
-                if (stat.width >= cardWidth) {
-                    stat.flipping = false;
-                    stat.width = cardWidth;
-                }
-                ctx.drawImage(stat.img, stat.pos.x - (growFactor * stat.width) / 2, stat.pos.y - (growFactor * cardHeight) / 2, growFactor * stat.width, growFactor * cardHeight);
-            } else {
-                stat.width -= 1000 * deltaTime;
-                console.log("false",stat.width);
-                if (stat.width <= 0) {
-                    stat.rev = true;
-                    stat.width = 1;
-                }
-                ctx.drawImage(b.back, stat.pos.x - (growFactor * stat.width) / 2, stat.pos.y - (growFactor * cardHeight) / 2, growFactor * stat.width, growFactor * cardHeight);
-            }
-        }
-        else {
-            if (stat.rev) {
-                ctx.drawImage(stat.img, stat.pos.x - (growFactor * cardWidth) / 2, stat.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth, growFactor * cardHeight);
-            } else {
-                ctx.drawImage(b.back, stat.pos.x - (growFactor * cardWidth) / 2, stat.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth, growFactor * cardHeight);
-            }
-        }
-    }
-    requestAnimationFrame(draw);
+function parabelfunktion(x, xMax) { //Die Funktion erstellt eine gestrauchte Parabel => Damit Dreh Bewegung der karte, F(x) gibt Anteil der Normalbreite an. Bei  = 1000 und bei x = 1 ist sie 1. Der zweite parameter gibt die Stauchung in Millisekunden an
+    const x0 = xMax / 2; // Der Scheitelpunkt liegt in der Mitte zwischen 0 und xMax
+    const a = -4 / (xMax ** 2); // Der Streckungsfaktor der Parabel
+    return Math.max(0, Math.min(1, a * (x - x0) ** 2 + 1));
 }
 
-// Deklariert eine neue Animation
-function newMoving(anim) {
-    anim.moves = true;
-    anim.dx = (anim.endPoint.x - anim.startPoint.x) / anim.time;
-    anim.dy = (anim.endPoint.y - anim.startPoint.y) / anim.time;
-}
-
-// Funktion zur Berechnung der nächsten Koordinaten, jedoch mit einer Beschleunigung des Objekts mithilfe einer phasenverschobenen Sinuswelle
 function sinVel(anim){
-
+    function calculateDistance({x1, y1}, {x2, y2}) {
+        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    }
     // Prozentualer Anteil des Weges der zurückgelegt wurde
     let part = 1 - ((anim.endPoint.x - anim.pos.x) / (anim.endPoint.x - anim.startPoint.x));
 
@@ -240,59 +186,81 @@ function sinVel(anim){
     if(currentDistance < netDistance){
         anim.pos.x += anim.dx * part * deltaTime;
         anim.pos.y += anim.dy * part * deltaTime;
-    }
-    else{
+    } else{
         anim.pos.x = anim.endPoint.x;
         anim.pos.y = anim.endPoint.y;
-        anim.moves = false;
+        anim.isMoving = false;
     }
 }
 
-function calculateDistance({x1, y1}, {x2, y2}) {
-    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-}
-
-class animationObject {
-    constructor(img, {x: startx, y: starty}, {x: endx, y: endy}, _time, rev) {
-        this.moves = false;
+class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
+    constructor(img, pos = {x: -100, y: -100}) {
+        this.isMoving = false;
+        this.isFlipping = false;
+        this.pos = pos;
+        this.img = img;
+        this.widthAnteil = 1;
+        animationObjects.push(this);
+    }
+    moveTo(posB, _time) {
+        this.startPoint = {...this.pos}; //Gleifsetzen reicht nicht, da sont nur Object Poiter und nicht Werte kopiert. Durch JS Funktion werden alle werte einzelnt geklont also x und y
         this.time = _time;
-        this.startPoint = {x:startx, y:starty};
-        this.endPoint = {x:endx,y:endy};
-        this.pos = {x:startx,y:starty};
-        this.img = img;
-        this.rev = rev;
+        this.endPoint = posB;
+        this.dx = (this.endPoint.x - this.startPoint.x) / this.time;
+        this.dy = (this.endPoint.y - this.startPoint.y) / this.time;
+        this.isMoving = true; // Updater Erkennt Handlungsgedarf
     }
-    update() {
-
+    async changeSide(img = null) {
+        if(!img) img = b.back;
+        this.imgVorher = this.img;
+        this.imgNacher = img;
+        this.isFlipping = true;
+        this.startFlippingTime = Date.now();
+    }
+    update(ctx, deltaTime) {
+        if(this.isMoving) sinVel(this, {...this.pos});
+        if(this.isFlipping) {
+            const timeVerstrichen = Date.now()-this.startFlippingTime; //Seid beginn des Drehens der Karte
+            this.widthAnteil = parabelfunktion(timeVerstrichen, flippingTime);  //Weil Wenn noch das alte dann schmaler werden wenn schon neue wieder breiter
+            if(this.widthAnteil >= 1) { //Drehen Abgeschlossen!
+                this.isFlipping = false;
+                this.widthAnteil = 1;
+                console.log("Drehen Abgeschlossen!");
+            }
+            if(this.img === this.imgVorher && timeVerstrichen >= flippingTime/2) this.img = this.imgNacher;
+        }
+        ctx.drawImage(this.img, this.pos.x - (growFactor * this.widthAnteil * cardWidth) / 2, this.pos.y - (growFactor * cardHeight) / 2, growFactor * cardWidth * this.widthAnteil, growFactor * cardHeight);
     }
 }
 
-class stationaryObject{
-    img;
-    pos = {x:0,y:0}
-    rev;
-    flipping = false;
-    width = cardWidth;
-    height = cardHeight;
+window.animationObjects = [];
+window.gameDrawThreads = {};
 
-    constructor(img, {posx, posy}, rev) {
-        this.img = img;
-        this.pos = {x:posx, y:posy};
-        this.rev = rev;
-    }
+window.addDrawingThread = (callback = ()=>{}) => {
+    const id = Math.random().toString();
+    gameDrawThreads[id] = callback;
+    return {remove: ()=>delete gameDrawThreads[id]};
+};
+
+let last = 0;
+let deltaTime = 0;
+function draw() {
+    deltaTime = (Date.now() - last) / 1000;
+    last = Date.now();
+    Object.values(gameDrawThreads).forEach(c => c(ctx));
+    animationObjects.forEach(o => o.update(ctx, deltaTime));
+    requestAnimationFrame(draw);
 }
 
-window.GameCard = class GameCard {
+// Funktion zur Berechnung der nächsten Koordinaten, jedoch mit einer Beschleunigung des Objekts mithilfe einer phasenverschobenen Sinuswelle
 
-    constructor(img, coat, val, pos = {x: -200, y: -200}) {
-        this.img = img;
-        this.coat = coat;
-        this.val = val;
-        this.pos = pos
+
+window.GameCard = class GameCard extends AnimationObject {
+    constructor(kartenwert = null, img, pos = {x: -200, y: -200}) {
+        super(img, pos);
+        this.kartenwert = kartenwert; //Um was für eine Karte hanelt es  sich ist Null wenn Srerver noch nicht geantowrtet.
     }
-    moveTo(posTo, time = 0.5) {
-        const a = new animationObject(this.img, this.pos, posTo, time, false);
-        newMoving(a);
-        animationObjects.push(a);
+    moveTo(...p) {
+        super.moveTo(...p); //Einfach alle Paramzer Kopieren, weil eh gleich
     }
 }
