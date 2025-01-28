@@ -211,8 +211,8 @@ window.play = async ()=>{
             const elapsed = timestamp - startTime;
 
             if(finalImageIndex < 0 || elapsed < duration) {
-                if(speed < 100) speed += 0.2;
-                if(speed < randomReachSpeed) speed += 0.1;
+                if(speed < 100) speed += 0.5;
+                if(speed < randomReachSpeed) speed += 0.5;
             } else {
                 let ziel = finalImageIndex*imageHeight;
                 if(ziel < currentOffset-0.1) ziel += totalImages*imageHeight;
@@ -221,8 +221,16 @@ window.play = async ()=>{
                 let speedProTime = strecke/1000;
                 if(Math.abs(speedProTime) < 5) speedProTime *= 10;
 
-                speed += speedProTime-speed > 0 ? 0.05 : -0.05;
+                speed += speedProTime-speed > 0 ? 0.1 : -0.1;
+
+                if(Math.abs(strecke) < 5) {
+                    speed -= strecke/10000;
+                    speed -= 0.5;
+                }
             }
+            //if(Math.abs(speed) > 40) speed -= Math.max(Math.sqrt(speed), 1);
+            if(!speed) speed -= 2;
+            if(speed < -40) speed += 20;
 
             currentOffset = (currentOffset+speed)%(totalImages*imageHeight);
 
