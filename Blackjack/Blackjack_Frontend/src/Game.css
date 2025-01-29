@@ -153,3 +153,21 @@ button:active {
 .GameContainer > .elements-container > .overlay.hide {
     opacity: 0;
 }
+
+.GameContainer > .elements-container .buttons {
+    z-index: 6;
+    opacity: 0;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.2s;
+}
+.GameContainer > .elements-container .buttons.show {
+    opacity: 1;
+}

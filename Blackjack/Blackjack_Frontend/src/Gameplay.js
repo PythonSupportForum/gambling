@@ -1,5 +1,6 @@
 console.log("Run Script...");
 
+const addierenStappelFaecherSteps = 30;
 const showIntro = false;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -73,7 +74,40 @@ const zeigeKartenInderMitteMitAuswahl = (cards, time = normalMoveTime)=>{
     for(let i = 0; i < cards.length; i++) p.push(cards[i].moveTo(positions[i], time));
     return {...focusElementWithOverlay(cards), cards, promise: Promise.all(p)};
 }
-const welcome = async ()=>{
+const getEinsatz = ()=>new Promise(resolve => {
+   resolve(10000);
+});
+const userKarfenZiehen = async (count = 1) => {
+    console.log("User Karten ziehen!");
+
+    const e = [];
+    while(count > 0) e.push(karteZiehen());
+    const kartenWertePromise = Promise.all(e);
+    const {end, cards, promise} = zeigeKartenInderMitteMitAuswahl(ziehenStack.karfenZiehen(2));
+    await promise;
+    const flip = await kartenWertePromise;
+    //Karten gezogen aber noch nicht umgedreht und Rückseitenwert steht bereit weilserver anronw
+    console.log("Gezogen:",flip);
+    //Gezogene Karfen umdrehen
+    let a = [];
+    for (let i = 0; i < flip.length; i++) {
+        console.log("i:",i,flip[i],cards[i]);
+        a.push(cards[i].changeSide(flip[i]));
+    }
+    await Promise.all(a);
+    //Umdrehen Beended
+
+    const eingabe = await new Promise(resolve => buttons.show({
+        weiter: ()=>resolve("w")
+    }));
+
+    console.log("Eingabe:", eingabe);
+}
+
+
+const welcome = async ()=> {
+    const einsatzPromise = getEinsatz();
+
     if(showIntro) {
         await Promise.all([
             messageQueue.mehrneMesagesAnzeigen([
@@ -97,8 +131,11 @@ const welcome = async ()=>{
 
    // window.card = new GameCard(null, b.back, {x: 400, y: 200});
 
+
+    const gameInfoPromise = einsatzPromise.then(einsatz => startNewGame(einsatz));
+
     await new Promise(resolve => setTimeout(resolve, 2000));
-    await showZweiDealerKarten();
+    await showZweiDealerKarten(gameInfoPromise);
 
    // card.moveTo(700, 400);
 
@@ -106,27 +143,10 @@ const welcome = async ()=>{
     
     await adduserStack(); //Ersten User Stack vor ertem Spitten
 
-    const {end, cards, promise} = zeigeKartenInderMitteMitAuswahl(ziehenStack.karfenZiehen(2));
-    await promise;
+    await userKarfenZiehen();
+
 
     let running = true;
-    const flip = ["10_c", "8_h"];
-
-    let deckValues = [0,0,0,0];
-
-    console.log("hier:",flip);
-
-   // await ziehenStack.copyStack(userStack[runningStackId], 2); //Zwei Karten auf den Ersten user Stack zuehen
-
-
-    console.log("g!")
-    let a = [];
-    for (let i = 0; i < flip.length; i++) {
-        console.log("i:",i,flip[i],cards[i]);
-        a.push(cards[i].changeSide(flip[i]));
-    }
-    await Promise.all(a);
-
 
     console.log("Gameplay loop");
 
@@ -135,7 +155,7 @@ const welcome = async ()=>{
     }
 }
 
-const showZweiDealerKarten = async ()=>{
+const showZweiDealerKarten = async (gameInfoPromise)=>{
     function calculateCardPositions(screenWidth = window.innerWidth, screenHeight = window.innerHeight) { //Um Posotion für Dealer Karten auf dem Bildschirm
         const upperHalfHeight = screenHeight / 2;
         const y = upperHalfHeight / 2; // Mittig in der oberen Hälfte
@@ -148,15 +168,15 @@ const showZweiDealerKarten = async ()=>{
     const positions = calculateCardPositions();
 
     const links = positions[0];
-    window.dealerLeftStack = new Stack(links);
+    window.dealerLeftStack = new Stack(links, "faecher", addierenStappelFaecherSteps);
 
     await ziehenStack.copyStack(dealerLeftStack, 2);
 
-    await dealerLeftStack.getOberste().changeSide("4_d");
+    const gameInfo = await gameInfoPromise; //Wichtig: Mischen und Ziehen Animation auch Bevor einsatz abgeben, erst vor dem Umdrehen muss auf einSatz + Server Antwort gewartet werden
+    await dealerLeftStack.getOberste().aufdecken(gameInfo);
 
     console.log("Dealer hat gezogen!");
 }
-
 
 const adduserStack = ()=>{
     function calculateCardPositions(count = userStack.length+1, screenWidth = window.innerWidth, screenHeight = window.innerHeight, cardWidth = 100) { //Um die Player Stack gleihmäßig auf der unterhälfte des bildschirms zu verteilen => Berechnet Koords der Spappel
@@ -173,11 +193,11 @@ const adduserStack = ()=>{
         return positions;
     }
     const newPositions = calculateCardPositions();
-    for(let i = 0; i < userStack.length; i++) userStack[i].moveTo(neuePositions[i]);
-    userStack.push(new Stack(newPositions[newPositions.length-1])); //Letes Element für neuen Stack => Rechts angehangen
+    for(let i = 0; i < userStack.length; i++) userStack[i].moveTo(newPositions[i]);
+    userStack.push(new Stack(newPositions[newPositions.length-1], "faecher", addierenStappelFaecherSteps)); //Letes Element für neuen Stack => Rechts angehangen
 }
 const initVariables = ()=>{
-    window.ziehenStack = new Stack({x: window.innerWidth-cardWidth, y: 120}, "normal");
+    window.ziehenStack = new Stack({x: window.innerWidth-cardWidth/2, y: 120}, "normal");
     window.userStack = [];
     window.runningStackId = 0;
 }

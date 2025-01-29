@@ -33,11 +33,26 @@ window.connectSocket = ()=>{
 }
 document.addEventListener("DOMContentLoaded", connectSocket);
 
+//In die volgenden Methoden kommt der ganze Quatsch mit der Serbfer Komimioation
 window.karteZiehen = ()=>new Promise(async resolve => {
     const socket = await connectSocket();
 
     resolve({
         type: "4_d",
         points: 4
+    });
+});
+//Um ein Neues PSiel zu starten => Übergeben wird der einseatz => Muss an derver gegeben werden, Zurückgegeben wird die erste sichtbare umgedrehte karte des dellers.
+window.startNewGame = (einsatz)=>new Promise(async resolve => {
+    const socket = await connectSocket();
+
+    //blub.send(seinsatz)     <= Exemplarische
+    //blub.get(Info);
+
+    resolve({
+        firstDealerCard: {
+            type: "4_d",
+            points: 4
+        }
     });
 });

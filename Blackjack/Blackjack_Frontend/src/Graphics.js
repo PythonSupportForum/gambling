@@ -138,10 +138,13 @@ function resizeCanvas(){
 
 window.buttons = {
     show: (types) =>{
-
+        document.getElementById("buttonsDiv").classList.add("show");
+        Object.keys(types).forEach(t => {
+            [...document.getElementById("buttonsDiv").querySelectorAll("."+t)].forEach(b => b.onclick = types[t]);
+        });
     },
     hide: ()=>{
-
+        document.getElementById("buttonsDiv").classList.remove("show");
     }
 }
 
@@ -235,10 +238,11 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
         if(this.isFlipping) {
             const timePassed = Date.now()-this.startFlippingTime; //Seid beginn des Drehens der Karte
             this.widthAnteil = parabelfunktion(timePassed, flippingTime);  //Weil Wenn noch das alte dann schmaler werden wenn schon neue wieder breiter
-            if(this.img !== this.imgNacher && timePassed >= flippingTime/2) this.img = this.imgNacher; //Die hälfte also ganz weg neues bild zeichen
+            if(this.img === this.imgVorher && timePassed >= flippingTime/2) this.img = this.imgNacher; //Die hälfte also ganz weg neues bild zeichen
             if(this.widthAnteil >= 1 && timePassed >= flippingTime/2) { //Drehen Abgeschlossen!
                 this.isFlipping = false;
                 this.widthAnteil = 1;
+                this.img = this.imgNacher;
                 console.log("Drehen Abgeschlossen!");
             }
         }
@@ -314,13 +318,18 @@ window.GameCard = class GameCard extends AnimationObject {
         this.StackReferenze = Stack._add(this, time);
         return this.StackReferenze.promise;
     }
+    aufdecken({type, points}) {
+        this.kartenwert = points;
+        return this.changeSide(type);
+    }
 }
 
 window.Stack = class Stack {
-    constructor(pos = {x: 0, y: 0}, type = "faecher") {
+    constructor(pos = {x: 0, y: 0}, type = "faecher", faecherSteps = faecherStackCardAbstand) {
         this.pos = pos;
         this.cards = {};
         this.type = type;
+        this.faecherSteps = faecherSteps; //Nur Releant für Type = Faechem
     }
     getOberste() {
         console.log("Get Oberste:", this, this.cards);
@@ -346,7 +355,7 @@ window.Stack = class Stack {
     }
     _add(card, time = normalMoveTime) {
         const id = Math.random().toString();
-        const cardPos = {y: this.pos.y, x: this.type === "faecher" ? this.pos.x+faecherStackCardAbstand*Object.keys(this.cards).length : this.pos.x}
+        const cardPos = {y: this.pos.y, x: this.type === "faecher" ? this.pos.x+this.faecherSteps*Object.keys(this.cards).length : this.pos.x}
         console.log("Add To Stack:", this, id);
         this.cards[id] = card;
         const promise = card.moveTo(cardPos, time);
