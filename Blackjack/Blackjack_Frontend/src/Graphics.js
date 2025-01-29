@@ -3,13 +3,15 @@ console.log("Loaded Test Animation.js!");
 
 let ctx;
 
-let growFactor = 0.7;
-let cardWidth = 200;
-let cardHeight = 300;
-let flippingTime = 500;
-let faecherStackCardAbstand = 20;
+const growFactor = 0.7;
+const cardWidth = 200;
+const cardHeight = 300;
+const flippingTime = 500;
+const faecherStackCardAbstand = 20;
+const overlaySpeed = 0.01; //Wen Element im Vordergrund, wie schnell schwarz
+const overlayStaerke = 0.6;
 
-let normalMoveTime = 0.5; //Pre Einstellung => einezlen Anis weischen ab
+const normalMoveTime = 0.5; //Pre vorher Einstellung => einezlen Anis weischen ab
 
 // region Assets
 let toLoad = {
@@ -108,32 +110,6 @@ window.getGraphicsData = async ()=>{
 let canvas;
 let b; //Enthält Aufgelöstes promise oBjekt => Nach abgeschlosenen Laden
 
-const socket = new WebSocket('ws://127.0.0.1:8080');
-let clientID = -1;
-
-// Verbindung geöffnet
-socket.onopen = () => {
-    const text = document.getElementById('Connection Text');
-    text.style.visibility = "visible";
-};
-
-// Nachricht vom Server empfangen
-socket.onmessage = (event) => {
-    console.log(event);
-    const msg = event.data.toString();
-    if(event.data.toString().indexOf('acc') === 0) clientID = Number(msg.substring(4, msg.length));
-};
-
-// Fehlerbehandlung
-socket.onerror = (error) => {
-    console.error('WebSocket-Fehler:', error);
-};
-
-// Verbindung geschlossen
-socket.onclose = () => {
-    console.log('Verbindung zum Server geschlossen.');
-};
-
 window.overlaySetStatus = (s = true) => document.getElementById("overlay").classList[s ? "remove" : "add"]("hide");
 
 
@@ -160,6 +136,14 @@ function resizeCanvas(){
 
 // Frame Generation
 
+window.buttons = {
+    show: (types) =>{
+
+    },
+    hide: ()=>{
+
+    }
+}
 
 function parabelfunktion(x, xMax) { //Die Funktion erstellt eine gestrauchte Parabel => Damit Dreh Bewegung der karte, F(x) gibt Anteil der Normalbreite an. Bei  = 1000 und bei x = 1 ist sie 1. Der zweite parameter gibt die Stauchung in Millisekunden an
     // Der Scheitelpunkt liegt in der Mitte zwischen 0 und xMax
@@ -197,6 +181,13 @@ function sinVel(anim){
         anim.pos.y = anim.endPoint.y;
         anim.endMove();
     }
+}
+function getUniqueAttributes(obj1, obj2) { //Um die Elemente übern dem Overlay nicht vorher zu zihcne => ID Vergleich
+    let result = {};
+    for (let key in obj1) {
+        if (!(key in obj2)) result[key] = obj1[key];
+    }
+    return result;
 }
 
 class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
@@ -264,15 +255,39 @@ window.addDrawingThread = (callback = ()=>{}) => {
     return {remove: ()=>delete gameDrawThreads[id]};
 };
 
+window.focusElements = {}; //Elemente die vor dem Overlay schweben => Für Draw Loop
+let overlayAlpha = 0; //Aktuelle Overlay Stärke => 0 = Kein Overlay
+let overlayStatus = false;
+window.focusElementWithOverlay = (elements)=>{
+    overlayStatus = true;
+    console.log("Focus Elements:", elements);
+    elements.forEach(key => focusElements[typeof key === "string" ? key : key.id] = typeof key === "string" ? animationObjects[key] : key);
+    return {
+        end: ()=>{
+            window.focusElements = {};
+            overlayStatus = false;
+        }
+    }
+}
+
 let last = 0;
 let deltaTime = 0;
+
 function draw() {
     deltaTime = (Date.now() - last) / 1000;
     last = Date.now();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     try {
         Object.values(gameDrawThreads).forEach(c => c(ctx));
-        Object.values(animationObjects).forEach(o => o.update(ctx, deltaTime));
+        Object.values(getUniqueAttributes(animationObjects, focusElements)).forEach(o => o.update(ctx, deltaTime));
+        if(overlayAlpha > 0) {
+            ctx.fillStyle = `rgba(0, 0, 0, ${overlayAlpha})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        if (overlayAlpha < overlayStaerke && overlayStatus) overlayAlpha += overlaySpeed;
+        else if(overlayAlpha > 0 && !overlayStatus) overlayAlpha -= overlaySpeed;
+
+        Object.values(focusElements).forEach(o => o.update(ctx, deltaTime));
     } catch(e) {
         console.log(e);
     }
@@ -291,9 +306,11 @@ window.GameCard = class GameCard extends AnimationObject {
     moveTo(...p) {
         return super.moveTo(...p); //Einfach alle Paramzer Kopieren, weil eh gleich
     }
-    putOnStack(Stack, time = normalMoveTime) { //Auf einen Stack bewegen => Fächereffekt Möglich!
-        console.log("PUT ON STAPEL:", this.StackReferenze);
+    removeFromStack() {
         if(this.StackReferenze) this.StackReferenze.remove(); //Falls auf Altem Erst Weg!
+    }
+    putOnStack(Stack, time = normalMoveTime) { //Auf einen Stack bewegen => Fächereffekt Möglich!
+        this.removeFromStack();
         this.StackReferenze = Stack._add(this, time);
         return this.StackReferenze.promise;
     }
@@ -308,6 +325,11 @@ window.Stack = class Stack {
     getOberste() {
         console.log("Get Oberste:", this, this.cards);
         return Object.keys(this.cards).length === 0 ? null : Object.values(this.cards)[Object.values(this.cards).length-1];
+    }
+    karfenZiehen(count = 1) { //Macht Dasselbe wie get Oberste nur entfern gleichezig!
+        const c = this.getObersteViele(count);
+        c.forEach(c => c.removeFromStack());
+        return c;
     }
     getObersteViele(count = 1) {
         console.log("Get Oberste viele:", this, this.cards);
