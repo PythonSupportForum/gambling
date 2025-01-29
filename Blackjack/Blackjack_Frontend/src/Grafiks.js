@@ -307,6 +307,11 @@ window.Stappel = class Stappel {
         console.log("Get Oberste:", this, this.cards);
         return Object.keys(this.cards).length === 0 ? null : Object.values(this.cards)[Object.values(this.cards).length-1];
     }
+    moveTo(posB, time = normalMoveTime) { //Um Stappel mit allen Karten zu bewegen
+        const old = this.cards;
+        this.cards = {};
+        return Promise.all(Object.values(old).map(c => this.add(c, time)));
+    }
     add(card, time = normalMoveTime) {
         return card.putOnStappel(this, time);
     }
@@ -317,8 +322,7 @@ window.Stappel = class Stappel {
         this.cards[id] = card;
         const promise = card.moveTo(cardPos, time);
         return {remove: ()=>{
-            console.log("Remove From Stappel!", this, id);
-            delete this.cards[id]
+            if(id in this.cards) delete this.cards[id]
         }, promise};
     }
     async copyStappel(andererStappel, count = -1, reverse = true, time = normalMoveTime) { //Um Ganzen Stappel auf anderen Stappel zu bewegen. Reverse Gibt an ob der Stappel umgedreht werden soll  oder niht

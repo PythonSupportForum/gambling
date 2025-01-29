@@ -113,7 +113,7 @@ const showZweiDealerKarten = async ()=>{
 
     console.log("Dealer hat gezogen!");
 
-    
+
 }
 
 
