@@ -1,6 +1,8 @@
 @ -6,21 +6,63 @@
+<meta charset = "UTF-8">
+<meta lang="de">
+
 <link rel="stylesheet" href="Frontend.css">
-<link rel="stylesheet" href="../../Startseite/Startseite/src/Startseite.css">
 <title>Blackjack | Let's go Gambling!</title>
 <link rel="apple-touch-icon" sizes="180x180" href="../../Startseite/Startseite/assets/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../../Startseite/Startseite/assets/favicon-32x32.png">
@@ -50,22 +52,42 @@
 
 
   <div id="StartGame">
-    <span class="text">Spiel starten</span>
     <div class="form-container">
-      <h1 style="color: black;">Anedlnen bei LETTS' GMLE</h1>
+      <h1 style="color: black;">Blackjack</h1>
       <p class="error" style="font-size: 16px;"></p>
       <div class="form-group">
-        <label for="username" style="color: white;">Benutzername</label>
-        <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($username); ?>" required placeholder="Benutzername">
+
       </div>
-      <div class="form-group">
-        <label for="password" style="color: white;">Passwort</label>
-        <input type="password" id="password" name="password" value="<?php echo htmlspecialchars($password); ?>" required placeholder="Passwort">
-      </div>
-      <button type="submit" class="btn-submit">Einloggen</button>
+
+      <button type="button" class="button-start-game gleichButton">Starten</button>
     </div>
   </div>
+  <footer id="footer">
+    <h2>Regelwerk:</h2>
+    <ul id="liste1">
+      <li>Ziel des Spiels: Erreiche eine Hand mit einem Wert von 21 oder so nah wie möglich an 21, ohne diese Zahl zu überschreiten</li>
+      <li>Kartenwerte:
+        <ul id="liste2">
+          <li>Zahlenkarten (2-10): Entsprechen ihrem Zahlenwert</li>
+          <li>Bildkarten (König, Dame, Bube): Jeweils 10 Punkte</li>
+          <li>Asse: Entweder 1 oder 11 Punkte, je nachdem, was für den Spieler vorteilhafter ist</li>
+        </ul>
+      </li>
+      <li>Spielverlauf:
+        <ol id="liste3">
+          <li>Jeder Spieler erhält zwei Karten, der Dealer ebenfalls, wobei eine Karte des Dealers offen ist</li>
+          <li>Spieler entscheiden, ob sie eine weitere Karte ("Hit") nehmen oder bei ihrer Hand bleiben ("Stand")</li>
+          <li>Wenn die Hand eines Spielers über 21 geht, verliert der Spieler automatisch ("Bust")</li>
+          <li>Wenn alle Spieler fertig sind, zeigt der Dealer seine zweite Karte. Der Dealer muss bei 16 oder weniger eine Karte ziehen, bei 17 oder mehr muss er stehen bleiben</li>
+          <li>Der Spieler gewinnt, wenn seine Hand näher an 21 ist als die des Dealers oder wenn der Dealer über 21 geht</li>
+        </ol>
+      </li>
+      <li>Blackjack: Ein Ass und eine 10-Punkte-Karte in den ersten beiden Karten, was eine sofortige Gewinnkombination ist (außer gegen ein Blackjack des Dealers)</li>
+      <li>Verdopplung (Double Down): Der Spieler kann seinen Einsatz verdoppeln und erhält nur eine weitere Karte</li>
+      <li>Teilen (Split): Wenn die ersten beiden Karten des Spielers den gleichen Wert haben, kann er sie in zwei separate Hände aufteilen und für jede Hand einen neuen Einsatz platzieren</li>
+    </ul>
 
+  </footer>
 
 </main>
 </body>
