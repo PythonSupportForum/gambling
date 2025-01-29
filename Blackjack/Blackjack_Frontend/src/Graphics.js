@@ -6,8 +6,8 @@ let ctx;
 let growFactor = 0.7;
 let cardWidth = 200;
 let cardHeight = 300;
-let flippingTime = 1000;
-let faecherStappelCardAbstand = 20;
+let flippingTime = 500;
+let faecherStackCardAbstand = 20;
 
 let normalMoveTime = 0.5; //Pre Einstellung => einezlen Anis weischen ab
 
@@ -96,11 +96,11 @@ const loader = ()=>{
     });
 }
 
-window.getGrafiksData = async ()=>{
+window.getGraphicsData = async ()=>{
     if(b) return b;
     if(!("bilder" in window)) window.bilder = loader(); //Erst Loader, dann auch bei vielen Aufrufen
     b = await bilder;
-    console.log("Alle Assets (ilder) Sehen breit!");
+    console.log("Alle Assets (Bilder) Sehen breit!");
     return b;
 }
 
@@ -148,7 +148,7 @@ window.addEventListener("load", async function () {
         draw();
         console.log("Started Drawing...");
     } else console.log("Error! No Canvas!");
-    getGrafiksData().then(()=>{});
+    getGraphicsData().then(()=>{});
 });
 
 function resizeCanvas(){
@@ -205,7 +205,7 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
         this.isFlipping = false;
         this.onMoveEnd = [];
         this.pos = pos;
-        this.img = img;
+        this.img = img ? img.cloneNode(true) : null;
         this.widthAnteil = 1;
         this.id = Math.random().toString(); //Um Effizient key => Vlaue zugriff in objects
         animationObjects[this.id] = this;
@@ -214,12 +214,12 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
     moveTo(posB, _time = 0.5) {
         return new Promise((resolve)=>{ //Wenn Bewegung Beended ist, damit für Gameplay
             this.onMoveEnd.push(resolve);
-            this.startPoint = {...this.pos}; //Gleifsetzen reicht nicht, da sont nur Object Poiter und nicht Werte kopiert. Durch JS Funktion werden alle werte einzelnt geklont also x und y
+            this.startPoint = {...this.pos}; //Gleifsetzen reicht nicht, da sont nur Object Pointer und nicht Werte kopiert. Durch JS Funktion werden alle werte einzelnt geklont also x und y
             this.time = _time;
             this.endPoint = posB;
             this.dx = (this.endPoint.x - this.startPoint.x) / this.time;
             this.dy = (this.endPoint.y - this.startPoint.y) / this.time;
-            this.isMoving = true; // Updater Erkennt Handlungsgedarf
+            this.isMoving = true; // Updater Erkennt Handlungsbedarf
 
             delete animationObjects[this.id];
             animationObjects[this.id] = this; //an oberste Stelle, über die anderen Karten!
@@ -232,18 +232,20 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
     }
     async changeSide(img = null) {
         if(!img) img = b.back;
+        if(typeof img === "string") img = (await getGraphicsData())[img];
         this.imgVorher = this.img;
-        this.imgNacher = img;
+        this.imgNacher = img.cloneNode(true);
         this.isFlipping = true;
         this.startFlippingTime = Date.now();
+        console.log("Drehen angefangen", this);
     }
     update(ctx, deltaTime) {
         if(this.isMoving) sinVel(this, {...this.pos});
         if(this.isFlipping) {
-            const timeVerstrichen = Date.now()-this.startFlippingTime; //Seid beginn des Drehens der Karte
-            this.widthAnteil = parabelfunktion(timeVerstrichen, flippingTime);  //Weil Wenn noch das alte dann schmaler werden wenn schon neue wieder breiter
-            if(this.img === this.imgVorher && timeVerstrichen >= flippingTime/2) this.img = this.imgNacher; //Die hälfe also ganz weg neues bild zeichen
-            if(this.widthAnteil >= 1) { //Drehen Abgeschlossen!
+            const timePassed = Date.now()-this.startFlippingTime; //Seid beginn des Drehens der Karte
+            this.widthAnteil = parabelfunktion(timePassed, flippingTime);  //Weil Wenn noch das alte dann schmaler werden wenn schon neue wieder breiter
+            if(this.img !== this.imgNacher && timePassed >= flippingTime/2) this.img = this.imgNacher; //Die hälfte also ganz weg neues bild zeichen
+            if(this.widthAnteil >= 1 && timePassed >= flippingTime/2) { //Drehen Abgeschlossen!
                 this.isFlipping = false;
                 this.widthAnteil = 1;
                 console.log("Drehen Abgeschlossen!");
@@ -284,20 +286,20 @@ window.GameCard = class GameCard extends AnimationObject {
     constructor(kartenwert = null, img, pos = {x: -200, y: -200}) {
         super(img, pos);
         this.kartenwert = kartenwert; //Um was für eine Karte hanelt es  sich ist Null wenn Srerver noch nicht geantowrtet.
-        this.stappelReferenze = null; //Auf welchem Stappel ist die Karte => Hat nur Grafische Auswirkungne nix Gameplay
+        this.StackReferenze = null; //Auf welchem Stack ist die Karte => Hat nur Grafische Auswirkungne nix Gameplay
     }
     moveTo(...p) {
         return super.moveTo(...p); //Einfach alle Paramzer Kopieren, weil eh gleich
     }
-    putOnStappel(stappel, time = normalMoveTime) { //Auf einen Stappel bewegen => Fächereffekt Möglich!
-        console.log("PUT ON STAPEL:", this.stappelReferenze);
-        if(this.stappelReferenze) this.stappelReferenze.remove(); //Falls auf Altem Erst Weg!
-        this.stappelReferenze = stappel._add(this, time);
-        return this.stappelReferenze.promise;
+    putOnStack(Stack, time = normalMoveTime) { //Auf einen Stack bewegen => Fächereffekt Möglich!
+        console.log("PUT ON STAPEL:", this.StackReferenze);
+        if(this.StackReferenze) this.StackReferenze.remove(); //Falls auf Altem Erst Weg!
+        this.StackReferenze = Stack._add(this, time);
+        return this.StackReferenze.promise;
     }
 }
 
-window.Stappel = class Stappel {
+window.Stack = class Stack {
     constructor(pos = {x: 0, y: 0}, type = "faecher") {
         this.pos = pos;
         this.cards = {};
@@ -307,37 +309,42 @@ window.Stappel = class Stappel {
         console.log("Get Oberste:", this, this.cards);
         return Object.keys(this.cards).length === 0 ? null : Object.values(this.cards)[Object.values(this.cards).length-1];
     }
-    moveTo(posB, time = normalMoveTime) { //Um Stappel mit allen Karten zu bewegen
+    getObersteViele(count = 1) {
+        console.log("Get Oberste viele:", this, this.cards);
+
+        return Object.keys(this.cards).length === 0 ? [] : Object.values(this.cards).slice(-count);
+    }
+    moveTo(posB, time = normalMoveTime) { //Um Stack mit allen Karten zu bewegen
         const old = this.cards;
         this.cards = {};
         return Promise.all(Object.values(old).map(c => this.add(c, time)));
     }
     add(card, time = normalMoveTime) {
-        return card.putOnStappel(this, time);
+        return card.putOnStack(this, time);
     }
     _add(card, time = normalMoveTime) {
         const id = Math.random().toString();
-        const cardPos = {y: this.pos.y, x: this.type === "faecher" ? this.pos.x+faecherStappelCardAbstand*Object.keys(this.cards).length : this.pos.x}
-        console.log("Add To Stappel:", this, id);
+        const cardPos = {y: this.pos.y, x: this.type === "faecher" ? this.pos.x+faecherStackCardAbstand*Object.keys(this.cards).length : this.pos.x}
+        console.log("Add To Stack:", this, id);
         this.cards[id] = card;
         const promise = card.moveTo(cardPos, time);
         return {remove: ()=>{
             if(id in this.cards) delete this.cards[id]
         }, promise};
     }
-    async copyStappel(andererStappel, count = -1, reverse = true, time = normalMoveTime) { //Um Ganzen Stappel auf anderen Stappel zu bewegen. Reverse Gibt an ob der Stappel umgedreht werden soll  oder niht
-        if(andererStappel === this) return; //Soll nicht auf sich selber sondt => Unsendlich Loop
-        console.log("Copy:", this, andererStappel);
+    async copyStack(andererStack, count = -1, reverse = true, time = normalMoveTime) { //Um Ganzen Stack auf anderen Stack zu bewegen. Reverse Gibt an ob der Stack umgedreht werden soll  oder niht
+        if(andererStack === this) return; //Soll nicht auf sich selber sondt => Unsendlich Loop
+        console.log("Copy:", this, andererStack);
         if(reverse) {
             while(this.getOberste() && count !== 0) {
                 console.log("Put One...");
-                const p = this.getOberste().putOnStappel(andererStappel, time);
+                const p = this.getOberste().putOnStack(andererStack, time);
                 await p;
                 count--;
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
         } else {
-            const pList = (count < 0 ? Object.values(this.cards) : (Object.values(this.cards).slice(-count))).map(card => card.putOnStappel(andererStappel, time));
+            const pList = (count < 0 ? Object.values(this.cards) : (Object.values(this.cards).slice(-count))).map(card => card.putOnStack(andererStack, time));
             console.log("Copy without Reverse..", count, pList, this.cards);
 
             await Promise.all(pList);

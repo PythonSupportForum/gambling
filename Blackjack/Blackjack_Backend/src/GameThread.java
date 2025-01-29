@@ -525,13 +525,13 @@ public class GameThread implements Runnable {
     private void checkValue(int index) {
         ArrayList<GameCard> cardStack = playerStack.get(index);
         if (currentValue(cardStack) > 21) {
-            states.put(cardStack, StackState.LOST);
+            states.replace(cardStack, StackState.LOST);
             System.out.println("Bust! Du hast auf Stapel " + (index + 1) + " verloren!");
             cardInput[index] = true;
         }
         else if (currentValue(cardStack) == 21) {
             System.out.println("Herzlichen Glückwunsch! Du hast auf Stapel " + (index + 1) + " einen Blackjack!");
-            states.put(cardStack, StackState.WON);
+            states.replace(cardStack, StackState.WON);
             cardInput[index] = true;
         }
     }
@@ -635,7 +635,7 @@ public class GameThread implements Runnable {
                             playerStack.get(index + 1).add(playerStack.get(index).get(1));
                             playerStack.get(index).remove(1);
                             splitCount++;
-                            states.put(temp, StackState.RUNNING);
+                            states.replace(temp, StackState.RUNNING);
                             wartet = false;
                         } else {
                             wartet = false;
@@ -647,30 +647,40 @@ public class GameThread implements Runnable {
             }
         }
         public void checkGameState(){
-
             if (insuranceBet > 0 && dealerStack.get(0).getValue() == 'a') {
                 coins += insuranceBet;
                 System.out.println("Du hast den Insurance Bet erhalten!");
             }
 
             for(int i = 0; i <= splitCount; i++) {
-                ArrayList<GameCard> a = new ArrayList<>();
-                if (currentValue(dealerStack) < currentValue(playerStack.get(i))) {
+                ArrayList<GameCard> a = playerStack.get(i);
+                if(states.get(a) == StackState.RUNNING){
+                    if (currentValue(dealerStack) < currentValue(a)) {
+                        states.replace(a, StackState.WON);
+                    } else if(currentValue(dealerStack) == currentValue(a)){
+                        states.replace(a, StackState.PUSH);
+                    } else if (currentValue(dealerStack) > currentValue(a)) {
+                        states.replace(a, StackState.LOST);
+                    } else {
+                        System.out.println("Ups??!? Ein Fehler ist aufgetreten! 1");
+                    }
+                }
+                if(states.get(a) == StackState.WON)
+                {
                     System.out.println("Auf Stapel " + (i + 1) + " hast du gewonnen!");
                     coins += 2 * bet;
-                    states.put(a, StackState.WON);
                     System.out.println("Du hast " + bet + " Coins gewonnen");
-                } else if(currentValue(dealerStack) == currentValue(playerStack.get(i))){
+                } else if (states.get(a) == StackState.PUSH) {
                     System.out.println("Push auf Stapel " + (i + 1) + "!");
                     coins += bet;
-                    states.put(a, StackState.PUSH);
                     System.out.println("Du hast " + bet + " Coins zurück erhalten!");
-                } else if (currentValue(dealerStack) > currentValue(playerStack.get(i))) {
+                }
+                else if (states.get(a) == StackState.LOST) {
                     System.out.println("Du hast auf Stapel " + (i + 1) + " verloren!");
                     System.out.println("Du hast " + bet + " Coins verloren!");
-                    states.put(a, StackState.LOST);
-                } else {
-                    System.out.println("Ups??!? Ein Fehler ist aufgetreten!");
+                }
+                else {
+                    System.out.println("Ups??!? Ein Fehler ist aufgetreten! 2");
                 }
             }
             setGameState(GameState.GAME_END);

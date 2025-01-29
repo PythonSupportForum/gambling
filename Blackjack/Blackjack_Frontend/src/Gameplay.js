@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("startGameButton").onclick = async (event) => {
         event.preventDefault();
         event.stopPropagation();
-        console.log("Gami Stariiii!!!!");
+        console.log("Game Start!!!!");
         initVariables();
         initBackground();
         document.getElementById("GameContainer").classList.add("show");
@@ -18,13 +18,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 const initBackground = async ()=> {
-    const t = (await getGrafiksData()).table;
+    const t = (await getGraphicsData()).table;
     addDrawingThread((ctx)=>{
         ctx.drawImage(t, 0, 0, ctx.canvas.width, ctx.canvas.height);
     });
 }
 
-window.ziehenStappel = null;
+window.ziehenStack = null;
 
 
 const mischeAnimationDelaler = () => {
@@ -35,11 +35,11 @@ const mischeAnimationDelaler = () => {
         return [y1, y2];
     }
     return new Promise(async resolve => {
-        const b = await getGrafiksData();
+        const b = await getGraphicsData();
 
         const [y1, y2] = calculateRowCoordinates(window.innerHeight, cardHeight);
-        const aS = new Stappel({x: 100, y: y1+cardHeight/2});
-        const bS = new Stappel({x: 100, y: y2+cardHeight/2});
+        const aS = new Stack({x: 100, y: y1+cardHeight/2});
+        const bS = new Stack({x: 100, y: y2+cardHeight/2});
 
         console.log("Add Cards:", b.back);
         for(let i = 0; i < 10; i++) await aS.add(new GameCard(null, b.back), 0.2);
@@ -47,9 +47,9 @@ const mischeAnimationDelaler = () => {
 
         setTimeout(async ()=> {
             console.log("Start Copy!");
-            await aS.copyStappel(bS, -1, true, 0.2);
+            await aS.copyStack(bS, -1, true, 0.2);
             console.log("Copy to Ziehen!");
-            await bS.copyStappel(ziehenStappel, -1, false); //Am Ende der Einleitungs Animation fliegen alle Karten zu dem Ziehstappel
+            await bS.copyStack(ziehenStack, -1, false); //Am Ende der Einleitungs Animation fliegen alle Karten zu dem ZiehStack
             console.log("Cpoied to ziehen!");
             resolve();
         }, 1000);
@@ -57,17 +57,23 @@ const mischeAnimationDelaler = () => {
 }
 
 const welcome = async ()=>{
-    await Promise.all([
-        messageQueue.mehrneMesagesAnzeigen([
-            "Hallo!",
-            "Willkommen bei Blackjack!",
-            "Von Carli und Florian!",
-            "Der Dealer ist dem Spiel beigetreten...",
-            "Die Karfen werden gemischt...",
-            "Du wirst sterben!"
-        ]),
-        mischeAnimationDelaler()
-    ]);
+    if(0 < -6) {
+        await Promise.all([
+            messageQueue.mehrneMesagesAnzeigen([
+                "Hallo!",
+                "Willkommen bei Blackjack!",
+                "Von Carl und Florian!",
+                "Der Dealer ist dem Spiel beigetreten...",
+                "Die Karten werden gemischt..."
+            ]),
+            mischeAnimationDelaler()
+        ]);
+    }
+
+    const z = await getGraphicsData();
+    for(let i = 0; i < 10; i++) await  ziehenStack.add(new GameCard(null, z["back"]), 0.2);
+
+
     console.log("Einleitungs Animation fertig!");
 
     //let temp = new GameCard(b.a_s, "spades", "a")
@@ -84,13 +90,31 @@ const welcome = async ()=>{
 
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    await addUserStappel(); //Ersten User Stappel vor ertem Spitten
+    await adduserStack(); //Ersten User Stack vor ertem Spitten
 
-    await ziehenStappel.copyStappel(userStappel[runningStappelId], 2); //Zwei Karten auf den Ersten user Stappel zuehen
-    const b = await getGrafiksData();
-    userStappel[runningStappelId].getOberste().changeSide(b["4_d"]); //Und dann beide aufdecken
-    userStappel[runningStappelId].getOberste().changeSide(b["2_d"]);
+    let running = true;
+    const flip = ["10_c", "8_h"];
 
+    let deckValues = [0,0,0,0];
+
+    console.log("hier:",flip);
+
+    await ziehenStack.copyStack(userStack[runningStackId], 2); //Zwei Karten auf den Ersten user Stack zuehen
+
+    console.log("g!")
+    let a = [];
+    for (let i = 0; i < flip.length; i++) {
+        console.log("i:",i,flip[i],userStack[runningStackId].getObersteViele(2)[i]);
+        a.push(userStack[runningStackId].getObersteViele(2)[i].changeSide(flip[i]));
+    }
+
+    await Promise.all(a);
+
+    console.log("Gameplay loop");
+
+    while(running){
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
 }
 
 const showZweiDealerKarten = async ()=>{
@@ -106,24 +130,18 @@ const showZweiDealerKarten = async ()=>{
     const positions = calculateCardPositions();
 
     const links = positions[0];
-    window.dealerLinkerStappel = new Stappel(links);
+    window.dealerLeftStack = new Stack(links);
 
-    await ziehenStappel.copyStappel(dealerLinkerStappel, 2);
+    await ziehenStack.copyStack(dealerLeftStack, 2);
 
-    const b = await getGrafiksData();
-
-    console.log("SHOW:", b["4_d"]);
-
-    dealerLinkerStappel.getOberste().changeSide(b["4_d"]);
+    await dealerLeftStack.getOberste().changeSide("4_d");
 
     console.log("Dealer hat gezogen!");
-
-
 }
 
 
-const addUserStappel = ()=>{
-    function calculateCardPositions(count = userStappel.length+1, screenWidth = window.innerWidth, screenHeight = window.innerHeight, cardWidth = 100) { //Um die Player Stappel gleihmäßig auf der unterhälfte des bildschirms zu verteilen => Berechnet Koords der Spappel
+const adduserStack = ()=>{
+    function calculateCardPositions(count = userStack.length+1, screenWidth = window.innerWidth, screenHeight = window.innerHeight, cardWidth = 100) { //Um die Player Stack gleihmäßig auf der unterhälfte des bildschirms zu verteilen => Berechnet Koords der Spappel
         const lowerHalfHeight = screenHeight / 2;
         const y = screenHeight - lowerHalfHeight / 2; // Mittig in der unteren Hälfte, von der höhe her
         // Berechne den Gesamtabstand, den alle Karten einnehmen
@@ -136,12 +154,12 @@ const addUserStappel = ()=>{
         }
         return positions;
     }
-    const neuePositions = calculateCardPositions();
-    for(let i = 0; i < userStappel.length; i++) userStappel[i].moveTo(neuePositions[i]);
-    userStappel.push(new Stappel(neuePositions[neuePositions.length-1])); //Letes Element für neuen Stappel => Rechts angehangen
+    const newPositions = calculateCardPositions();
+    for(let i = 0; i < userStack.length; i++) userStack[i].moveTo(neuePositions[i]);
+    userStack.push(new Stack(newPositions[newPositions.length-1])); //Letes Element für neuen Stack => Rechts angehangen
 }
 const initVariables = ()=>{
-    window.ziehenStappel = new Stappel({x: window.innerWidth-cardWidth, y: 120}, "normal");
-    window.userStappel = [];
-    window.runningStappelId = 0;
+    window.ziehenStack = new Stack({x: window.innerWidth-cardWidth, y: 120}, "normal");
+    window.userStack = [];
+    window.runningStackId = 0;
 }
