@@ -82,7 +82,14 @@ const welcome = async ()=>{
 
    // card.moveTo(700, 400);
 
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     await addUserStappel(); //Ersten User Stappel vor ertem Spitten
+
+    await ziehenStappel.copyStappel(userStappel[runningStappelId], 2); //Zwei Karten auf den Ersten user Stappel zuehen
+    const b = await getGrafiksData();
+    userStappel[runningStappelId].getOberste().changeSide(b["4_d"]); //Und dann beide aufdecken
+    userStappel[runningStappelId].getOberste().changeSide(b["2_d"]);
 
 }
 
