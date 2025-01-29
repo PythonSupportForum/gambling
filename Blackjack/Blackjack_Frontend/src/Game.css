@@ -154,20 +154,35 @@ button:active {
     opacity: 0;
 }
 
-.GameContainer > .elements-container .buttons {
-    z-index: 6;
-    opacity: 0;
-    position: absolute;
+.buttons {
+    position: fixed;
     bottom: 0;
     left: 0;
-    width: 100%;
-    height: 100px;
+    width: 150px;
+    height: 250px;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 20px;
     transition: all 0.2s;
+    z-index: 6;
+    opacity: 0;
+    pointer-events: none;
 }
-.GameContainer > .elements-container .buttons.show {
+.buttons.show {
     opacity: 1;
+    pointer-events: auto;
+}
+
+.buttons button {
+    display: none;
+    transition: all 0.2s;
+}
+.buttons button:hover {
+    background-color: #e6ac0c;
+    cursor: pointer;
+}
+.buttons button.show {
+    display: block;
 }

@@ -72,7 +72,8 @@ let toLoad = {
     "k_s": "https://gambling.megdb.de/assets/karten/spade/K.svg",
 
     "back": "https://gambling.megdb.de/assets/Kartenrücken.png",
-    "table": "https://gambling.megdb.de/assets/table.png"
+    "table": "https://gambling.megdb.de/assets/table.png",
+    "end": "https://gambling.megdb.de/assets/karten/end.png"
 }
 // endregion
 
@@ -139,8 +140,12 @@ function resizeCanvas(){
 window.buttons = {
     show: (types) =>{
         document.getElementById("buttonsDiv").classList.add("show");
+        [...document.getElementById("buttonsDiv").querySelectorAll("button")].forEach(b => b.classList.remove("show"))
         Object.keys(types).forEach(t => {
-            [...document.getElementById("buttonsDiv").querySelectorAll("."+t)].forEach(b => b.onclick = types[t]);
+            [...document.getElementById("buttonsDiv").querySelectorAll("."+t)].forEach(b => {
+                b.onclick = types[t];
+                b.classList.add("show");
+            });
         });
     },
     hide: ()=>{
@@ -227,7 +232,6 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
     async changeSide(img = null) {
         if(!img) img = b.back;
         if(typeof img === "string") img = (await getGraphicsData())[img];
-        this.imgVorher = this.img;
         this.imgNacher = img.cloneNode(true);
         this.isFlipping = true;
         this.startFlippingTime = Date.now();
@@ -238,7 +242,7 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
         if(this.isFlipping) {
             const timePassed = Date.now()-this.startFlippingTime; //Seid beginn des Drehens der Karte
             this.widthAnteil = parabelfunktion(timePassed, flippingTime);  //Weil Wenn noch das alte dann schmaler werden wenn schon neue wieder breiter
-            if(this.img === this.imgVorher && timePassed >= flippingTime/2) this.img = this.imgNacher; //Die hälfte also ganz weg neues bild zeichen
+            if(this.img !== this.imgNacher && timePassed >= flippingTime/2) this.img = this.imgNacher; //Die hälfte also ganz weg neues bild zeichen
             if(this.widthAnteil >= 1 && timePassed >= flippingTime/2) { //Drehen Abgeschlossen!
                 this.isFlipping = false;
                 this.widthAnteil = 1;
@@ -330,6 +334,14 @@ window.Stack = class Stack {
         this.cards = {};
         this.type = type;
         this.faecherSteps = faecherSteps; //Nur Releant für Type = Faechem
+    }
+    length() {
+        return Object.keys(this.cards).length;
+    }
+    wert() {
+        let w = 0;
+        Object.values(this.cards).forEach(c => w+=c.kartenwert);
+        return w;
     }
     getOberste() {
         console.log("Get Oberste:", this, this.cards);

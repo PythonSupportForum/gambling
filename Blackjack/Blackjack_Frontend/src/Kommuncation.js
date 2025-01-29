@@ -42,6 +42,14 @@ window.karteZiehen = ()=>new Promise(async resolve => {
         points: 4
     });
 });
+window.karteZiehenDealer = ()=>new Promise(async resolve => {
+    const socket = await connectSocket();
+
+    resolve({
+        type: "4_d",
+        points: 4
+    });
+});
 //Um ein Neues PSiel zu starten => Übergeben wird der einseatz => Muss an derver gegeben werden, Zurückgegeben wird die erste sichtbare umgedrehte karte des dellers.
 window.startNewGame = (einsatz)=>new Promise(async resolve => {
     const socket = await connectSocket();
