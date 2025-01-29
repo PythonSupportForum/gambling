@@ -82,6 +82,8 @@ const welcome = async ()=>{
 
    // card.moveTo(700, 400);
 
+    await addUserStappel(); //Ersten User Stappel vor ertem Spitten
+
 }
 
 const showZweiDealerKarten = async ()=>{
@@ -89,13 +91,9 @@ const showZweiDealerKarten = async ()=>{
         const upperHalfHeight = screenHeight / 2;
         const y = upperHalfHeight / 2; // Mittig in der oberen Hälfte
         const gap = cardWidth + 30; // Abstand zwischen den Karten
-
-        const x1 = screenWidth / 2 - gap / 2; // Linke Karte
-        const x2 = screenWidth / 2 + gap / 2; // Rechte Karte
-
         return [
-            { x: x1, y: y }, // Position der linken Karte
-            { x: x2, y: y }, // Position der rechten Karte
+            { x: screenWidth / 2 - gap / 2, y: y }, // Position der linken Karte
+            { x: screenWidth / 2 + gap / 2, y: y }, // Position der rechten Karte
         ];
     }
     const positions = calculateCardPositions();
@@ -117,6 +115,26 @@ const showZweiDealerKarten = async ()=>{
 }
 
 
+const addUserStappel = ()=>{
+    function calculateCardPositions(count = userStappel.length+1, screenWidth = window.innerWidth, screenHeight = window.innerHeight, cardWidth = 100) { //Um die Player Stappel gleihmäßig auf der unterhälfte des bildschirms zu verteilen => Berechnet Koords der Spappel
+        const lowerHalfHeight = screenHeight / 2;
+        const y = screenHeight - lowerHalfHeight / 2; // Mittig in der unteren Hälfte, von der höhe her
+        // Berechne den Gesamtabstand, den alle Karten einnehmen
+        const totalGap = (count - 1) * (cardWidth + 30); // 30 ist der Abstand zwischen den Karten
+        const startX = (screenWidth - totalGap) / 2; // Startposition => Position der Katen
+        const positions = [];
+        for (let i = 0; i < count; i++) {
+            const x = startX + i * (cardWidth + 30); // Berechne lassen die xPosition für jede Karte
+            positions.push({ x, y });
+        }
+        return positions;
+    }
+    const neuePositions = calculateCardPositions();
+    for(let i = 0; i < userStappel.length; i++) userStappel[i].moveTo(neuePositions[i]);
+    userStappel.push(new Stappel(neuePositions[neuePositions.length-1])); //Letes Element für neuen Stappel => Rechts angehangen
+}
 const initVariables = ()=>{
     window.ziehenStappel = new Stappel({x: window.innerWidth-cardWidth, y: 120}, "normal");
+    window.userStappel = [];
+    window.runningStappelId = 0;
 }
