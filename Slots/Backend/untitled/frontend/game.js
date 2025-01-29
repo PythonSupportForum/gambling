@@ -221,11 +221,11 @@ window.play = async ()=>{
                 let speedProTime = strecke/1000;
                 if(Math.abs(speedProTime) < 5) speedProTime *= 10;
 
-                speed += speedProTime-speed > 0 ? 0.1 : -0.1;
+                speed += speedProTime-speed > 0 ? 0.4 : -0.4;
 
                 if(Math.abs(strecke) < 5) {
                     speed -= strecke/10000;
-                    speed -= 0.5;
+                    speed -= 0.45;
                 }
             }
             //if(Math.abs(speed) > 40) speed -= Math.max(Math.sqrt(speed), 1);
