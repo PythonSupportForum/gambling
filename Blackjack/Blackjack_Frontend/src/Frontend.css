@@ -1,170 +1,260 @@
-* {
-    box-sizing: border-box;
-    overflow: hidden;
-}
-html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-}
-body {
-    margin: 0;
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(145deg, #111, #444);
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    position: relative;
-}
-
-.container {
-    text-align: center;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-    width: 90%;
-    max-width: 400px;
-}
-
-h1 {
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #ffc107;
-}
-
-p {
-    font-size: 1rem;
-    margin-bottom: 30px;
-    color: #ddd;
-}
-
-button {
-    padding: 15px 30px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #000;
-    background: #ffc107;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 15px rgba(255, 193, 7, 0.6);
-}
-
-button:active {
-    transform: translateY(1px);
-    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.4);
-}
-
-.GameContainer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 2;
-    background-color: darkgreen;
+@ -9,4 +9,258 @@ body{
     background-image: url('/../assets/Blackjack.jpg');
     background-repeat: no-repeat;
     background-size: cover;
-    transition: all 1s;
-    opacity: 0;
-    pointer-events: none;
 }
-.GameContainer.show {
-    opacity: 1;
-    pointer-events: auto;
-    cursor: crosshair;
-}
-.GameContainer > .elements-container {
-    position: relative;
-    height: 100%;
-    width: 100%;
-    pointer-events: none;
-    z-index: 1;
-}
-.GameContainer > .elements-container > * {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-.GameContainer > .elements-container > canvas {
-    z-index: 3 !important;
 }
 
-.GameContainer > .elements-container > .message-container {
-    z-index: 5 !important;
+
+
+#StartGame {
+/* Styling für den StartGame-Bereich */
+margin-top: 230px; /* Optional: Fügt Abstand zwischen den Elementen hinzu */
+}
+
+
+
+
+
+
+*{
+    font-family: Helvetica;
+    color: #15471c;
+}
+
+.Header {
+    position: fixed;
+    top: 0px;
+    bottom: 85%;
+    left: 0px;
+    right: 0px;
+    background-color: #00541d;
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
     text-align: center;
-    padding: 15px;
-}
-.GameContainer > .elements-container > .message-container > .message-box {
-    width: 400px;
-    max-width: 100%;
-    text-align: center;
-}
-.GameContainer > .elements-container > .message-container h2 {
-    margin: 0;
-    padding: 0;
-    font-size: 30px;
-    opacity: 0;
     color: white;
-    animation: fadeInOut 3s ease-in-out forwards;
+    padding-right: 10%;
+
 }
-@keyframes fadeInOut {
-     0% {
-         opacity: 0;
-     }
-     10% {
-         opacity: 1;
-     }
-     50% {
-         opacity: 1;
-     }
-     100% {
-         opacity: 0;
-     }
- }
-.GameContainer > .elements-container > .overlay {
-    opacity: 1;
-    z-index: 4;
-    position: absolute;
-    top: 0;
-    left: 0;
+
+#Logo {
+position: fixed;
+top: 3%;
+left: 3%;
+height: 20%;
+aspect-ratio: 982 / 669;
+transform: rotate(-10deg);
+}
+
+
+#Anmelden {
+padding: 10px;
+width: 20%;
+font-size: 2vw;
+color: #e6ac0c;
+background-color: transparent;
+border-style: solid;
+border-top-color: #e6ac0c;
+border-left-color: #e6ac0c;
+border-right-color: #f8bb12;
+border-bottom-color: #f8bb12;
+border-width: 15px;
+border-radius: 400px;
+transition: all 0.2s;
+cursor: pointer;
+overflow: hidden;
+position: relative;
+display: inline-block;
+text-align: center;
+}
+#Anmelden:hover {
+transform: scale(0.95);
+}
+#Anmelden.form {
+animation: buttonToSign 10s forwards;
+}
+#Anmelden .form-container {
+position: absolute;
+top: 0;
+left: 0;
+bottom: 0;
+right: 0;
+padding: 10px;
+overflow-x: hidden;
+overflow-y: auto;
+color: white;
+}
+#Anmelden.form .form-container {
+opacity: 1;
+cursor: auto;
+}
+#Anmelden:not(.form) .form-container {
+opacity: 0;
+pointer-events: none;
+display: none;
+}
+#Anmelden:not(.form) .text {
+animation: fadeIn 2s forwards;
+}
+#Anmelden.form .text {
+animation: fadeOut 2s forwards;
+pointer-events: none;
+}
+#Anmelden .text {
+color: #e6ac0c;
+opacity: 1;
+}
+
+#Guthaben {
+font-size: 4vw;
+color: #e6ac0c;
+}
+#Taler {
+position: fixed;
+top: 5%;
+right: 5%;
+height: 5%;
+aspect-ratio: 1 / 1;
+}
+
+@keyframes buttonToSign {
+    0% {
+        color: transparent;
+        background-color: #00541d;
+    }
+    10% {
+        width: 80%;
+        height: 60vh;
+        transform: translate(10vw, 50vh);
+        border-radius: 50px;
+        background-color: #00541d;
+    }
+    100% {
+        width: 80%;
+        height: 60vh;
+        transform: translate(10vw, 50vh);
+        border-radius: 50px;
+        color: transparent;
+        background-color: #00541d;
+    }
+}
+@keyframes fadeIn {
+    0% {
+        opacity: 0;  /* Zu Beginn unsichtbar */
+    }
+    100% {
+        opacity: 1;  /* Am Ende vollständig sichtbar */
+    }
+}
+@keyframes fadeOut {
+    0% {
+        opacity: 1;  /* Zu Beginn unsichtbar */
+    }
+    100% {
+        opacity: 0;  /* Am Ende vollständig sichtbar */
+    }
+}
+
+.form-group {
+    margin-bottom: 15px;
+    color: white;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input {
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    transition: opacity 0.5s;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
 }
-.GameContainer > .elements-container > .overlay.hide {
-    opacity: 0;
-}
-.GameContainer > .elements-container > .buttons {
-    z-index: 5;
-    position: absolute;
-    bottom: 0;
-    left: 0;
+
+.btn-submit {
     width: 100%;
-    height: 200px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
 }
-.GameContainer > .elements-container > .buttons.show {
-    opacity: 1;
+
+.btn-submit:hover {
+    background-color: #45a049;
+}
+
+.error {
+    color: red;
+    font-size: 14px;
+    text-align: center;
+}
+
+#Slots {
+width: 40%;
+height: 22.5%;
+position: fixed;
+right: 7.5%;
+top: 35%;
+}
+
+#BlackjackButton {
+height: 7%;
+position: fixed;
+bottom: 35%;
+width: 20%;
+left: 17.5%;
+background-color: #e6ac0c;
+border: solid 15px #e6ac0c;
+border-radius: 40px;
+color: #00541d;
+font-weight: 700;
+font-size: 60px;
+}
+
+#SlotsButton {
+height: 7%;
+width: 20%;
+margin-top: 46.5%;
+margin-left: 40%;
+background-color: #e6ac0c;
+border: solid 15px #e6ac0c;
+border-radius: 40px;
+color: #00541d;
+font-weight: 700;
+font-size: 60px;
+z-index: 5;
+}
+
+#BlackjackImage {
+width: 40%;
+position: fixed;
+left: 7.5%;
+top: 35%;
+border-radius: 40px;
+}
+#SlotsImage {
+width: 40%;
+position: fixed;
+right: 7.5%;
+top: 35%;
+border-radius: 40px;
+z-index: 4;
+}
+
+#Footer {
+height: 10%;
+width: 100%;
+background-color: #00541d;
+position: fixed;
+bottom: 0px;
+left: 0px;
+right: 0px;
+
 }
