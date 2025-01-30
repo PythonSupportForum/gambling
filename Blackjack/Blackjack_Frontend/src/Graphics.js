@@ -377,8 +377,8 @@ window.Stack = class Stack {
     }
     wert() {
         let w = 0;
-        Object.values(this.cards).forEach(c => w+=c.wertZaehlen ? c.kartenwert : 0);
-        return w-this.unovollstaendigerWert;
+        Object.values(this.cards).forEach(c => w+=(c.wertZaehlen?c.kartenwert:0));
+        return w;
     }
     getOberste() {
         console.log("Get Oberste:", this, this.cards);
