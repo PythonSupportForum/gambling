@@ -21,7 +21,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 const getEinsatz = ()=>new Promise(resolve => {
-   resolve(10000);
+   document.getElementById("seztenPoupupContainer").classList.add("show");
+   document.getElementById("setEinsatzButton").onclick = ()=>{
+       const v = document.getElementById("einsatzValue").value;
+       if(v < 100 || v > 100000) return;
+       document.getElementById("seztenPoupupContainer").classList.remove("show");
+       setTimeout(()=>resolve(Number(v))); //Weil Karten SOnst schon umgedreht werden bevor transition von css verschwinden noch nicht fertig ist
+   }
+   const slider = document.getElementById("einsatzValue");
+   const output = document.getElementById("sliderValue");
+
+   slider.oninput = function() {
+       output.innerHTML = this.value + " €";
+   };
 });
 const userKarfenZiehen = async (count = 1) => {
     if(userStack[runningStackId].restMaxCount !== -1) {
@@ -204,6 +216,7 @@ const showFinalResule = ()=>{
 }
 
 const showDealerKarten = async (gameInfoPromise = null, countVerschlosseneKarten = 1, schnellDreien = false)=>{
+    dealerLeftStack.direktWertUpdate = false;
     if(!gameInfoPromise) gameInfoPromise = await karteZiehenDealer();
     if(!schnellDreien) {
         await ziehenStack.copyStack(dealerLeftStack, 1+countVerschlosseneKarten);

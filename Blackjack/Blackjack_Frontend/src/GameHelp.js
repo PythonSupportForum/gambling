@@ -92,6 +92,7 @@ const closeUserStappel = async (index) => {
     ]);
 }
 const closeDellerStappel = async (s) => {
+    await new Promise(resolve => setTimeout(resolve, 500)); //Um den Fail zu sehen
     const card = ziehenStack.karfenZiehen(1)[0];
     s.showInfo = false;
     await Promise.all([

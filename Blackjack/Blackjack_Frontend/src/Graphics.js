@@ -341,6 +341,7 @@ window.Stack = class Stack {
         this.showPoints = false;
         this.showInfo = false;
         this.restMaxCount = -1;
+        this.direktWertUpdate = true; //Soll der angezeigte Wert schon beim Losfliegen aktualisiert werden
     }
     startShowPoits() {
         this.showInfo = true;
@@ -395,9 +396,12 @@ window.Stack = class Stack {
         return Object.keys(this.cards).length === 0 ? [] : Object.values(this.cards).slice(-count);
     }
     moveTo(posB, time = normalMoveTime) { //Um Stack mit allen Karten zu bewegen
-        const old = this.cards;
-        this.cards = {};
-        return Promise.all(Object.values(old).map(c => this.add(c, time)));
+        const diff = {x: posB.x-this.pos.x, y:  posB.y-this.pos.y}; //Relwtive Befweung des Stappels
+        console.log("Mve S:", diff);
+        this.showInfo = false;
+        this.pos = posB;
+        setTimeout(()=>this.showInfo=true, 700);
+        return Promise.all(Object.values(this.cards).map(c => c.moveTo({x: c.pos.x+diff.x, y: c.pos.y+diff.y})));
     }
     add(card, time = normalMoveTime) {
         return card.putOnStack(this, time);
@@ -406,7 +410,7 @@ window.Stack = class Stack {
         const id = Math.random().toString();
         const cardPos = {y: this.pos.y, x: this.type === "faecher" ? this.pos.x+this.faecherSteps*Object.keys(this.cards).length : this.pos.x}
         console.log("Add To Stack:", this, id);
-        card.wertZaehlen = false;
+        if(!this.direktWertUpdate) card.wertZaehlen = false;
         this.cards[id] = card;
         const promise = card.moveTo(cardPos, time);
         (async ()=>{
