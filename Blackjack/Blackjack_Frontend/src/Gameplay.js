@@ -26,7 +26,7 @@ const getEinsatz = ()=>new Promise(resolve => {
        const v = document.getElementById("einsatzValue").value;
        if(v < 100 || v > 100000) return;
        document.getElementById("seztenPoupupContainer").classList.remove("show");
-       setTimeout(()=>resolve(Number(v))); //Weil Karten SOnst schon umgedreht werden bevor transition von css verschwinden noch nicht fertig ist
+       setTimeout(()=>resolve(Number(v)), 1500); //Weil Karten SOnst schon umgedreht werden bevor transition von css verschwinden noch nicht fertig ist
    }
    const slider = document.getElementById("einsatzValue");
    const output = document.getElementById("sliderValue");

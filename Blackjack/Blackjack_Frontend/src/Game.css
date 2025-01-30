@@ -221,6 +221,11 @@ button:active {
     padding: 15px;
     border-radius: 15px;
 }
+.seztenPoupupContainer .bb {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
 
 
 
