@@ -95,7 +95,7 @@ const userKarfenZiehen = async (count = 1) => {
         userStack[userStack.length-1].einsatz = userStack[runningStackId].einsatz/2;
         userStack[runningStackId].einsatz = userStack[runningStackId].einsatz/2;
 
-        if(cards[0].kartenwert === 11) {
+        if(cards.length > 0 && cards[0].kartenwert === 11) {
             userStack[runningStackId].restMaxCount = 1;
             userStack[runningStackId-1].restMaxCount = 1;
         }
@@ -124,7 +124,7 @@ const welcome = async ()=> {
         console.log("Einleitungs Animation fertig!");
     } else { //Wenn kein Intro Karten so füllen
         const z = await getGraphicsData();
-        for(let i = 0; i < 20; i++) await ziehenStack.add(new GameCard(null, z["back"]), 0.05);
+        for(let i = 0; i < 40; i++) await ziehenStack.add(new GameCard(null, z["back"]), 0.05);
     }
     overlaySetStatus(false); //Hell Machen, Scwarzes Di weg bzw. Unsichtbar opayisty:0
     initDealerStappel();

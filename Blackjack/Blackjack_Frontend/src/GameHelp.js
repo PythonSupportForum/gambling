@@ -29,7 +29,7 @@ const mischeAnimationDelaler = () => {
         const bS = new Stack({x: 100, y: y2+cardHeight/2});
 
         console.log("Add Cards:", b.back);
-        for(let i = 0; i < 10; i++) await aS.add(new GameCard(null, b.back), 0.2);
+        for(let i = 0; i < 40; i++) await aS.add(new GameCard(null, b.back), 0.2);
         console.log("Added Cards!");
 
         setTimeout(async ()=> {
@@ -49,30 +49,23 @@ const initBackground = async ()=> {
     });
 }
 const adduserStack = ()=>{
-    function calculateCardPositions(
-        count = userStack.length + 1,
-        screenWidth = window.innerWidth,
-        screenHeight = window.innerHeight,
-        cardWidth = 100,
-        minGap = 30 // Minimaler Abstand zwischen den Karten
-    ) {
+    function calculateCardPositions(count = userStack.length+1, screenWidth = window.innerWidth, screenHeight = window.innerHeight, cardWidth = 100) { //Um die Player Stack gleihmäßig auf der unterhälfte des bildschirms zu verteilen => Berechnet Koords der Spappel
         const lowerHalfHeight = screenHeight / 2;
-        const y = screenHeight - lowerHalfHeight / 2; // Vertikal zentriert in der unteren Hälfte
-        // Verfügbare Breite für die Karten (ohne die Seitenränder)
-        const availableWidth = screenWidth - cardWidth;
-        // Berechne den optimalen Abstand basierend auf der Anzahl der Karten
-        const gap = Math.max(minGap, availableWidth / (count - 1)); // Abstand dynamisch berechnen, aber nicht kleiner als minGap
-        // Berechne die Startposition (zentriert)
-        const startX = (screenWidth - (count - 1) * gap - cardWidth) / 2;
-        // Erzeuge die Positionen für die Karten
+        const y = screenHeight - lowerHalfHeight / 2; // Mittig in der unteren Hälfte, von der höhe her
+        // Berechne den Gesamtabstand, den alle Karten einnehmen
+        const verfuegbarteBreie = screenWidth-count*cardWidth; //Wie viel Breie is abzuüglich von der Kerten breite noch na, Um die Lücken aufzteien zwischen den dingern
+        console.log("B:",verfuegbarteBreie, count);
+        const breteProGap = verfuegbarteBreie/(count+1); //Plus ein weil rechts und links noch platz
+        console.log("G:", breteProGap);
         const positions = [];
         for (let i = 0; i < count; i++) {
-            const x = startX + i * gap; // X-Position basierend auf dem berechneten Abstand
+            const x = breteProGap*(i+1)+cardWidth*(i+0.5);
             positions.push({ x, y });
         }
         return positions;
     }
     const newPositions = calculateCardPositions();
+    console.log("New Positions:", newPositions);
     for(let i = 0; i < userStack.length; i++) userStack[i].moveTo(newPositions[i]);
     userStack.push(new Stack(newPositions[newPositions.length-1], "faecher", addierenStappelFaecherSteps)); //Letes Element für neuen Stack => Rechts angehangen
 }
@@ -92,7 +85,7 @@ const initDealerStappel = ()=>{
 }
 const closeUserStappel = async (index) => {
     const card = ziehenStack.karfenZiehen(1)[0];
-    userStack[index].showPoints = false;
+    userStack[index].showInfo = false;
     await Promise.all([
         userStack[index].add(card),
         card.changeSide("end")
@@ -100,7 +93,7 @@ const closeUserStappel = async (index) => {
 }
 const closeDellerStappel = async (s) => {
     const card = ziehenStack.karfenZiehen(1)[0];
-    s.showPoints = false;
+    s.showInfo = false;
     await Promise.all([
         s.add(card),
         card.changeSide("end")

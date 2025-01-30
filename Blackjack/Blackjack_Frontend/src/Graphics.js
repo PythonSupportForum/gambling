@@ -308,7 +308,7 @@ function draw() {
 
 
 window.GameCard = class GameCard extends AnimationObject {
-    constructor(kartenwert = null, img, pos = {x: -200, y: -200}) {
+    constructor(kartenwert = 0, img, pos = {x: -200, y: -200}) {
         super(img, pos);
         this.kartenwert = kartenwert; //Um was für eine Karte hanelt es  sich ist Null wenn Srerver noch nicht geantowrtet.
         this.StackReferenze = null; //Auf welchem Stack ist die Karte => Hat nur Grafische Auswirkungne nix Gameplay
@@ -340,6 +340,7 @@ window.Stack = class Stack {
         this.showPoints = false;
         this.showInfo = false;
         this.restMaxCount = -1;
+        this.unovollstaendigerWert = 0; //Der Anteil des Kartenstappelwertes, der noch nicht gerednert wird, da die Animation noch running ist.
     }
     startShowPoits() {
         this.showInfo = true;
@@ -377,7 +378,7 @@ window.Stack = class Stack {
     wert() {
         let w = 0;
         Object.values(this.cards).forEach(c => w+=c.kartenwert);
-        return w;
+        return w-this.unovollstaendigerWert;
     }
     getOberste() {
         console.log("Get Oberste:", this, this.cards);
@@ -405,6 +406,7 @@ window.Stack = class Stack {
         const id = Math.random().toString();
         const cardPos = {y: this.pos.y, x: this.type === "faecher" ? this.pos.x+this.faecherSteps*Object.keys(this.cards).length : this.pos.x}
         console.log("Add To Stack:", this, id);
+        this.unovollstaendigerWert += card.
         this.cards[id] = card;
         const promise = card.moveTo(cardPos, time);
         return {remove: ()=>{
