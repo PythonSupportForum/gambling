@@ -82,8 +82,17 @@ const initDealerStappel = ()=>{
 }
 const closeUserStappel = async (index) => {
     const card = ziehenStack.karfenZiehen(1)[0];
+    userStack[index].showPoints = false;
     await Promise.all([
         userStack[index].add(card),
+        card.changeSide("end")
+    ]);
+}
+const closeDellerStappel = async (s) => {
+    const card = ziehenStack.karfenZiehen(1)[0];
+    s.showPoints = false;
+    await Promise.all([
+        s.add(card),
         card.changeSide("end")
     ]);
 }

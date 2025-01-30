@@ -288,9 +288,8 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     try {
         Object.values(gameDrawThreads).forEach(c => c(ctx, deltaTime));
-        hicgherAnimationObjektsTop.forEach(c => c(ctx, deltaTime));
         Object.values(getUniqueAttributes(animationObjects, focusElements)).forEach(o => o.update(ctx, deltaTime));
-
+        hicgherAnimationObjektsTop.forEach(o => o.update(ctx, deltaTime)); //Damit die Kreise höher wiegen, über dem rest geuecgen werden
         if(overlayAlpha > 0) {
             ctx.fillStyle = `rgba(0, 0, 0, ${overlayAlpha})`;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -339,13 +338,17 @@ window.Stack = class Stack {
         this.faecherSteps = faecherSteps; //Nur Releant für Type = Faechem
         this.einsatz = -1;
         this.showPoints = false;
+        this.showInfo = false;
+        this.restMaxCount = -1;
     }
     startShowPoits() {
+        this.showInfo = true;
         if(this.showPoints) return;
         this.showPoints = true;
         hicgherAnimationObjektsTop.push(this);
     }
     update(ctx, deltaTime) {
+        if(!this.showInfo) return;
         const y = this.pos.y;
         const x = this.pos.x + (((this.length() - 1) * this.faecherSteps) / 2);
         // Kreisgröße berechnen Kreis ist da um Stappel Wergt hervorzugebn
@@ -356,13 +359,13 @@ window.Stack = class Stack {
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fill();
         // Punktzahl zeichnen (rot)
-        ctx.font = "bold 40px Arial";
+        ctx.font = "bold "+(this.einsatz === -1 ? 55 : 40).toString()+"px Arial"; //Wenn Dealer Stappel dann fetterer text
         ctx.fillStyle = "red";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(this.wert().toString(), x, y - 10);
+        ctx.fillText(this.wert().toString(), x, this.einsatz === -1 ? y+5 : y-10);
         // Einsatz zeichnen (gold) unterhalb der Punktzahl
-        if (this.einsatz) {
+        if (this.einsatz && this.einsatz >= 0) {
             ctx.font = "bold 20px Arial";
             ctx.fillStyle = "gold";
             ctx.fillText(this.einsatz.toString() + "TT", x, y + 20);

@@ -20,13 +20,15 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-
-
-
 const getEinsatz = ()=>new Promise(resolve => {
    resolve(10000);
 });
 const userKarfenZiehen = async (count = 1) => {
+    if(userStack[runningStackId].restMaxCount !== -1) {
+        if(count > userStack[runningStackId].restMaxCount) {
+            console.log("Error! Try to Ziehen mehr als erlaubt!");
+        } else userStack[runningStackId].restMaxCount -= count;
+    }
     console.log("User Karten ziehen!");
     const e = [];
     while(count > 0) {
@@ -52,22 +54,34 @@ const userKarfenZiehen = async (count = 1) => {
 
     const aktuelleUserCarten = [...Object.values(userStack[runningStackId].cards), ...cards];
     const canSplitten = aktuelleUserCarten.length === 2 && aktuelleUserCarten[0].kartenwert === aktuelleUserCarten[1].kartenwert && userStack.length < 4; //Kann nur Spilitten bei Zwei gleichen Karten und nur maximal 4 mal spittem
+    const canVerdopeln = aktuelleUserCarten.length === 2 && userStack[runningStackId].restMaxCount === -1;
     const eingabe = await new Promise(resolve => buttons.show({
         weiter: ()=>resolve("w"),
         ...(canSplitten ? {
             split: ()=>resolve("s")
-        } : {})
+        } : {}),
+        ...(canVerdopeln ? {
+            verdoppeln: ()=>resolve("v")
+        } : {}),
     }));
     buttons.hide();
 
     end(); //Um Overlay u schließen => Karfenn aus dem Vordergurnf
-    if(eingabe === "w") {
+    if(eingabe === "v") {
+        userStack[runningStackId].einsatz*=2;
+        userStack[runningStackId].restMaxCount = 1;
+        serverDoubleDown();
+    }
+    if(eingabe === "w" || eingabe === "v") {
         const p = [];
         Promise.all(cards.map(card => p.push(userStack[runningStackId].add(card)))).then(()=>{
             userStack[runningStackId].startShowPoits();
         });
         await Promise.all(p);
-        if(userStack[runningStackId].wert() > 21) await closeUserStappel(runningStackId);
+        if(userStack[runningStackId].wert() > 21) {
+            await closeUserStappel(runningStackId);
+            await endStappel();
+        }
         return true;
     } else if(eingabe === "s") {
         adduserStack();
@@ -77,11 +91,20 @@ const userKarfenZiehen = async (count = 1) => {
         ]); //Auf die Entsprhecnen Stpapel verteilen mit Promise für Warten
         userStack[runningStackId].startShowPoits();
         userStack[userStack.length-1].startShowPoits();
+
+        userStack[userStack.length-1].einsatz = userStack[runningStackId].einsatz/2;
+        userStack[runningStackId].einsatz = userStack[runningStackId].einsatz/2;
+
+        if(cards[0].kartenwert === 11) {
+            userStack[runningStackId].restMaxCount = 1;
+            userStack[runningStackId-1].restMaxCount = 1;
+        }
         return true;
     }
 
     console.log("Error! Unbekannzr Eingabe:", eingabe);
 }
+
 
 
 const welcome = async ()=> {
@@ -101,53 +124,99 @@ const welcome = async ()=> {
         console.log("Einleitungs Animation fertig!");
     } else { //Wenn kein Intro Karten so füllen
         const z = await getGraphicsData();
-        for(let i = 0; i < 10; i++) await ziehenStack.add(new GameCard(null, z["back"]), 0.05);
+        for(let i = 0; i < 20; i++) await ziehenStack.add(new GameCard(null, z["back"]), 0.05);
     }
     overlaySetStatus(false); //Hell Machen, Scwarzes Di weg bzw. Unsichtbar opayisty:0
     initDealerStappel();
 
-    const gameInfoPromise = einsatzPromise.then(einsatz => startNewGame(einsatz));
+    adduserStack(); //Ersten User Stack vor ertem Spitten
+
+    const gameInfoPromise = einsatzPromise.then(einsatz => {
+        userStack[0].einsatz = einsatz;
+        return startNewGame(einsatz);
+    });
 
     await new Promise(resolve => setTimeout(resolve, 2000));
     await showDealerKarten(gameInfoPromise.then(g => g.firstDealerCard), 0);
 
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    await adduserStack(); //Ersten User Stack vor ertem Spitten
 
     await userKarfenZiehen(2);
 
-    let running = true;
     console.log("Gameplay loop");
-    while(running){
+    while(!jetztIstAllesVorbei){
         await new Promise(resolve => setTimeout(resolve, 100));
         const eingabe = await new Promise(resolve => buttons.show({
             ziehen: ()=>resolve("z"),
-            stop: ()=>resolve("s"),
-            verdoppeln: ()=>resolve("v")
+            stop: ()=>resolve("s")
         }));
         if(eingabe === "z") {
             await userKarfenZiehen(1);
+            if(userStack[runningStackId].restMaxCount === 0) await endStappel();
         } else if(eingabe === "s") {
-            if(runningStackId < userStack.length) runningStackId++;
             await messageQueue.mehrneMesagesAnzeigen(["Der Stappel wurd abgeschlossen!"]);
             overlaySetStatus(false);
-        } else if(eingabe === "v") {
-
+            await endStappel();
         }
+
     }
 }
 
+const berechneErgebiss = async (dealerKartenPromise)=>{
+    const dealerCarten = await dealerKartenPromise;
+    console.log("Dealer Zieht:", dealerCarten);
+
+    dealerLeftStack.startShowPoits();
+
+    for (const c of dealerCarten) await showDealerKarten(c, 0, true);
+
+    console.log("All Fertig!");
+}
+
+window.jetztIstAllesVorbei = false;
+const endStappel = ()=>new Promise(resolve => {
+    buttons.hide();
+    endStappelServer(runningStackId).then(()=>{});
+    const esGehtWeter = runningStackId < userStack.length-1; //Ob noch win weitere Stappel durch Spiltlen vegübar ist
+    if(esGehtWeter) runningStackId++;
+    const {end} = focusElementWithOverlay(Object.values(userStack[runningStackId].cards));
+    const dealerCardsPromise = esGehtWeter ? null : getDealerKarten();
+    setTimeout(async ()=>{
+        await end();
+        if(esGehtWeter) {
+            setTimeout(async ()=>{
+                await userKarfenZiehen(1);
+                resolve();
+            }, 1000);
+        } else {
+            showFinalResule();
+            window.jetztIstAllesVorbei = true;
+            await berechneErgebiss(dealerCardsPromise);
+            resolve();
+        }
+    }, 2500);
+});
+
+const showFinalResule = ()=>{
+    console.log("SHow FInle Resilt!");
 
 
+}
 
-const showDealerKarten = async (gameInfoPromise = null, countVerschlosseneKarten = 1)=>{
+const showDealerKarten = async (gameInfoPromise = null, countVerschlosseneKarten = 1, schnellDreien = false)=>{
     if(!gameInfoPromise) gameInfoPromise = await karteZiehenDealer();
-    await ziehenStack.copyStack(dealerLeftStack, 1+countVerschlosseneKarten);
-    const gameInfo = await gameInfoPromise; //Wichtig: Mischen und Ziehen Animation auch Bevor einsatz abgeben, erst vor dem Umdrehen muss auf einSatz + Server Antwort gewartet werden
-    console.log("Dealer First:", gameInfo.firstDealerCard);
-    await dealerLeftStack.getOberste().aufdecken(gameInfo);
-
+    if(!schnellDreien) {
+        await ziehenStack.copyStack(dealerLeftStack, 1+countVerschlosseneKarten);
+        const gameInfo = await gameInfoPromise; //Wichtig: Mischen und Ziehen Animation auch Bevor einsatz abgeben, erst vor dem Umdrehen muss auf einSatz + Server Antwort gewartet werden
+        console.log("Dealer First:", gameInfo.firstDealerCard);
+        await dealerLeftStack.getOberste().aufdecken(gameInfo);
+    } else {
+        const card = ziehenStack.karfenZiehen(1)[0];
+        await Promise.all([dealerLeftStack.add(card), card.aufdecken(await gameInfoPromise)]);
+    }
+    if(dealerLeftStack.wert() > 21) {
+        await closeDellerStappel(dealerLeftStack);
+    }
     console.log("Dealer hat gezogen!");
 }
 

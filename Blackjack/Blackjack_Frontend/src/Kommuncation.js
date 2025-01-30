@@ -64,3 +64,45 @@ window.startNewGame = (einsatz)=>new Promise(async resolve => {
         }
     });
 });
+
+
+window.getDealerKarten = ()=>new Promise(resolve => {
+    resolve([
+        {
+            type: "4_d",
+            points: 4
+        },
+        {
+            type: "4_d",
+            points: 4
+        },
+        {
+            type: "4_d",
+            points: 4
+        },
+        {
+            type: "4_d",
+            points: 4
+        },
+        {
+            type: "4_d",
+            points: 4
+        }
+    ]);
+});
+
+window.serverDoubleDown = ()=>{
+
+}
+
+//Um einen Stappel zu schlicßen
+window.endStappelServer = (stappelIndex)=>new Promise(async resolve => {
+    const socket = await connectSocket();
+
+    //blub.send(seinsatz)     <= Exemplarische
+    //blub.get(Info);
+
+    resolve({
+
+    });
+});
