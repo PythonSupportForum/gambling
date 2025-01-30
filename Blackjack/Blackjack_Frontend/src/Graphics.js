@@ -255,6 +255,7 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
 }
 
 window.animationObjects = {};
+window.hicgherAnimationObjektsTop = [];
 window.gameDrawThreads = {};
 
 window.addDrawingThread = (callback = ()=>{}) => {
@@ -286,8 +287,10 @@ function draw() {
     last = Date.now();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     try {
-        Object.values(gameDrawThreads).forEach(c => c(ctx));
+        Object.values(gameDrawThreads).forEach(c => c(ctx, deltaTime));
+        hicgherAnimationObjektsTop.forEach(c => c(ctx, deltaTime));
         Object.values(getUniqueAttributes(animationObjects, focusElements)).forEach(o => o.update(ctx, deltaTime));
+
         if(overlayAlpha > 0) {
             ctx.fillStyle = `rgba(0, 0, 0, ${overlayAlpha})`;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -340,29 +343,24 @@ window.Stack = class Stack {
     startShowPoits() {
         if(this.showPoints) return;
         this.showPoints = true;
-        this.id = Math.random().toString();
-        animationObjects[this.id] = this;
+        hicgherAnimationObjektsTop.push(this);
     }
     update(ctx, deltaTime) {
         const y = this.pos.y;
         const x = this.pos.x + (((this.length() - 1) * this.faecherSteps) / 2);
-
-        // Kreisgröße berechnen
+        // Kreisgröße berechnen Kreis ist da um Stappel Wergt hervorzugebn
         const radius = 50; // Größe des Kreises
-
         // Schwarzen Kreis zeichnen
         ctx.fillStyle = "black";
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fill();
-
         // Punktzahl zeichnen (rot)
         ctx.font = "bold 40px Arial";
         ctx.fillStyle = "red";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(this.wert().toString(), x, y - 10);
-
         // Einsatz zeichnen (gold) unterhalb der Punktzahl
         if (this.einsatz) {
             ctx.font = "bold 20px Arial";
