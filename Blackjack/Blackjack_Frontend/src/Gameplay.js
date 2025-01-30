@@ -63,7 +63,9 @@ const userKarfenZiehen = async (count = 1) => {
     end(); //Um Overlay u schließen => Karfenn aus dem Vordergurnf
     if(eingabe === "w") {
         const p = [];
-        cards.forEach(card => p.push(userStack[runningStackId].add(card)));
+        Promise.all(cards.map(card => p.push(userStack[runningStackId].add(card)))).then(()=>{
+            userStack[runningStackId].startShowPoits();
+        });
         await Promise.all(p);
         if(userStack[runningStackId].wert() > 21) await closeUserStappel(runningStackId);
         return true;
@@ -73,9 +75,12 @@ const userKarfenZiehen = async (count = 1) => {
             ...(cards.length > 1 ? [userStack[runningStackId].add(cards[0])] : []),
             userStack[userStack.length-1].add(cards.pop()) //Hintere Karfe auf neien Stappel
         ]); //Auf die Entsprhecnen Stpapel verteilen mit Promise für Warten
+        userStack[runningStackId].startShowPoits();
+        userStack[userStack.length-1].startShowPoits();
+        return true;
     }
 
-    console.log("Eingabe:", eingabe);
+    console.log("Error! Unbekannzr Eingabe:", eingabe);
 }
 
 

@@ -334,6 +334,41 @@ window.Stack = class Stack {
         this.cards = {};
         this.type = type;
         this.faecherSteps = faecherSteps; //Nur Releant für Type = Faechem
+        this.einsatz = -1;
+        this.showPoints = false;
+    }
+    startShowPoits() {
+        if(this.showPoints) return;
+        this.showPoints = true;
+        this.id = Math.random().toString();
+        animationObjects[this.id] = this;
+    }
+    update(ctx, deltaTime) {
+        const y = this.pos.y;
+        const x = this.pos.x + (((this.length() - 1) * this.faecherSteps) / 2);
+
+        // Kreisgröße berechnen
+        const radius = 50; // Größe des Kreises
+
+        // Schwarzen Kreis zeichnen
+        ctx.fillStyle = "black";
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Punktzahl zeichnen (rot)
+        ctx.font = "bold 40px Arial";
+        ctx.fillStyle = "red";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(this.wert().toString(), x, y - 10);
+
+        // Einsatz zeichnen (gold) unterhalb der Punktzahl
+        if (this.einsatz) {
+            ctx.font = "bold 20px Arial";
+            ctx.fillStyle = "gold";
+            ctx.fillText(this.einsatz.toString() + "TT", x, y + 20);
+        }
     }
     length() {
         return Object.keys(this.cards).length;
