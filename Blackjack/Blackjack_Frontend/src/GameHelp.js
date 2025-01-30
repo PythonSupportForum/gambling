@@ -49,15 +49,25 @@ const initBackground = async ()=> {
     });
 }
 const adduserStack = ()=>{
-    function calculateCardPositions(count = userStack.length+1, screenWidth = window.innerWidth, screenHeight = window.innerHeight, cardWidth = 100) { //Um die Player Stack gleihmäßig auf der unterhälfte des bildschirms zu verteilen => Berechnet Koords der Spappel
+    function calculateCardPositions(
+        count = userStack.length + 1,
+        screenWidth = window.innerWidth,
+        screenHeight = window.innerHeight,
+        cardWidth = 100,
+        minGap = 30 // Minimaler Abstand zwischen den Karten
+    ) {
         const lowerHalfHeight = screenHeight / 2;
-        const y = screenHeight - lowerHalfHeight / 2; // Mittig in der unteren Hälfte, von der höhe her
-        // Berechne den Gesamtabstand, den alle Karten einnehmen
-        const totalGap = (count - 1) * (cardWidth + userStappelAbstandSpit); // 30 ist der Abstand zwischen den Karten
-        const startX = (screenWidth - totalGap) / 2; // Startposition => Position der Katen
+        const y = screenHeight - lowerHalfHeight / 2; // Vertikal zentriert in der unteren Hälfte
+        // Verfügbare Breite für die Karten (ohne die Seitenränder)
+        const availableWidth = screenWidth - cardWidth;
+        // Berechne den optimalen Abstand basierend auf der Anzahl der Karten
+        const gap = Math.max(minGap, availableWidth / (count - 1)); // Abstand dynamisch berechnen, aber nicht kleiner als minGap
+        // Berechne die Startposition (zentriert)
+        const startX = (screenWidth - (count - 1) * gap - cardWidth) / 2;
+        // Erzeuge die Positionen für die Karten
         const positions = [];
         for (let i = 0; i < count; i++) {
-            const x = startX + i * (cardWidth + userStappelAbstandSpit); // Berechne lassen die xPosition für jede Karte
+            const x = startX + i * gap; // X-Position basierend auf dem berechneten Abstand
             positions.push({ x, y });
         }
         return positions;

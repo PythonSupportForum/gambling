@@ -165,11 +165,11 @@ const welcome = async ()=> {
 const berechneErgebiss = async (dealerKartenPromise)=>{
     const dealerCarten = await dealerKartenPromise;
     console.log("Dealer Zieht:", dealerCarten);
-
     dealerLeftStack.startShowPoits();
-
-    for (const c of dealerCarten) await showDealerKarten(c, 0, true);
-
+    for (const c of dealerCarten) {
+        await showDealerKarten(c, 0, true);
+        if(dealerLeftStack.wert() > 21) break; //Breche Ab, sobald der dealer mehr als 21 hat
+    }
     console.log("All Fertig!");
 }
 
@@ -189,9 +189,9 @@ const endStappel = ()=>new Promise(resolve => {
                 resolve();
             }, 1000);
         } else {
-            showFinalResule();
             window.jetztIstAllesVorbei = true;
             await berechneErgebiss(dealerCardsPromise);
+            showFinalResule();
             resolve();
         }
     }, 2500);
@@ -214,9 +214,7 @@ const showDealerKarten = async (gameInfoPromise = null, countVerschlosseneKarten
         const card = ziehenStack.karfenZiehen(1)[0];
         await Promise.all([dealerLeftStack.add(card), card.aufdecken(await gameInfoPromise)]);
     }
-    if(dealerLeftStack.wert() > 21) {
-        await closeDellerStappel(dealerLeftStack);
-    }
+    if(dealerLeftStack.wert() > 21) await closeDellerStappel(dealerLeftStack);
     console.log("Dealer hat gezogen!");
 }
 
