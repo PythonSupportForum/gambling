@@ -65,7 +65,9 @@ window.startNewGame = (einsatz)=>new Promise(async resolve => {
     });
 });
 
-
+window.getGameResults = ()=>new Promise(resolve => {
+   resolve("Hallo");
+});
 window.getDealerKarten = ()=>new Promise(resolve => {
     resolve([
         {

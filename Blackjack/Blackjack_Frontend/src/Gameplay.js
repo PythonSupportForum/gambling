@@ -46,6 +46,13 @@ const getInsuranzeEinsatz = ()=>new Promise(resolve => { //Nicht wirklich eistaz
         resolve(false);
     }
 });
+const showErgebisse = (text)=>new Promise(resolve => { //Nicht wirklich eistaz sondern nur ja nein popup aber weil grad kein besserer name da war, besser als in den informatik klausuren, wo die methoden einfahc nur "ichmacheetwas" heißen
+    document.getElementById("ergebnissText").innerText = text;
+    document.getElementById("ergebniss").classList.add("show");
+    document.getElementById("playAgain").onclick = ()=>{
+        resolve(true);
+    }
+});
 const userKarfenZiehen = async (count = 1) => {
     if(userStack[runningStackId].restMaxCount !== -1) {
         if(count > userStack[runningStackId].restMaxCount) {
@@ -191,8 +198,11 @@ const welcome = async ()=> {
             overlaySetStatus(false);
             await endStappel();
         }
-
     }
+    const gameResultsPromise = getGameResults();
+    await new Promise(resolve => setTimeout(resolve, 1000)); //Es soll gewartet werden, bis der Server die Ergebnisse geschickt hat, dieses warten soll mindetsens 500ms gehen, damit man auch den spielstand sehen kann
+    const ergebisText = await gameResultsPromise;
+    await showErgebisse(ergebisText);
 }
 
 const berechneErgebiss = async (dealerKartenPromise)=>{
