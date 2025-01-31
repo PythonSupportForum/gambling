@@ -226,8 +226,12 @@ button:active {
     justify-content: flex-end;
     align-items: center;
 }
-
-
+.seztenPoupupContainer .bb.c {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
 
 .slider-container {
     position: relative;

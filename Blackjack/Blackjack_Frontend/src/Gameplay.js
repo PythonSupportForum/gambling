@@ -35,6 +35,17 @@ const getEinsatz = ()=>new Promise(resolve => {
        output.innerHTML = this.value + " €";
    };
 });
+const getInsuranzeEinsatz = ()=>new Promise(resolve => { //Nicht wirklich eistaz sondern nur ja nein popup aber weil grad kein besserer name da war, besser als in den informatik klausuren, wo die methoden einfahc nur "ichmacheetwas" heißen
+    document.getElementById("seztenPoupupContainerInsuranze").classList.add("show");
+    document.getElementById("setEinsatzIButton").onclick = ()=>{
+        document.getElementById("seztenPoupupContainerInsuranze").classList.remove("show");
+        resolve(true);
+    }
+    document.getElementById("setEinsatzIButtonNo").onclick = ()=>{
+        document.getElementById("seztenPoupupContainerInsuranze").classList.remove("show");
+        resolve(false);
+    }
+});
 const userKarfenZiehen = async (count = 1) => {
     if(userStack[runningStackId].restMaxCount !== -1) {
         if(count > userStack[runningStackId].restMaxCount) {
@@ -118,7 +129,7 @@ const userKarfenZiehen = async (count = 1) => {
 }
 
 
-
+window.insuranceEinsatz = 0; //Geld das auf dealer Blakcjack gewettet wurde
 const welcome = async ()=> {
     const einsatzPromise = getEinsatz();
 
@@ -152,6 +163,16 @@ const welcome = async ()=> {
     await showDealerKarten(gameInfoPromise.then(g => g.firstDealerCard), 0);
 
     await new Promise(resolve => setTimeout(resolve, 1000));
+
+    if(dealerLeftStack.getOberste().kartenwert === 11) {
+        if((await getInsuranzeEinsatz())) {
+            console.log("Set nsurnce,..");
+            await gameInfoPromise;
+            console.log("Startet Game,,");
+            userStack.forEach(s => s.einsatz *= 0.5); //Alle User Stappel EInsatz halbieren => Gesmmt einsatz wir dhalbiert
+            window.insuranceEinsatz = (await einsatzPromise)/2;
+        }
+    }
 
     await userKarfenZiehen(2);
 

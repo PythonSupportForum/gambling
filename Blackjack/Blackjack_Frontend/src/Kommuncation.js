@@ -60,7 +60,7 @@ window.startNewGame = (einsatz)=>new Promise(async resolve => {
     resolve({
         firstDealerCard: {
             type: "4_d",
-            points: 4
+            points: 11
         }
     });
 });
