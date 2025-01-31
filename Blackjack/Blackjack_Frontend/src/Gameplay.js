@@ -36,13 +36,16 @@ const getEinsatz = ()=>new Promise(resolve => {
    };
 });
 const getInsuranzeEinsatz = ()=>new Promise(resolve => { //Nicht wirklich eistaz sondern nur ja nein popup aber weil grad kein besserer name da war, besser als in den informatik klausuren, wo die methoden einfahc nur "ichmacheetwas" heißen
+    overlaySetStatus(true);
     document.getElementById("seztenPoupupContainerInsuranze").classList.add("show");
     document.getElementById("setEinsatzIButton").onclick = ()=>{
         document.getElementById("seztenPoupupContainerInsuranze").classList.remove("show");
+        overlaySetStatus(false);
         resolve(true);
     }
     document.getElementById("setEinsatzIButtonNo").onclick = ()=>{
         document.getElementById("seztenPoupupContainerInsuranze").classList.remove("show");
+        overlaySetStatus(false);
         resolve(false);
     }
 });
@@ -50,7 +53,8 @@ const showErgebisse = (text)=>new Promise(resolve => { //Nicht wirklich eistaz s
     document.getElementById("ergebnissText").innerText = text;
     document.getElementById("ergebniss").classList.add("show");
     document.getElementById("playAgain").onclick = ()=>{
-        resolve(true);
+        window.location.reload();
+        resolve();
     }
 });
 const userKarfenZiehen = async (count = 1) => {
@@ -194,15 +198,20 @@ const welcome = async ()=> {
             await userKarfenZiehen(1);
             if(userStack[runningStackId].restMaxCount === 0) await endStappel();
         } else if(eingabe === "s") {
+            buttons.hide();
             await messageQueue.mehrneMesagesAnzeigen(["Der Stappel wurd abgeschlossen!"]);
             overlaySetStatus(false);
             await endStappel();
         }
     }
+
     const gameResultsPromise = getGameResults();
     await new Promise(resolve => setTimeout(resolve, 1000)); //Es soll gewartet werden, bis der Server die Ergebnisse geschickt hat, dieses warten soll mindetsens 500ms gehen, damit man auch den spielstand sehen kann
     const ergebisText = await gameResultsPromise;
-    await showErgebisse(ergebisText);
+    await Promise.all([
+        messageQueue.mehrneMesagesAnzeigen(["ENDE"]),
+        showErgebisse(ergebisText)
+    ]);
 }
 
 const berechneErgebiss = async (dealerKartenPromise)=>{
@@ -234,17 +243,10 @@ const endStappel = ()=>new Promise(resolve => {
         } else {
             window.jetztIstAllesVorbei = true;
             await berechneErgebiss(dealerCardsPromise);
-            showFinalResule();
             resolve();
         }
     }, 2500);
 });
-
-const showFinalResule = ()=>{
-    console.log("SHow FInle Resilt!");
-
-
-}
 
 const showDealerKarten = async (gameInfoPromise = null, countVerschlosseneKarten = 1, schnellDreien = false)=>{
     dealerLeftStack.direktWertUpdate = false;
