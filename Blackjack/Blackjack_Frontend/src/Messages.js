@@ -11,7 +11,7 @@ class MessageQueue {
             this.processQueue(); // Versuche die Warteschlange zu verarbeiten
         });
     }
-    mehrneMesagesAnzeigen(list) {
+    displayMultipleMessages(list) {
         return Promise.all(list.map(l => this.addMessage(l)));
     }
     async processQueue() {
