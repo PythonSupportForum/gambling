@@ -1,5 +1,7 @@
 window.socket = null;
 
+window.listener = [];
+
 window.connectSocket = ()=>{
     return new Promise(resolve => {
         if(socket) return resolve(socket); //Es gibt schon socket!
@@ -13,16 +15,45 @@ window.connectSocket = ()=>{
 
          // Nachricht vom Server empfangen => Allgemein für alle Nachenacihtne (Websocket protoikkoll)
         socket.onmessage = (event) => {
-            console.log(event);
+            console.log(event.data);
             const msg = event.data.toString();
             if(event.data.toString().indexOf('acc') === 0) clientID = Number(msg.substring(4, msg.length));
+
+            let card;
+            let value;
+            if(msg.startsWith("Card: ")){
+                let sub = msg.substring(5);
+
+                let part = sub.split(",");
+
+                card = part[0].substring(1);
+
+                value = part[1].substring(1);
+                listener.shift()({
+                    type: card,
+                    points: value
+                });
+            }
+
+            if(msg.startsWith("DealerCards,")){
+                let sub = msg.substring(5);
+
+                let part = sub.split(",");
+
+                card = part[0].substring(1);
+
+                value = part[1].substring(1);
+                listener.shift()({
+                    type: card,
+                    points: value
+                });
+            }
         };
 
         // Fehlerbehandlung => Bei Wecgsockent kominiaitob
         socket.onerror = (error) => {
             console.error('WebSocket-Fehler:', error);
-            //BNeu Verundein
-
+            // Crash
         };
 
         // Verbindung geschlossen => Handlen
@@ -33,64 +64,35 @@ window.connectSocket = ()=>{
 }
 document.addEventListener("DOMContentLoaded", connectSocket);
 
-//In die volgenden Methoden kommt der ganze Quatsch mit der Serbfer Komimioation
-window.karteZiehen = ()=>new Promise(async resolve => {
+// Server Kommunikation, Annahme der Karten
+window.takeCard = ()=>new Promise(async resolve => {
     const socket = await connectSocket();
+    socket.send("TakeUser");
 
-    resolve({
-        type: "4_d",
-        points: 4
-    });
+    listener.push(resolve);
 });
-window.karteZiehenDealer = ()=>new Promise(async resolve => {
+window.dealerTakes = ()=>new Promise(async resolve => {
     const socket = await connectSocket();
+    socket.send("TakeDealer");
 
-    resolve({
-        type: "4_d",
-        points: 4
-    });
+    listener.push(resolve);
 });
 //Um ein Neues PSiel zu starten => Übergeben wird der einseatz => Muss an derver gegeben werden, Zurückgegeben wird die erste sichtbare umgedrehte karte des dellers.
-window.startNewGame = (einsatz)=>new Promise(async resolve => {
+window.startNewGame = (bet)=>new Promise(async resolve => {
     const socket = await connectSocket();
+    socket.send("Bet:"+bet);
 
-    //blub.send(seinsatz)     <= Exemplarische
-    //blub.get(Info);
-
-    resolve({
-        firstDealerCard: {
-            type: "4_d",
-            points: 11
-        }
-    });
+    listener.push(resolve);
 });
 
 window.getGameResults = ()=>new Promise(resolve => {
    resolve("Hallo");
 });
-window.getDealerKarten = ()=>new Promise(resolve => {
-    resolve([
-        {
-            type: "4_d",
-            points: 4
-        },
-        {
-            type: "4_d",
-            points: 4
-        },
-        {
-            type: "4_d",
-            points: 4
-        },
-        {
-            type: "4_d",
-            points: 4
-        },
-        {
-            type: "4_d",
-            points: 4
-        }
-    ]);
+window.getDealerCards = ()=>new Promise(async resolve => {
+    const socket = await connectSocket();
+    socket.send("GetDealer");
+
+    listener.push(resolve);
 });
 
 window.serverDoubleDown = ()=>{
@@ -98,7 +100,7 @@ window.serverDoubleDown = ()=>{
 }
 
 //Um einen Stappel zu schlicßen
-window.endStappelServer = (stappelIndex)=>new Promise(async resolve => {
+window.endStackServer = (stappelIndex)=>new Promise(async resolve => {
     const socket = await connectSocket();
 
     //blub.send(seinsatz)     <= Exemplarische

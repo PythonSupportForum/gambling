@@ -188,7 +188,7 @@ button:active {
     display: block;
 }
 
-.seztenPoupupContainer {
+.betPopupContainer {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -204,14 +204,14 @@ button:active {
     z-index: 10;
     color: black;
 }
-.seztenPoupupContainer p {
+.betPopupContainer p {
     color: black;
 }
-.seztenPoupupContainer.show {
+.betPopupContainer.show {
     pointer-events: auto;
     opacity: 1;
 }
-.seztenPoupupContainer .setzenPopo {
+.betPopupContainer .betPopup {
     width: 500px;
     height: auto;
     max-width: 100%;
@@ -221,12 +221,12 @@ button:active {
     padding: 15px;
     border-radius: 15px;
 }
-.seztenPoupupContainer .bb {
+.betPopupContainer .bb {
     display: flex;
     justify-content: flex-end;
     align-items: center;
 }
-.seztenPoupupContainer .bb.c {
+.betPopupContainer .bb.c {
     display: flex;
     justify-content: space-between;
     align-items: center;

@@ -1,6 +1,6 @@
-const userStappelAbstandSpit = 400;
+const userStappelAbstandSplit = 400;
 
-const zeigeKartenInderMitteMitAuswahl = (cards, time = normalMoveTime)=>{
+const showCardsInCenter = (cards, time = normalMoveTime)=>{
     function calculateCardPositions(cardCount, screenWidth = window.innerWidth, screenHeight = window.innerHeight, cardWidth = 100) {
         const y = screenHeight / 2; // Karten werden vertikal zentriert
         const gap = cardWidth + 60; // Abstand zwischen den Karten
@@ -14,7 +14,7 @@ const zeigeKartenInderMitteMitAuswahl = (cards, time = normalMoveTime)=>{
     for(let i = 0; i < cards.length; i++) p.push(cards[i].moveTo(positions[i], time));
     return {...focusElementWithOverlay(cards), cards, promise: Promise.all(p)};
 }
-const mischeAnimationDelaler = () => {
+const mixAnimationDealer = () => {
     function calculateRowCoordinates(screenHeight, cardHeight) { //Um Beide reihen Mittäg zu platzuieren
         const spacing = (screenHeight - 2 * cardHeight) / 3;
         const y1 = spacing;
@@ -37,7 +37,7 @@ const mischeAnimationDelaler = () => {
             await aS.copyStack(bS, -1, true, 0.2);
             console.log("Copy to Ziehen!");
             await bS.copyStack(ziehenStack, -1, false); //Am Ende der Einleitungs Animation fliegen alle Karten zu dem ZiehStack
-            console.log("Cpoied to ziehen!");
+            console.log("Copied to ziehen!");
             resolve();
         }, 1000);
     });
@@ -48,7 +48,7 @@ const initBackground = async ()=> {
         ctx.drawImage(t, 0, 0, ctx.canvas.width, ctx.canvas.height);
     });
 }
-const adduserStack = ()=>{
+const addUserStack = ()=>{
     function calculateCardPositions(count = userStack.length+1, screenWidth = window.innerWidth, screenHeight = window.innerHeight, cardWidth = 100) { //Um die Player Stack gleihmäßig auf der unterhälfte des bildschirms zu verteilen => Berechnet Koords der Spappel
         const lowerHalfHeight = screenHeight / 2;
         const y = screenHeight - lowerHalfHeight / 2; // Mittig in der unteren Hälfte, von der höhe her
@@ -67,9 +67,9 @@ const adduserStack = ()=>{
     const newPositions = calculateCardPositions();
     console.log("New Positions:", newPositions);
     for(let i = 0; i < userStack.length; i++) userStack[i].moveTo(newPositions[i]);
-    userStack.push(new Stack(newPositions[newPositions.length-1], "faecher", addierenStappelFaecherSteps)); //Letes Element für neuen Stack => Rechts angehangen
+    userStack.push(new Stack(newPositions[newPositions.length-1], "faecher", addStackMarginSteps)); //Letes Element für neuen Stack => Rechts angehangen
 }
-const initDealerStappel = ()=>{
+const initDealerStack = ()=>{
     function calculateCardPositions(screenWidth = window.innerWidth, screenHeight = window.innerHeight) { //Um Posotion für Dealer Karten auf dem Bildschirm
         const upperHalfHeight = screenHeight / 2;
         const y = upperHalfHeight / 2; // Mittig in der oberen Hälfte
@@ -80,20 +80,20 @@ const initDealerStappel = ()=>{
         ];
     }
     const positions = calculateCardPositions();
-    window.dealerLeftStack = new Stack(positions[0], "faecher", addierenStappelFaecherSteps);
-    window.dealerRightStack = new Stack(positions[1], "faecher", addierenStappelFaecherSteps);
+    window.dealerLeftStack = new Stack(positions[0], "faecher", addStackMarginSteps);
+    window.dealerRightStack = new Stack(positions[1], "faecher", addStackMarginSteps);
 }
-const closeUserStappel = async (index) => {
-    const card = ziehenStack.karfenZiehen(1)[0];
+const closeUserStack = async (index) => {
+    const card = ziehenStack.takeCard(1)[0];
     userStack[index].showInfo = false;
     await Promise.all([
         userStack[index].add(card),
         card.changeSide("end")
     ]);
 }
-const closeDellerStappel = async (s) => {
+const closeDealerStack = async (s) => {
     await new Promise(resolve => setTimeout(resolve, 500)); //Um den Fail zu sehen
-    const card = ziehenStack.karfenZiehen(1)[0];
+    const card = ziehenStack.takeCard(1)[0];
     s.showInfo = false;
     await Promise.all([
         s.add(card),

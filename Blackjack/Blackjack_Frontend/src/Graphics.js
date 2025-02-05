@@ -153,7 +153,10 @@ window.buttons = {
     }
 }
 
-function parabelfunktion(x, xMax) { //Die Funktion erstellt eine gestrauchte Parabel => Damit Dreh Bewegung der karte, F(x) gibt Anteil der Normalbreite an. Bei  = 1000 und bei x = 1 ist sie 1. Der zweite parameter gibt die Stauchung in Millisekunden an
+function parabolaFunction(x, xMax) { /**Die Funktion erstellt eine gestauchte Parabel =>
+                        Damit Dreh Bewegung der karte, F(x) gibt Anteil der Normalbreite an.
+                        Bei  = 1000 und bei x = 1 ist sie 1. Der zweite Parameter gibt die Stauchung in Millisekunden an.
+                        */
     // Der Scheitelpunkt liegt in der Mitte zwischen 0 und xMax
     const x0 = xMax / 2;
 
@@ -241,7 +244,7 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
         if(this.isMoving) sinVel(this, {...this.pos});
         if(this.isFlipping) {
             const timePassed = Date.now()-this.startFlippingTime; //Seid beginn des Drehens der Karte
-            this.widthAnteil = parabelfunktion(timePassed, flippingTime);  //Weil Wenn noch das alte dann schmaler werden wenn schon neue wieder breiter
+            this.widthAnteil = parabolaFunction(timePassed, flippingTime);  //Weil Wenn noch das alte dann schmaler werden wenn schon neue wieder breiter
             if(this.img !== this.imgNacher && timePassed >= flippingTime/2) this.img = this.imgNacher; //Die hälfte also ganz weg neues bild zeichen
             if(this.widthAnteil >= 1 && timePassed >= flippingTime/2) { //Drehen Abgeschlossen!
                 this.isFlipping = false;
@@ -385,7 +388,7 @@ window.Stack = class Stack {
         console.log("Get Oberste:", this, this.cards);
         return Object.keys(this.cards).length === 0 ? null : Object.values(this.cards)[Object.values(this.cards).length-1];
     }
-    karfenZiehen(count = 1) { //Macht Dasselbe wie get Oberste nur entfern gleichezig!
+    takeCard(count = 1) { //Macht Dasselbe wie get Oberste nur entfern gleichezig!
         const c = this.getObersteViele(count);
         c.forEach(c => c.removeFromStack());
         return c;
