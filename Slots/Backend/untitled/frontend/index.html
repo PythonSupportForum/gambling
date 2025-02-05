@@ -30,16 +30,27 @@
                 flex-direction: column;
             }
             .header {
+                height: 20%;
                 flex-basis: 100px;
                 width: 100%;
                 flex-grow: 0;
                 display: flex;
-                justify-content: center;
-                flex-direction: column;
+                justify-content: space-around;
+                flex-direction: row;
                 gap: 15px;
                 align-items: center;
                 background-color: #004b2e;
                 border-bottom: 5px solid #f8bb12;
+                padding: 15px;
+                position: relative;
+            }
+            .u {
+                display: flex;
+                justify-content: center;
+                flex-direction: column;
+                gap: 15px;
+                align-content: center;
+                text-align: center;
             }
             .header * {
                 margin: 0;
@@ -170,15 +181,31 @@
                 border-radius: 20px;
                 cursor: pointer;
             }
+
+            #logo{
+                height: calc( 100% - 20px );
+                width: auto;
+                object-fit: contain;
+                aspect-ratio: 982 / 669;
+                transform: rotate(-10deg);
+
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                bottom: 10px;
+            }
         </style>
     </head>
     <body>
         <div class="top">
             <div class="header">
-                <img src="assets/Logo_Rand.png">
-                <h1>Gambling | Sloti-Machine - Play and WIN!!!!!!!</h1>
-                <h2>Glücksspiel aus dem Informatik Unterricht bei Herrn Engels! Bei uns wird jeder reich!</h2>
-                <h3>(Spielen auf eigene Gefahr!)</h3>
+                <img id="logo" src="assets/Logo_Rand.png">
+                <div class="u">
+                    <h1>Gambling | Sloti-Machine - Play and WIN!!!!!!!</h1>
+                    <h2>Glücksspiel aus dem Informatik Unterricht bei Herrn Engels! Bei uns wird jeder reich!</h2>
+                    <h3>(Spielen auf eigene Gefahr!)</h3>
+                </div>
+
             </div>
             <div class="machine-container">
                 <div class="machine">
