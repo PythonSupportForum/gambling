@@ -10,15 +10,15 @@
   <link rel="icon" type="image/png" sizes="32x32" href="../../Startseite/Startseite/assets/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../../Startseite/Startseite/assets/favicon-16x16.png">
   <script src="Graphics.js"></script>
-  <script src="GameHelp.js"></script>
+  <script src="GameHelper.js"></script>
   <script src="Gameplay.js"></script>
-  <script src="messages.js"></script>
-  <script src="Kommuncation.js"></script>
+  <script src="Messages.js"></script>
+  <script src="Communication.js"></script>
 </head>
   <body>
     <div class="container">
       <h1>Blackjack Online</h1>
-      <p>Ein SPiel von Carli Göb für den Informatik Unterricht bei Herrn Engels!</p>
+      <p>Ein Spiel von Carl Göb!</p>
       <button id="startGameButton">Start Game</button>
     </div>
     <div class="GameContainer" id="GameContainer">
@@ -29,36 +29,36 @@
         </div>
         <canvas id="canvas"></canvas>
       </div>
-      <div class="seztenPoupupContainer" id="seztenPoupupContainer">
-        <div class="setzenPopo">
+      <div class="betPopupContainer" id="betPopupContainer">
+        <div class="betPopup">
           <h2>Wie viel Kohle möchtest du kohlen</h2>
           <p>Je mehr Geld du setzt, desto mehr Geld kannst du gewinnen! Minum ist 100 Maximum ist 100.000! Hier wierst du reich! Klotzen und Klicj!</p>
           <div class="slider-container">
-            <input type="range" min="100" max="100000" id="einsatzValue" value="500" class="slider">
+            <input type="range" min="100" max="100000" id="betValue" value="500" class="slider">
             <div class="slider-value" id="sliderValue">500 €</div>
           </div>
           <p>Sobald du den Button gedrückt hast Buchen wir das Geld von deinem Konto ab!</p>
           <div class="bb">
-            <button id="setEinsatzButton">LETS GAMBLI!</button>
+            <button id="setBetButton">Setzen</button>
           </div>
         </div>
       </div>
-      <div class="seztenPoupupContainer" id="seztenPoupupContainerInsuranze">
-        <div class="setzenPopo">
-          <h2>Insurance Seten</h2>
+      <div class="betPopupContainer" id="insuranceBetPopupContainer">
+        <div class="betPopup">
+          <h2>Insurance Setzen</h2>
           <p>Der Dealer hat als Erste Karfe ein Ass gelegt. Du kannst eine zweite Nebenwette darauf abschliepen, ob der Dealer einen Blackjack ziehen wird, also mit 2 karten genau 21 erreichen wird. Für diese Nebenwette wird die Hälfte deine sGeldes genutzt!</p>
           <p>Sobald du den Button gedrückt hast Buchen wir das Geld von deinem Konto ab!</p>
           <div class="bb c">
-            <button id="setEinsatzIButtonNo">Auf Insuranze versichen</button>
-            <button id="setEinsatzIButton">Nebenwette Abschli+ßen</button>
+            <button id="setBetButtonNo">Auf Insuranze versichen</button>
+            <button id="setBetButtonYes">Nebenwette Abschließen</button>
           </div>
         </div>
       </div>
-      <div class="seztenPoupupContainer" id="ergebniss">
-        <div class="setzenPopo">
+      <div class="betPopupContainer" id="result">
+        <div class="betPopup">
           <h2>Herzlichen Glückwunsch</h2>
           <p>Das Spiel ist zuende. Im folgenden Erfährst du, ob du gewonnen hast und wenn ja wie viel. </p>
-          <p id="ergebnissText"></p>
+          <p id="resultText"></p>
           <div class="bb c">
             <button id="playAgain">Nochmal Spielen</button>
           </div>
@@ -66,11 +66,11 @@
       </div>
     </div>
     <div class="buttons" id="buttonsDiv">
-      <button class="weiter">Weiter</button>
-      <button class="split">Splitten</button>
-      <button class="ziehen">carte</button>
-      <button class="stop">reste</button>
-      <button class="verdoppeln">double down</button>
+      <button class="proceed">Weiter</button>
+      <button class="split">Split</button>
+      <button class="take">Karte nehmen</button>
+      <button class="stop">Bleiben</button>
+      <button class="double">Double Down</button>
     </div>
   </body>
 </html>

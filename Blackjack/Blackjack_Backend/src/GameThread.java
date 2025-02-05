@@ -1,4 +1,3 @@
-import org.checkerframework.checker.units.qual.A;
 import org.java_websocket.WebSocket;
 
 import java.sql.*;
@@ -160,6 +159,7 @@ public class GameThread implements Runnable {
         // endregion
     }
 
+    // Test Konstruktor zum Debuggen
     public GameThread(){
         client_ID = -1;
         conn = null;
