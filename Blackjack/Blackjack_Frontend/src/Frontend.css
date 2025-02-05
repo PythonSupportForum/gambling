@@ -71,7 +71,7 @@ position: relative;
 display: inline-block;
 text-align: center;
 }
-#Anmelden:hover {
+#Anmelden:hover, .gleichButton:hover{
 transform: scale(0.95);
 }
 #Anmelden.form {
@@ -252,7 +252,7 @@ z-index: 4;
 }
 
 #footer {
-height: 15%;
+
 width: 100%;
 background-color: #00541d;
 color: #ffffff;
@@ -263,17 +263,39 @@ right: 0px;
 
 }
 
+#regelwerk{
+	margin-left: 0px
+	
+	
+}
+
+
+
+
+
+
+/*
+Listen mit der Spielanleitung
+*/
+
 #liste1 {
 color: #ffffff;
+margin: 5px
 
 }
 
 #liste2 {
 color: #ffffff;
-
+margin: 5px
 }
 
 #liste3 {
 color: #ffffff !important;
+margin: 5px
+}
 
+
+#a-element{
+	margin: 10px
+	
 }
