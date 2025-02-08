@@ -5,3 +5,7 @@ RewriteRule ^login$ index.php?login [L,QSA]
 RewriteRule ^register$ index.php?register [L,QSA]
 
 RewriteRule ^imprint$ index.php?page=imprint [L,QSA]
+
+RewriteRule ^$ index.php?page=start [L,QSA]
+
+RewriteRule ^logout$ index.php?page=logout&logout=true [L,QSA]
