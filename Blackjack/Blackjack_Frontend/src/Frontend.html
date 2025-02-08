@@ -1,4 +1,3 @@
-@ -6,21 +6,63 @@
 <meta charset = "UTF-8">
 <meta lang="de">
 
@@ -25,17 +24,15 @@ CSS-Datei, Favicons und JS-Datei einbinden
 Obere Leiste mit Logo
 -->
 <header>
-  <img id="Logo" src="../assets/Logo_Rand.png"/>
-
+  <a href="../../../Startseite/Startseite/src/Startseite.html">
+    <img id="Logo" src="../assets/Logo_Rand.png"/>
+  </a>
 
   <!--
   Anmelde-Button
   -->
 
-  <div id="Anmelden">
-    <span class="text">Anmelden</span>
-  </div>
-  </div>
+  <button onclick="window.location.href = '../../../Startseite/Startseite/src/Startseite.html'" type="button" id="Anmelden">Starten</button>
 
   <div id="Kontostand">
     <img id="PB" src="../assets/default-profile.png" alt="Profilbild">
@@ -45,34 +42,16 @@ Obere Leiste mit Logo
 
 </header>
 
-
-
-
-
 <main>
   <!--
       <h2 id="Connection Text" style="visibility: hidden;">Verbindung erstellt, Spiel gestartet</h2>
       <button onclick="handleStartButton()" id="StartButton">Spiel Starten</button>
     -->
 
-<!--
-Start-Knopf
--->
   <div id="StartGame">
-    <div class="form-container">
-      <h1 style="color: black;">Blackjack</h1>
-      <p class="error" style="font-size: 16px;"></p>
-      <div class="form-group">
-
-      </div>
-
-      <button type="button" class="button-start-game gleichButton">Starten</button>
-    </div>
+      <h1 id="Titel">Blackjack</h1>
+      <button onclick="window.location.href = 'game.html'" type="button" class="gleichButton">Starten</button>
   </div>
-  
-  <!--
-Untere Leiste mit Spielanleitung in verschachtelten Listen
--->
 
 </main>
   <footer class="footer">
