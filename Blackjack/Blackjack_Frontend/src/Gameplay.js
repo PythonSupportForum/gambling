@@ -15,18 +15,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
         window.messageQueue = new MessageQueue('messageBox'); // GameContainer wird nach dem Dokument initialisiert
 
-        setTimeout(welcome, 1000);
+        startBlackJack();
+
+        setTimeout(startGame, 1000);
     };
 });
 
 
-const getEinsatz = ()=>new Promise(resolve => {
+const getBet = ()=>new Promise(resolve => {
    document.getElementById("betPopupContainer").classList.add("show");
    document.getElementById("setBetButton").onclick = ()=>{
        const v = document.getElementById("betValue").value;
        if(v < 100 || v > 100000) return;
        document.getElementById("betPopupContainer").classList.remove("show");
-       setTimeout(()=>resolve(Number(v)), 1500); //Weil Karten SOnst schon umgedreht werden bevor transition von css verschwinden noch nicht fertig ist
+       setTimeout(()=>resolve(Number(v)), 1500); //Weil Karten sonst schon umgedreht werden bevor transition von css verschwinden noch nicht fertig ist
    }
    const slider = document.getElementById("betValue");
    const output = document.getElementById("sliderValue");
@@ -35,7 +37,7 @@ const getEinsatz = ()=>new Promise(resolve => {
        output.innerHTML = this.value + " €";
    };
 });
-const getinsuranceEinsatz = ()=>new Promise(resolve => { //Nicht wirklich eistaz sondern nur ja nein popup aber weil grad kein besserer name da war, besser als in den informatik klausuren, wo die methoden einfahc nur "ichmacheetwas" heißen
+const getInsuranceBet = ()=>new Promise(resolve => { //Nicht wirklich Einsatz sondern nur ja nein popup aber weil grad kein besserer name da war, besser als in den informatik klausuren, wo die methoden einfahc nur "ichmacheetwas" heißen
     overlaySetStatus(true);
     document.getElementById("insuranceBetPopupContainer").classList.add("show");
     document.getElementById("setBetButton").onclick = ()=>{
@@ -49,7 +51,7 @@ const getinsuranceEinsatz = ()=>new Promise(resolve => { //Nicht wirklich eistaz
         resolve(false);
     }
 });
-const showErgebisse = (text)=>new Promise(resolve => { //Nicht wirklich eistaz sondern nur ja nein popup aber weil grad kein besserer name da war, besser als in den informatik klausuren, wo die methoden einfahc nur "ichmacheetwas" heißen
+const showResults  = (text)=>new Promise(resolve => { //Nicht wirklich eistaz sondern nur ja nein popup aber weil grad kein besserer name da war, besser als in den informatik klausuren, wo die methoden einfahc nur "ichmacheetwas" heißen
     document.getElementById("resultText").innerText = text;
     document.getElementById("result").classList.add("show");
     document.getElementById("playAgain").onclick = ()=>{
@@ -69,22 +71,22 @@ const userTakeCard = async (count = 1) => {
         e.push(takeCard());
         count--;
     }
-    const kartenWertePromise = Promise.all(e);
+    const valuePromise = Promise.all(e);
     console.log("Zeige Karten..");
     const {end, cards, promise} = showCardsInCenter(ziehenStack.takeCard(e.length));
     console.log("Karen Gezeigt!", cards);
     await promise;
-    const flip = await kartenWertePromise;
-    //Karten gezogen aber noch nicht umgedreht und Rückseitenwert steht bereit weilserver anronw
+    const flip = await valuePromise;
+    //Karten gezogen aber noch nicht umgedreht und Rückseitenwert steht bereit weil server antwort
     console.log("Gezogen:",flip);
-    //Gezogene Karfen umdrehen
+    //Gezogene Karten umdrehen
     let a = [];
     for (let i = 0; i < flip.length; i++) {
         console.log("i:",i,flip[i],cards[i]);
         a.push(cards[i].aufdecken(flip[i]));
     }
     await Promise.all(a);
-    //Umdrehen Beended
+    //Umdrehen Beendet
 
     const currentUserCard = [...Object.values(userStack[runningStackId].cards), ...cards];
     const canSplit = currentUserCard.length === 2 && currentUserCard[0].kartenwert === currentUserCard[1].kartenwert && userStack.length < 4; //Kann nur Spilitten bei Zwei gleichen Karten und nur maximal 4 mal spittem
@@ -100,7 +102,7 @@ const userTakeCard = async (count = 1) => {
     }));
     buttons.hide();
 
-    end(); //Um Overlay u schließen => Karfenn aus dem Vordergurnf
+    end(); //Um Overlay u schließen → Karten aus dem Vordergrund
     if(input === "p") {
         userStack[runningStackId].einsatz*=2;
         userStack[runningStackId].restMaxCount = 1;
@@ -109,22 +111,22 @@ const userTakeCard = async (count = 1) => {
     if(input === "p" || input === "d") {
         const p = [];
         Promise.all(cards.map(card => p.push(userStack[runningStackId].add(card)))).then(()=>{
-            userStack[runningStackId].startShowPoits();
+            userStack[runningStackId].startShowPoints();
         });
         await Promise.all(p);
         if(userStack[runningStackId].wert() > 21) {
             await closeUserStack(runningStackId);
-            await endStappel();
+            await endStack();
         }
         return true;
     } else if(input === "s") {
         addUserStack();
         await Promise.all([
             ...(cards.length > 1 ? [userStack[runningStackId].add(cards[0])] : []),
-            userStack[userStack.length-1].add(cards.pop()) //Hintere Karfe auf neien Stappel
+            userStack[userStack.length-1].add(cards.pop()) //Hintere Karte auf neuen Stack
         ]); //Auf die entsprechenden Stapel verteilen mit Promise für Warten
-        userStack[runningStackId].startShowPoits();
-        userStack[userStack.length-1].startShowPoits();
+        userStack[runningStackId].startShowPoints();
+        userStack[userStack.length-1].startShowPoints();
 
         userStack[userStack.length-1].einsatz = userStack[runningStackId].einsatz/2;
         userStack[runningStackId].einsatz = userStack[runningStackId].einsatz/2;
@@ -141,15 +143,14 @@ const userTakeCard = async (count = 1) => {
 
 
 window.insuranceBet = 0; // Einsatz der auf Dealer Blackjack gewettet wurde
-const welcome = async ()=> {
-    const betPromise = getEinsatz();
+const startGame = async ()=> {
+    const betPromise = getBet();
 
     if(showIntro) {
         await Promise.all([
             messageQueue.displayMultipleMessages([
                 "Hallo!",
                 "Willkommen bei Blackjack!",
-                "Von Carl und Florian!",
                 "Der Dealer ist dem Spiel beigetreten...",
                 "Die Karten werden gemischt..."
             ]),
@@ -167,20 +168,20 @@ const welcome = async ()=> {
 
     const gameInfoPromise = betPromise.then(einsatz => {
         userStack[0].einsatz = einsatz;
-        return startNewGame(einsatz);
+        return startNewBidding(einsatz);
     });
 
     await new Promise(resolve => setTimeout(resolve, 2000));
-    await showDealerCards(gameInfoPromise.then(g => g.firstDealerCard), 0);
+    await showDealerCards(gameInfoPromise.then(g => g), 0);
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     if(dealerLeftStack.getOberste().kartenwert === 11) {
-        if((await getinsuranceEinsatz())) {
+        if((await getInsuranceBet())) {
             console.log("Set insurance,..");
             await gameInfoPromise;
             console.log("Start Game");
-            userStack.forEach(s => s.einsatz *= 0.5); //Alle User Stappel Einsatz halbieren => Gesmmt einsatz wir halbiert
+            userStack.forEach(s => s.einsatz *= 0.5); //Alle User Stack Einsatz halbieren → Gesamt einsatz wir halbiert
             window.insuranceEinsatz = (await betPromise)/2;
         }
     }
@@ -188,7 +189,7 @@ const welcome = async ()=> {
     await userTakeCard(2);
 
     console.log("Gameplay loop");
-    while(!jetztIstAllesVorbei){
+    while(!endProcess){
         await new Promise(resolve => setTimeout(resolve, 100));
         const eingabe = await new Promise(resolve => buttons.show({
             take: ()=>resolve("t"),
@@ -196,65 +197,65 @@ const welcome = async ()=> {
         }));
         if(eingabe === "t") {
             await userTakeCard(1);
-            if(userStack[runningStackId].restMaxCount === 0) await endStappel();
+            if(userStack[runningStackId].restMaxCount === 0) await endStack();
         } else if(eingabe === "s") {
             buttons.hide();
             await messageQueue.displayMultipleMessages(["Der Stack wurde abgeschlossen!"]);
             overlaySetStatus(false);
-            await endStappel();
+            await endStack();
         }
     }
 
     const gameResultsPromise = getGameResults();
     await new Promise(resolve => setTimeout(resolve, 1000)); //Es soll gewartet werden, bis der Server die Ergebnisse geschickt hat, dieses warten soll mindetsens 500ms gehen, damit man auch den spielstand sehen kann
-    const ergebisText = await gameResultsPromise;
+    const resultText = await gameResultsPromise;
     await Promise.all([
         messageQueue.displayMultipleMessages(["ENDE"]),
-        showErgebisse(ergebisText)
+        showResults(resultText)
     ]);
 }
 
-const berechneErgebiss = async (dealerKartenPromise)=>{
-    const dealerCarten = await dealerKartenPromise;
-    console.log("Dealer Zieht:", dealerCarten);
-    dealerLeftStack.startShowPoits();
-    for (const c of dealerCarten) {
+const calculateResult = async (dealerCardsPromise)=>{
+    const dealerCards = await dealerCardsPromise;
+    console.log("Dealer Zieht:", dealerCards);
+    dealerLeftStack.startShowPoints();
+    for (const c of dealerCards) {
         await showDealerCards(c, 0, true);
-        if(dealerLeftStack.wert() > 21) break; //Breche Ab, sobald der dealer mehr als 21 hat
+        if(dealerLeftStack.wert() > 21) break; //Breche ab, sobald der dealer mehr als 21 hat
     }
     console.log("All Fertig!");
 }
 
-window.jetztIstAllesVorbei = false;
-const endStappel = ()=>new Promise(resolve => {
+window.endProcess = false;
+const endStack = ()=>new Promise(resolve => {
     buttons.hide();
     endStackServer(runningStackId).then(()=>{});
-    const esGehtWeter = runningStackId < userStack.length-1; //Ob noch win weitere Stappel durch Spiltlen vegübar ist
-    if(esGehtWeter) runningStackId++;
+    const continues = runningStackId < userStack.length-1; //Ob noch win weitere Stappel durch Spiltlen vegübar ist
+    if(continues) runningStackId++;
     const {end} = focusElementWithOverlay(Object.values(userStack[runningStackId].cards));
-    const dealerCardsPromise = esGehtWeter ? null : getDealerCards();
+    const dealerCardsPromise = continues ? null : getDealerCards();
     setTimeout(async ()=>{
         await end();
-        if(esGehtWeter) {
+        if(continues) {
             setTimeout(async ()=>{
                 await userTakeCard(1);
                 resolve();
             }, 1000);
         } else {
             window.jetztIstAllesVorbei = true;
-            await berechneErgebiss(dealerCardsPromise);
+            await calculateResult(dealerCardsPromise);
             resolve();
         }
     }, 2500);
 });
 
-const showDealerCards = async (gameInfoPromise = null, countVerschlosseneKarten = 1, schnellDreien = false)=>{
+const showDealerCards = async (gameInfoPromise = null, countCoveredCards = 1, fastFlip = false)=>{
     dealerLeftStack.direktWertUpdate = false;
     if(!gameInfoPromise) gameInfoPromise = await dealerTakes();
-    if(!schnellDreien) {
-        await ziehenStack.copyStack(dealerLeftStack, 1+countVerschlosseneKarten);
-        const gameInfo = await gameInfoPromise; //Wichtig: Mischen und Ziehen Animation auch Bevor einsatz abgeben, erst vor dem Umdrehen muss auf einSatz + Server Antwort gewartet werden
-        console.log("Dealer First:", gameInfo.firstDealerCard);
+    if(!fastFlip) {
+        await ziehenStack.copyStack(dealerLeftStack, 1 + countCoveredCards);
+        const gameInfo = await gameInfoPromise; //Wichtig: Mischen und Ziehen Animation auch vor einsatz abgeben, erst vor dem Umdrehen muss auf einSatz + Server Antwort gewartet werden
+        console.log("Dealer First:", gameInfo);
         await dealerLeftStack.getOberste().aufdecken(gameInfo);
     } else {
         const card = ziehenStack.takeCard(1)[0];

@@ -8,10 +8,10 @@ const cardWidth = 200;
 const cardHeight = 300;
 const flippingTime = 500;
 const faecherStackCardAbstand = 20;
-const overlaySpeed = 0.01; //Wen Element im Vordergrund, wie schnell schwarz
+const overlaySpeed = 0.01; //Wenn Element im Vordergrund, wie schnell schwarz
 const overlayStaerke = 0.6;
 
-const normalMoveTime = 0.5; //Pre vorher Einstellung => einezlen Anis weischen ab
+const normalMoveTime = 0.5; //Pre vorher Einstellung → einezlen Anis weischen ab
 
 // region Assets
 let toLoad = {
@@ -315,18 +315,18 @@ window.GameCard = class GameCard extends AnimationObject {
         super(img, pos);
         this.kartenwert = kartenwert; //Um was für eine Karte hanelt es  sich ist Null wenn Srerver noch nicht geantowrtet.
         this.wertZaehlen = true; //Der Anteil des Kartenstappelwertes, der noch nicht gerednert wird, da die Animation noch running ist.
-        this.StackReferenze = null; //Auf welchem Stack ist die Karte => Hat nur Grafische Auswirkungne nix Gamepla
+        this.StackReference = null; //Auf welchem Stack ist die Karte => Hat nur Grafische Auswirkungne nix Gamepla
     }
     moveTo(...p) {
-        return super.moveTo(...p); //Einfach alle Paramzer Kopieren, weil eh gleich
+        return super.moveTo(...p); //Einfach alle Parameter Kopieren, weil eh gleich
     }
     removeFromStack() {
-        if(this.StackReferenze) this.StackReferenze.remove(); //Falls auf Altem Erst Weg!
+        if(this.StackReference) this.StackReference.remove(); //Falls auf Altem Erst Weg!
     }
     putOnStack(Stack, time = normalMoveTime) { //Auf einen Stack bewegen => Fächereffekt Möglich!
         this.removeFromStack();
-        this.StackReferenze = Stack._add(this, time);
-        return this.StackReferenze.promise;
+        this.StackReference = Stack._add(this, time);
+        return this.StackReference.promise;
     }
     aufdecken({type, points}) {
         this.kartenwert = points;
@@ -339,14 +339,14 @@ window.Stack = class Stack {
         this.pos = pos;
         this.cards = {};
         this.type = type;
-        this.faecherSteps = faecherSteps; //Nur Releant für Type = Faechem
+        this.faecherSteps = faecherSteps; //Nur relevant für Type = Faecher
         this.einsatz = -1;
         this.showPoints = false;
         this.showInfo = false;
         this.restMaxCount = -1;
         this.direktWertUpdate = true; //Soll der angezeigte Wert schon beim Losfliegen aktualisiert werden
     }
-    startShowPoits() {
+    startShowPoints() {
         this.showInfo = true;
         if(this.showPoints) return;
         this.showPoints = true;

@@ -1,4 +1,4 @@
-const userStappelAbstandSplit = 400;
+const userStackDistanceSplit = 400;
 
 const showCardsInCenter = (cards, time = normalMoveTime)=>{
     function calculateCardPositions(cardCount, screenWidth = window.innerWidth, screenHeight = window.innerHeight, cardWidth = 100) {

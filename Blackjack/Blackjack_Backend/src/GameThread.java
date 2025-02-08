@@ -42,6 +42,7 @@ public class GameThread implements Runnable {
     int coins = 0;
     double balance = 0.0;
     int bet = 0;
+    int testBet = 0;
     int splitCount = 0;
     int insuranceBet = 0;
     
@@ -261,15 +262,16 @@ public class GameThread implements Runnable {
         if (message.startsWith("start")){
             start = true;
         }
-        else if (message.startsWith("exchange")){
-            coinAmount = Integer.parseInt(message.substring(9));
+        else if (message.startsWith("exchange:")){
+            coinAmount = Integer.parseInt(message.substring("exchange:".length()).trim());
             exchangeInput = true;
         }
-        else if (message.startsWith("bet")) {
-            bet = message.substring(7).length();
+        else if (message.startsWith("bet:")) {
+            bet = Integer.parseInt(message.substring("bet:".length()).trim());
+            System.out.println("Client wettet " + bet);
             betInput = true;
-        } else if (message.startsWith("insurance")) {
-            insuranceBet = message.substring(11).length();
+        } else if (message.startsWith("insurance:")) {
+            insuranceBet = Integer.parseInt(message.substring("insurance:".length()).trim());
             insuranceInput = true;
         } else if (message.startsWith("end")) {
             running = false;
@@ -336,7 +338,7 @@ public class GameThread implements Runnable {
                             System.out.println("Du hast " + coinAmount + " Coins erworben!");
                         }
                         //endregion
-                    } catch (NumberFormatException e) {}
+                    } catch (NumberFormatException ignored) {}
                 }
             }
             //region Geld umtauschen
@@ -358,10 +360,11 @@ public class GameThread implements Runnable {
 
                 String inputString = c.nextLine();
                 try {
-                    bet = Integer.parseInt(inputString);
-                    if (bet > coins) {
+                    testBet = Integer.parseInt(inputString);
+                    if (bet > coins || testBet > coins) {
                         System.out.println("Du hast nicht genug Coins für diesen Betrag!");
                         bet = 0;
+                        testBet = 0;
                     } else {
                         coins -= bet;
                         System.out.println("Du hast " + bet + " Coins gesetzt!");
@@ -383,7 +386,12 @@ public class GameThread implements Runnable {
 
             setGameState(GameState.DEALER_START);
 
-            dealerStack.add(deck.pop());
+            int pre = currentValue(dealerStack);
+            GameCard tempCard = deck.pop();
+            dealerStack.add(tempCard);
+            conn.send("DealerCard:c:" + tempCard.getCoat() + ",v:" + tempCard.getValue() + ",p:" + (currentValue(dealerStack) - pre));
+            System.out.println("DealerCard:c:" + tempCard.getCoat() + ",v:" + tempCard.getValue() + ",p:" + (currentValue(dealerStack) - pre));
+
             dealerStack.add(deck.pop());
             if (dealerStack.get(1).getValue() == '0' || dealerStack.get(1).getValue() == 'j' || dealerStack.get(1).getValue() == 'q' || dealerStack.get(1).getValue() == 'k') {
                 //region Insurance Bet
