@@ -23,8 +23,8 @@
         </div>
         <div class="left">Q2 INFO</div>
         <div class="buttons">
-            <button onclick="location.href='?login'">Login</button>
-            <button onclick="location.href='?register'">Register</button>
+            <button onclick="location.href='./login'">Login</button>
+            <button onclick="location.href='./register'">Register</button>
         </div>
     </header>
     <main>
@@ -64,56 +64,78 @@ $errors = [];
 
 // Formularverarbeitung
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = $_POST['name'] ?? '';
-    $vorname = $_POST['vorname'] ?? '';
-    $bn = $_POST['bn'] ?? '';
-    $pwd = $_POST['password'] ?? '';
-    $geburtsdatum = $_POST['geburtsdatum'] ?? '';
-    $addresse = $_POST['addresse'] ?? '';
+    if (isset($_POST['login'])) {
+        // Login-Logik
+        $bn = $_POST['bn'] ?? '';
+        $pwd = $_POST['password'] ?? '';
 
-    // Validierung
-    if (empty($name)) {
-        $errors[] = "Name ist erforderlich.";
-    }
-    if (empty($vorname)) {
-        $errors[] = "Vorname ist erforderlich.";
-    }
-    if (empty($bn)) {
-        $errors[] = "Benutzername ist erforderlich.";
-    }
-    if (empty($pwd)) {
-        $errors[] = "Passwort ist erforderlich.";
-    }
-    if (empty($geburtsdatum)) {
-        $errors[] = "Geburtsdatum ist erforderlich.";
-    }
-    if (empty($addresse)) {
-        $errors[] = "Adresse ist erforderlich.";
-    }
-
-    // Wenn keine Fehler vorhanden sind, Daten in die Datenbank einfügen
-    if (empty($errors)) {
-        // Passwort hashen
-        $pwdhash = password_hash($pwd, PASSWORD_DEFAULT);
-
-        // Datenbankverbindung herstellen
-        $conn = new mysqli('localhost', 'root', '', 'deine_datenbank');
-        if ($conn->connect_error) {
-            die("Verbindung fehlgeschlagen: " . $conn->connect_error);
-        }
-
-        // SQL-Query zum Einfügen des neuen Kunden
-        $stmt = $conn->prepare("INSERT INTO Kunden (Name, Vorname, bn, pwdhash, Geburtsdatum, Addresse) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssss", $name, $vorname, $bn, $pwdhash, $geburtsdatum, $addresse);
-
-        if ($stmt->execute()) {
-            echo "<script>alert('Kunde erfolgreich angelegt!');</script>";
+        if (empty($bn) || empty($pwd)) {
+            $errors[] = "Benutzername und Passwort sind erforderlich.";
         } else {
-            $errors[] = "Fehler beim Anlegen des Kunden: " . $stmt->error;
-        }
+            // Datenbankverbindung herstellen
+            $conn = new mysqli('localhost', 'carl', 'geilo123!', 'gambling');
+            if ($conn->connect_error) {
+                die("Verbindung fehlgeschlagen: " . $conn->connect_error);
+            }
 
-        $stmt->close();
-        $conn->close();
+            // Benutzer in der Datenbank suchen
+            $stmt = $conn->prepare("SELECT id, pwdhash FROM Kunden WHERE bn = ?");
+            $stmt->bind_param("s", $bn);
+            $stmt->execute();
+            $stmt->store_result();
+            $stmt->bind_result($id, $pwdhash);
+
+            if ($stmt->fetch() && password_verify($pwd, $pwdhash)) {
+                echo "<script>alert('Login erfolgreich!');</script>";
+                // Hier könnte eine Session gestartet werden
+            } else {
+                $errors[] = "Benutzername oder Passwort falsch.";
+            }
+
+            $stmt->close();
+            $conn->close();
+        }
+    } elseif (isset($_POST['register'])) {
+        // Register-Logik
+        $name = $_POST['name'] ?? '';
+        $vorname = $_POST['vorname'] ?? '';
+        $bn = $_POST['bn'] ?? '';
+        $pwd = $_POST['password'] ?? '';
+        $geburtsdatum = $_POST['geburtsdatum'] ?? '';
+        $addresse = $_POST['addresse'] ?? '';
+
+        // Validierung
+        if (empty($name)) $errors[] = "Name ist erforderlich.";
+        if (empty($vorname)) $errors[] = "Vorname ist erforderlich.";
+        if (empty($bn)) $errors[] = "Benutzername ist erforderlich.";
+        if (empty($pwd)) $errors[] = "Passwort ist erforderlich.";
+        if (empty($geburtsdatum)) $errors[] = "Geburtsdatum ist erforderlich.";
+        if (empty($addresse)) $errors[] = "Adresse ist erforderlich.";
+
+        // Wenn keine Fehler vorhanden sind, Daten in die Datenbank einfügen
+        if (empty($errors)) {
+            // Passwort hashen
+            $pwdhash = password_hash($pwd, PASSWORD_DEFAULT);
+
+            // Datenbankverbindung herstellen
+            $conn = new mysqli('localhost', 'root', '', 'deine_datenbank');
+            if ($conn->connect_error) {
+                die("Verbindung fehlgeschlagen: " . $conn->connect_error);
+            }
+
+            // SQL-Query zum Einfügen des neuen Kunden
+            $stmt = $conn->prepare("INSERT INTO Kunden (Name, Vorname, bn, pwdhash, Geburtsdatum, Addresse) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssssss", $name, $vorname, $bn, $pwdhash, $geburtsdatum, $addresse);
+
+            if ($stmt->execute()) {
+                echo "<script>alert('Kunde erfolgreich angelegt!');</script>";
+            } else {
+                $errors[] = "Fehler beim Anlegen des Kunden: " . $stmt->error;
+            }
+
+            $stmt->close();
+            $conn->close();
+        }
     }
 }
 
@@ -131,11 +153,25 @@ if (isset($_GET['login']) || isset($_GET['register'])) {
         foreach ($errors as $error) {
             echo "<li>$error</li>";
         }
-        echo "</ul></div>";
+        echo "</ul></div><br><br>";
     }
 
-    echo "
-            <form action='/' method='post'>
+    // Formular für Login oder Register
+    if (isset($_GET['login'])) {
+        echo "
+            <form action='./login' method='post'>
+                <input type='hidden' name='login' value='1'>
+                <input type='text' name='bn' placeholder='Benutzername' value='" . ($_POST['bn'] ?? '') . "' required>
+                <input type='password' name='password' placeholder='Passwort' required>
+                <div class='buttons'>
+                    <button onclick='event.preventDefault(); closePopup()'>Abbrechen</button>
+                    <button type='submit'>Anmelden</button>
+                </div>
+            </form>";
+    } else {
+        echo "
+            <form action='./register' method='post'>
+                <input type='hidden' name='register' value='1'>
                 <input type='text' name='name' placeholder='Name' value='" . ($_POST['name'] ?? '') . "' required>
                 <input type='text' name='vorname' placeholder='Vorname' value='" . ($_POST['vorname'] ?? '') . "' required>
                 <input type='text' name='bn' placeholder='Benutzername' value='" . ($_POST['bn'] ?? '') . "' required>
@@ -144,9 +180,12 @@ if (isset($_GET['login']) || isset($_GET['register'])) {
                 <input type='text' name='addresse' placeholder='Addresse' value='" . ($_POST['addresse'] ?? '') . "' required>
                 <div class='buttons'>
                     <button onclick='event.preventDefault(); closePopup()'>Abbrechen</button>
-                    <button type='submit'>$type</button>
+                    <button type='submit'>Account erstellen</button>
                 </div>
-            </form>
+            </form>";
+    }
+
+    echo "
         </div>
     </div>
     <script>
@@ -154,12 +193,11 @@ if (isset($_GET['login']) || isset($_GET['register'])) {
         function closePopup() {
             document.getElementById('overlay').style.display = 'none';
         }
-    </script>
-    ";
+    </script>";
 }
 ?>
 </body>
 <footer>
-    <p>&copy; 2023 Let's Gambling | <a href="/imprint">Impressum</a></p>
+    <p>&copy; 2023 Let's Gambling | <a href="./imprint">Impressum</a></p>
 </footer>
 </html>

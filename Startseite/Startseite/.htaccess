@@ -1,7 +1,7 @@
 RewriteEngine On
 
-# /login auf index.php?login umleiten
 RewriteRule ^login$ index.php?login [L,QSA]
 
-# /register auf index.php?register umleiten
 RewriteRule ^register$ index.php?register [L,QSA]
+
+RewriteRule ^imprint$ index.php?page=imprint [L,QSA]
