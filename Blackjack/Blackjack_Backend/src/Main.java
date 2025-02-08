@@ -10,7 +10,7 @@ public class Main {
         // Port zum Hosten des Servers
         int port = 8080;
 
-        // Ein Serverobjekt wird mit der Addresse des ausführenden Servers erstellt
+        // Ein Serverobjekt wird mit der Adresse des ausführenden Servers erstellt
         WebSocketServer server = new BlackjackServer(new InetSocketAddress(port));
         server.start();
     }

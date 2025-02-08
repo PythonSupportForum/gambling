@@ -11,7 +11,8 @@ import java.util.Map;
 class BlackjackServer extends WebSocketServer {
 
     // Funktioniert als Client_ID (intern). Mit jedem neuen Client wird diesem eine um 1 höhere ID zugewiesen, da immer um 1 erhöht wird, erhält der erste client die id 0
-    int count = -1;
+    int id = -50;
+    boolean acc = false;
 
     // "Dictionary" an Threads, Abfrage eines Threads mit Schlüssel Websocket, synchronizedMaps sind thread-sicher
     private final Map<WebSocket, GameThread> clientThreads = Collections.synchronizedMap(new HashMap<>());
@@ -24,17 +25,9 @@ class BlackjackServer extends WebSocketServer {
     // Beim Öffnen einer Verbindung wird ein neuer Thread erstellt, indem nur die eine Verbindung behandelt wird
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
-        count++;
         System.out.println("Neue Verbindung: " + conn.getRemoteSocketAddress());
-        // Senden der ClientId an den Client
-        conn.send("acc " + count);
-
-        // Starten eines neuen Threads
-        GameThread gameThread = new GameThread(count, conn);
-        Thread thread = new Thread(gameThread);
-        thread.start();
-        // Einfügen in die HashMap ("Dictionary") -> Schlüssel ist der Websocket
-        clientThreads.put(conn, gameThread);
+        conn.send("acc");
+        System.out.println("acc " + conn.getRemoteSocketAddress());
     }
 
     // Schließen des Threads und entfernen des Threads aus der HashMap
@@ -49,13 +42,29 @@ class BlackjackServer extends WebSocketServer {
     // Beim Erhalten einer Benachrichtigung → Verteilung der Nachrichten auf die zugehörigen Threads
     @Override
     public void onMessage(WebSocket conn, String message) {
+        String lowerCaseMessage = message.toLowerCase();
+
         // Finde den entsprechenden Thread durch die verwendete Verbindung als Schlüssel
         GameThread thread = clientThreads.get(conn);
 
         if (thread != null) {
-            thread.handleMessage(message); // Nachricht an den zugehörigen GameThread weiterleiten
+            thread.handleMessage(lowerCaseMessage); // Nachricht an den zugehörigen GameThread weiterleiten
         } else {
-            conn.send("Es ist ein Fehler aufgetreten: Kein Thread für diesen Client gefunden.");
+            System.out.println("Message without thread: " + lowerCaseMessage);
+            int startIndex = lowerCaseMessage.indexOf("id:");
+            if (startIndex != -1) {
+                try{
+                    id = Integer.parseInt(lowerCaseMessage.substring(startIndex + "id:".length()).trim());
+                    System.out.println("ID: " + id);
+                    acc = true;
+                    newThread(conn);
+                }catch(NumberFormatException e){
+                    System.out.println("Fehler: ID ist keine Zahl");
+                }
+            }
+            else{
+                System.out.println("Fehler: Befehl nicht erkannt");
+            }
         }
     }
 
@@ -68,5 +77,14 @@ class BlackjackServer extends WebSocketServer {
     @Override
     public void onStart() {
         System.out.println("Blackjack Server wurde erfolgreich gestartet.");
+    }
+
+    void newThread(WebSocket conn) {
+        // Starten eines neuen Threads
+        GameThread gameThread = new GameThread(id, conn);
+        Thread thread = new Thread(gameThread);
+        thread.start();
+        // Einfügen in die HashMap ("Dictionary") -> Schlüssel ist der Websocket
+        clientThreads.put(conn, gameThread);
     }
 }
