@@ -34,19 +34,6 @@ Obere Leiste mit Logo
 
   <div id="Anmelden">
     <span class="text">Anmelden</span>
-    <div class="form-container">
-      <h1 style="color: white;">Anmelden bei LETS GO GAMBLING</h1>
-      <p class="error" style="font-size: 16px;"></p>
-      <div class="form-group">
-        <label for="username" style="color: white;">Benutzername</label>
-        <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($username); ?>" required placeholder="Benutzername">
-      </div>
-      <div class="form-group">
-        <label for="password" style="color: white;">Passwort</label>
-        <input type="password" id="password" name="password" value="<?php echo htmlspecialchars($password); ?>" required placeholder="Passwort">
-      </div>
-      <button type="submit" class="btn-submit">Einloggen</button>
-    </div>
   </div>
   </div>
 
@@ -88,37 +75,36 @@ Untere Leiste mit Spielanleitung in verschachtelten Listen
 -->
 
 </main>
-  <footer>
-    
-	<h1 id="Footer-Title">Impressum:</h1>
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-hint"><h4> >>> Für mehr Informationen hier hovern! <<< </h4></div>
+	<h1 id="Footer-Title">Regelwerk:</h1>
 	<div id="regelwerk">
-	
-	<h2>Regelwerk:</h2>
     <ul id="liste1">
-      <li id="a-element">Ziel des Spiels: Erreiche eine Hand mit einem Wert von 21 oder so nah wie möglich an 21, ohne diese Zahl zu überschreiten</li>
-      <li id="a-element">Kartenwerte:
+      <li class="a-element">Ziel des Spiels: Erreiche eine Hand mit einem Wert von 21 oder so nah wie möglich an 21, ohne diese Zahl zu überschreiten</li>
+      <li class="a-element">Kartenwerte:
         <ul id="liste2">
-          <li id="a-element">Zahlenkarten (2-10): Entsprechen ihrem Zahlenwert</li>
-          <li id="a-element">Bildkarten (König, Dame, Bube): Jeweils 10 Punkte</li>
-          <li id="a-element">Asse: Entweder 1 oder 11 Punkte, je nachdem, was für den Spieler vorteilhafter ist</li>
+          <li class="a-element">Zahlenkarten (2-10): Entsprechen ihrem Zahlenwert</li>
+          <li class="a-element">Bildkarten (König, Dame, Bube): Jeweils 10 Punkte</li>
+          <li class="a-element">Asse: Entweder 1 oder 11 Punkte, je nachdem, was für den Spieler vorteilhafter ist</li>
         </ul>
       </li>
-      <li id="a-element">Spielverlauf:
+      <li class="a-element">Spielverlauf:
         <ol id="liste3">
-          <li id="a-element">Jeder Spieler erhält zwei Karten, der Dealer ebenfalls, wobei eine Karte des Dealers offen ist</li>
-          <li id="a-element">Spieler entscheiden, ob sie eine weitere Karte ("Hit") nehmen oder bei ihrer Hand bleiben ("Stand")</li>
-          <li id="a-element">Wenn die Hand eines Spielers über 21 geht, verliert der Spieler automatisch ("Bust")</li>
-          <li id="a-element">Wenn alle Spieler fertig sind, zeigt der Dealer seine zweite Karte. Der Dealer muss bei 16 oder weniger eine Karte ziehen, bei 17 oder mehr muss er stehen bleiben</li>
-          <li id="a-element">Der Spieler gewinnt, wenn seine Hand näher an 21 ist als die des Dealers oder wenn der Dealer über 21 geht</li>
+          <li class="a-element">Jeder Spieler erhält zwei Karten, der Dealer ebenfalls, wobei eine Karte des Dealers offen ist</li>
+          <li class="a-element">Spieler entscheiden, ob sie eine weitere Karte ("Hit") nehmen oder bei ihrer Hand bleiben ("Stand")</li>
+          <li class="a-element">Wenn die Hand eines Spielers über 21 geht, verliert der Spieler automatisch ("Bust")</li>
+          <li class="a-element">Wenn alle Spieler fertig sind, zeigt der Dealer seine zweite Karte. Der Dealer muss bei 16 oder weniger eine Karte ziehen, bei 17 oder mehr muss er stehen bleiben</li>
+          <li class="a-element">Der Spieler gewinnt, wenn seine Hand näher an 21 ist als die des Dealers oder wenn der Dealer über 21 geht</li>
         </ol>
       </li>
-      <li id="a-element">Blackjack: Ein Ass und eine 10-Punkte-Karte in den ersten beiden Karten, was eine sofortige Gewinnkombination ist (außer gegen ein Blackjack des Dealers)</li>
-      <li id="a-element">Verdopplung (Double Down): Der Spieler kann seinen Einsatz verdoppeln und erhält nur eine weitere Karte</li>
-      <li id="a-element">Teilen (Split): Wenn die ersten beiden Karten des Spielers den gleichen Wert haben, kann er sie in zwei separate Hände aufteilen und für jede Hand einen neuen Einsatz platzieren</li>
+      <li class="a-element">Blackjack: Ein Ass und eine 10-Punkte-Karte in den ersten beiden Karten, was eine sofortige Gewinnkombination ist (außer gegen ein Blackjack des Dealers)</li>
+      <li class="a-element">Verdopplung (Double Down): Der Spieler kann seinen Einsatz verdoppeln und erhält nur eine weitere Karte</li>
+      <li class="a-element">Teilen (Split): Wenn die ersten beiden Karten des Spielers den gleichen Wert haben, kann er sie in zwei separate Hände aufteilen und für jede Hand einen neuen Einsatz platzieren</li>
     </ul>
 	
 	</div>
-
+    </div>
   </footer>
 
 
