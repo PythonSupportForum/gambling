@@ -156,7 +156,6 @@ main .bild .sub {
 }
 
 .overlay {
-    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -164,12 +163,12 @@ main .bild .sub {
     height: 100%;
     background: rgba(0, 0, 0, 0.7);
     z-index: 1000;
+    display: none;
+    justify-content: center;
+    align-items: center;
 }
 
 .popup {
-    position: fixed;
-    top: 20%;
-    left: 50%;
     background: #333;
     padding: 20px;
     border-radius: 10px;
@@ -178,6 +177,8 @@ main .bild .sub {
     z-index: 1001;
     color: #fff;
     text-align: center;
+    width: auto;
+    max-width: 300px;
 }
 
 .popup form {

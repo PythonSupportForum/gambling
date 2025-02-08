@@ -199,7 +199,7 @@ if (isset($_GET['login']) || isset($_GET['register'])) {
         </div>
     </div>
     <script>
-        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('overlay').style.display = 'flex';
         function closePopup() {
             document.getElementById('overlay').style.display = 'none';
         }
