@@ -1,6 +1,7 @@
 import org.java_websocket.WebSocket;
 
 import java.sql.*;
+import java.text.DecimalFormat;
 import java.util.*;
 
 // Implementiert das Runnable interface -> Nutzung der Java Implementation für Multithreading
@@ -47,6 +48,8 @@ public class GameThread implements Runnable {
     int insuranceBet = 0;
     
     int coinAmount = 0;
+    boolean userTakes = false;
+
     // Ermöglicht Zugriff auf Thread Objekt, wenn GameThread Objekt gefunden wurde
     public Thread currentThread = Thread.currentThread();
 
@@ -258,19 +261,39 @@ public class GameThread implements Runnable {
 
     // Verarbeiten einer einkommenden Nachricht vom Client
     public void handleMessage(String message) {
-        System.out.println("Nachricht von Client " + client_ID + "empfangen: " + message + "\n");
+        System.out.println("Nachricht von Client " + client_ID + " empfangen: " + message + "\n");
         if (message.startsWith("start")){
             start = true;
+            DecimalFormat df = new DecimalFormat("0.00");
+            conn.send("Bal:"+ df.format(balance));
+            System.out.println("Bal:"+balance);
         }
         else if (message.startsWith("exchange:")){
             coinAmount = Integer.parseInt(message.substring("exchange:".length()).trim());
-            exchangeInput = true;
+            System.out.println("Client " + client_ID + " will " + coinAmount + " umtauschen\n");
+            if ((balance - (double) (coinAmount / 100)) < 0) {
+                System.out.println("Hat nicht genug Tilotaler um diesen Betrag zu erwerben!");
+                conn.send("ChipUpdate:-1");
+            } else {
+                coins += coinAmount;
+                balance -= (double) coinAmount / 100;
+                exchangeInput = true;
+                System.out.println("Client " + client_ID + " hat " + coinAmount + " Coins erworben!");
+                conn.send("ChipUpdate:" + coins);
+            }
         }
         else if (message.startsWith("bet:")) {
             bet = Integer.parseInt(message.substring("bet:".length()).trim());
-            System.out.println("Client wettet " + bet);
+            System.out.println("Client " + client_ID + " wettet " + bet);
+            if(bet > coinAmount){
+                bet = coinAmount;
+            }
             betInput = true;
-        } else if (message.startsWith("insurance:")) {
+        }
+        else if (message.startsWith("takeuser")) {
+            userTakes = true;
+        }
+        else if (message.startsWith("insurance:")) {
             insuranceBet = Integer.parseInt(message.substring("insurance:".length()).trim());
             insuranceInput = true;
         } else if (message.startsWith("end")) {
@@ -315,35 +338,27 @@ public class GameThread implements Runnable {
                 continue;
             }
 
-            System.out.println("Dein Kontostand ist " + balance +" Willst du einzahlen?(true, false)");
-            String wants = c.nextLine();
-
-            if(wants.equals("true")){ wantsExchange = true;}
-
-            if(wantsExchange){
-                while (!exchangeInput) {
-                    //ist nicht vollständig, nach mit Frontend lösen
-                    System.out.print("Aktuell hast du " + balance + " TiloTaler\nWie viele Coins willst du erwerben?\n");
-
-                    String inputString = c.nextLine();
-                    try {
-                        coinAmount = Integer.parseInt(inputString);
-                        // Umtauschen: Tilotaler zu Coins
-                        if ((balance - (double)(coinAmount / 100)) < 0) {
-                            System.out.println("Du hast nicht genug Tilotaler um diesen Betrag zu erwerben!");
-                        } else {
-                            coins += coinAmount;
-                            balance -= (double)coinAmount / 100;
-                            exchangeInput = true;
-                            System.out.println("Du hast " + coinAmount + " Coins erworben!");
-                        }
-                        //endregion
-                    } catch (NumberFormatException ignored) {}
-                }
-            }
-            //region Geld umtauschen
-
-
+//            if(wantsExchange){
+//                while (!exchangeInput) {
+//                    //ist nicht vollständig, nach mit Frontend lösen
+//                    System.out.print("Aktuell hast du " + balance + " TiloTaler\nWie viele Coins willst du erwerben?\n");
+//
+//                    String inputString = c.nextLine();
+//                    try {
+//                        coinAmount = Integer.parseInt(inputString);
+//                        // Umtauschen: Tilotaler zu Coins
+//                        if ((balance - (double)(coinAmount / 100)) < 0) {
+//                            System.out.println("Du hast nicht genug Tilotaler um diesen Betrag zu erwerben!");
+//                        } else {
+//                            coins += coinAmount;
+//                            balance -= (double)coinAmount / 100;
+//                            exchangeInput = true;
+//                            System.out.println("Du hast " + coinAmount + " Coins erworben!");
+//                        }
+//                        //endregion
+//                    } catch (NumberFormatException ignored) {}
+//                }
+//            }
             // Start des Spiels
             setGameState(GameState.START);
 
@@ -354,23 +369,26 @@ public class GameThread implements Runnable {
             //region Coins setzen
             while (!betInput) {
                 //ist nicht vollständig, nach mit Frontend lösen
-
-                System.out.println("Du hast " + coins + " Coins");
-                System.out.println("Wie viele Coins willst du setzen?");
-
-                String inputString = c.nextLine();
                 try {
-                    testBet = Integer.parseInt(inputString);
-                    if (bet > coins || testBet > coins) {
-                        System.out.println("Du hast nicht genug Coins für diesen Betrag!");
-                        bet = 0;
-                        testBet = 0;
-                    } else {
-                        coins -= bet;
-                        System.out.println("Du hast " + bet + " Coins gesetzt!");
-                        betInput = true;
-                    }
-                } catch (NumberFormatException ignored) {}
+                    Thread.sleep(100);
+                }
+                catch (Exception ignored) {}
+//                System.out.println("Du hast " + coins + " Coins");
+//                System.out.println("Wie viele Coins willst du setzen?");
+//
+//                String inputString = c.nextLine();
+//                try {
+//                    testBet = Integer.parseInt(inputString);
+//                    if (bet > coins || testBet > coins) {
+//                        System.out.println("Du hast nicht genug Coins für diesen Betrag!");
+//                        bet = 0;
+//                        testBet = 0;
+//                    } else {
+//                        coins -= bet;
+//                        System.out.println("Du hast " + bet + " Coins gesetzt!");
+//                        betInput = true;
+//                    }
+//                } catch (NumberFormatException ignored) {}
             }
 
             //endregion
@@ -422,13 +440,22 @@ public class GameThread implements Runnable {
 
             setGameState(GameState.PLAYER_DRAW);
 
-            card = deck.pop();
-            playerStack.get(0).add(card);
-            printCard(card);
-
-            card = deck.pop();
-            playerStack.get(0).add(card);
-            printCard(card);
+            for(int i = 0; i < 2; i++){
+                userTakes = false;
+                while(!userTakes){
+                    try {
+                        System.out.println("loop");
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                card = deck.pop();
+                playerStack.get(0).add(card);
+                conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + currentValue(playerStack.get(0)));
+                printCard(card);
+                userTakes = false;
+            }
 
             if((balance - bet) < 0) { wantsDoubleDown = true;}
             while (!wantsDoubleDown) {

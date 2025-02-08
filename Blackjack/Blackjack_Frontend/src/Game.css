@@ -154,6 +154,17 @@ button:active {
     opacity: 0;
 }
 
+.ui {
+    position: fixed;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 10px;
+    z-index: 6;
+}
+
 .buttons {
     position: fixed;
     bottom: 0;
@@ -223,9 +234,15 @@ button:active {
 }
 .betPopupContainer .bb {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
 }
+#exchangeButtons{
+    justify-content: space-between;
+}
+#exchangePopupContainer{
+     z-index: 100;
+ }
 .betPopupContainer .bb.c {
     display: flex;
     justify-content: space-between;
