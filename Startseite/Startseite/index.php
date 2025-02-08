@@ -24,7 +24,7 @@ logActivity($conn, isset($_SESSION['kundeId']) ? $_SESSION['kundeId'] : -1);
 
 $errors = [];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
     if (isset($_POST['login'])) {
         // Login-Logik
         $bn = $_POST['bn'] ?? '';
@@ -43,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->fetch() && password_verify($pwd, $pwdhash)) {
                 // Login erfolgreich
                 $_SESSION['kundeId'] = $id; // Benutzer-ID in der Session speichern
-                echo "<script>alert('Login erfolgreich!');</script>";
             } else {
                 $errors[] = "Benutzername oder Passwort falsch.";
             }
@@ -77,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bind_param("ssssss", $name, $vorname, $bn, $pwdhash, $geburtsdatum, $addresse);
 
             if ($stmt->execute()) {
-                echo "<script>alert('Kunde erfolgreich angelegt!');</script>";
+                $_SESSION['kundeId'] = $stmt->insert_id;
             } else {
                 $errors[] = "Fehler beim Anlegen des Kunden: " . $stmt->error;
             }
@@ -85,6 +84,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
         }
     }
+}
+
+if(isset($_GET['logout'])) {
+    unset($_SESSION['kundeId']);
 }
 ?>
 
