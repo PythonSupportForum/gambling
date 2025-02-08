@@ -4,40 +4,74 @@ const addStackMarginSteps = 30;
 const showIntro = false;
 
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("DOM Loaded!!!");
+    console.log("DOM Loaded");
     document.getElementById("startGameButton").onclick = async (event) => {
         event.preventDefault();
         event.stopPropagation();
-        console.log("Game Start!!!!");
+        console.log("Game Start!");
         initVariables();
-        initBackground();
+        initBackground().then();
         document.getElementById("GameContainer").classList.add("show");
 
         window.messageQueue = new MessageQueue('messageBox'); // GameContainer wird nach dem Dokument initialisiert
 
-        startBlackJack();
+        await startBlackJack();
+        console.log(balance);
+
+        if(window.chipCount === 0){
+            window.chipCount = await getExchange();
+        }
 
         setTimeout(startGame, 1000);
     };
+    document.getElementById("ExchangeButton").onclick = async (event) => {
+        window.chipCount = await getExchange();
+    };
 });
 
-
-const getBet = ()=>new Promise(resolve => {
-   document.getElementById("betPopupContainer").classList.add("show");
-   document.getElementById("setBetButton").onclick = ()=>{
-       const v = document.getElementById("betValue").value;
-       if(v < 100 || v > 100000) return;
-       document.getElementById("betPopupContainer").classList.remove("show");
-       setTimeout(()=>resolve(Number(v)), 1500); //Weil Karten sonst schon umgedreht werden bevor transition von css verschwinden noch nicht fertig ist
+const getExchange = ()=>new Promise(resolve => {
+   document.getElementById("exchangePopupContainer").classList.add("show");
+   document.getElementById("setExchangeButton").onclick = ()=>{
+       const v = document.getElementById("exchangeValue").value;
+       if(v < 1 || v > balance * 100) return;
+       document.getElementById("exchangePopupContainer").classList.remove("show");
+       return exchange(v).then(chipAmount => {
+           if(chipAmount !== -1){
+               resolve(chipAmount);
+           }
+       });
    }
-   const slider = document.getElementById("betValue");
-   const output = document.getElementById("sliderValue");
+   document.getElementById("abortExchangeButton").onclick = ()=>{
+        document.getElementById("exchangePopupContainer").classList.remove("show");
+        return chipCount;
+    }
+   const slider = document.getElementById("exchangeValue");
+   slider.max = balance * 100;
+   const output = document.getElementById("sValue");
 
    slider.oninput = function() {
-       output.innerHTML = this.value + " €";
+       output.innerHTML = this.value + " ¢hips";
    };
 });
-const getInsuranceBet = ()=>new Promise(resolve => { //Nicht wirklich Einsatz sondern nur ja nein popup aber weil grad kein besserer name da war, besser als in den informatik klausuren, wo die methoden einfahc nur "ichmacheetwas" heißen
+
+const getBet = ()=> new Promise(resolve => {
+    document.getElementById("betPopupContainer").classList.add("show");
+    document.getElementById("setBetButton").onclick = ()=>{
+        const v = document.getElementById("betValue").value;
+        if(v < 1 || v > chipCount) return;
+        document.getElementById("betPopupContainer").classList.remove("show");
+        setTimeout(()=>resolve(Number(v)), 1500); //Weil Karten sonst schon umgedreht werden bevor transition von css verschwinden noch nicht fertig ist
+    }
+    const slider = document.getElementById("betValue");
+    slider.max = chipCount;
+    const output = document.getElementById("sliderValue");
+
+    slider.oninput = function() {
+        output.innerHTML = this.value + " ¢hips";
+    };
+});
+
+const getInsuranceBet = ()=>new Promise(resolve => {
     overlaySetStatus(true);
     document.getElementById("insuranceBetPopupContainer").classList.add("show");
     document.getElementById("setBetButton").onclick = ()=>{
@@ -51,7 +85,7 @@ const getInsuranceBet = ()=>new Promise(resolve => { //Nicht wirklich Einsatz so
         resolve(false);
     }
 });
-const showResults  = (text)=>new Promise(resolve => { //Nicht wirklich eistaz sondern nur ja nein popup aber weil grad kein besserer name da war, besser als in den informatik klausuren, wo die methoden einfahc nur "ichmacheetwas" heißen
+const showResults  = (text)=>new Promise(resolve => { //Nicht wirklich Einsatz, sondern nur ja nein popup aber weil grad kein besserer name da war, besser als in den informatik klausuren, wo die methoden einfahc nur "ichmacheetwas" heißen
     document.getElementById("resultText").innerText = text;
     document.getElementById("result").classList.add("show");
     document.getElementById("playAgain").onclick = ()=>{
@@ -68,13 +102,13 @@ const userTakeCard = async (count = 1) => {
     console.log("User Karten ziehen!");
     const e = [];
     while(count > 0) {
-        e.push(takeCard());
+        e.push(await takeCard());
         count--;
     }
     const valuePromise = Promise.all(e);
     console.log("Zeige Karten..");
     const {end, cards, promise} = showCardsInCenter(ziehenStack.takeCard(e.length));
-    console.log("Karen Gezeigt!", cards);
+    console.log("Karten Gezeigt!", cards);
     await promise;
     const flip = await valuePromise;
     //Karten gezogen aber noch nicht umgedreht und Rückseitenwert steht bereit weil server antwort
@@ -89,7 +123,7 @@ const userTakeCard = async (count = 1) => {
     //Umdrehen Beendet
 
     const currentUserCard = [...Object.values(userStack[runningStackId].cards), ...cards];
-    const canSplit = currentUserCard.length === 2 && currentUserCard[0].kartenwert === currentUserCard[1].kartenwert && userStack.length < 4; //Kann nur Spilitten bei Zwei gleichen Karten und nur maximal 4 mal spittem
+    const canSplit = currentUserCard.length === 2 && currentUserCard[0].cardValue === currentUserCard[1].cardValue && userStack.length < 4; //Kann nur Splitten bei Zwei gleichen Karten und nur maximal 4 mal spittem
     const canDoubleDown = currentUserCard.length === 2 && userStack[runningStackId].restMaxCount === -1;
     const input = await new Promise(resolve => buttons.show({
         proceed: ()=>resolve("p"),
@@ -131,7 +165,7 @@ const userTakeCard = async (count = 1) => {
         userStack[userStack.length-1].einsatz = userStack[runningStackId].einsatz/2;
         userStack[runningStackId].einsatz = userStack[runningStackId].einsatz/2;
 
-        if(cards.length > 0 && cards[0].kartenwert === 11) {
+        if(cards.length > 0 && cards[0].cardValue === 11) {
             userStack[runningStackId].restMaxCount = 1;
             userStack[runningStackId-1].restMaxCount = 1;
         }
@@ -141,9 +175,11 @@ const userTakeCard = async (count = 1) => {
     console.log("Error! Unbekannte Eingabe:", input);
 }
 
-
+window.balance = 0;
+window.chipCount = 0;
 window.insuranceBet = 0; // Einsatz der auf Dealer Blackjack gewettet wurde
 const startGame = async ()=> {
+
     const betPromise = getBet();
 
     if(showIntro) {
@@ -166,19 +202,19 @@ const startGame = async ()=> {
 
     addUserStack(); // Ersten User Stack vor erstem Splitten
 
-    const gameInfoPromise = betPromise.then(einsatz => {
-        userStack[0].einsatz = einsatz;
-        return startNewBidding(einsatz);
+    const gameInfoPromise = betPromise.then(bet => {
+        userStack[0].einsatz = bet;
+        return startNewBidding(bet);
     });
 
     await new Promise(resolve => setTimeout(resolve, 2000));
-    await showDealerCards(gameInfoPromise.then(g => g), 0);
+    await showDealerCards(gameInfoPromise.then(), 0);
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    if(dealerLeftStack.getOberste().kartenwert === 11) {
+    if(dealerLeftStack.getOberste().cardValue === 11) {
         if((await getInsuranceBet())) {
-            console.log("Set insurance,..");
+            console.log("Set insurance...");
             await gameInfoPromise;
             console.log("Start Game");
             userStack.forEach(s => s.einsatz *= 0.5); //Alle User Stack Einsatz halbieren → Gesamt einsatz wir halbiert

@@ -16,7 +16,7 @@ window.connectSocket = ()=>{
          // Nachricht vom Server empfangen → Allgemein für alle Nachrichten (Websocket protokoll)
         socket.onmessage = (event) => {
             console.log("Nachricht vom Server:",event.data);
-            const msg = event.data.toString();
+            const msg = event.data.toString().toLowerCase();
             if(event.data.toString().toLowerCase().indexOf('acc') === 0) {
                 console.log("ID: " + clientID.toString());
                 socket.send("ID:" + clientID.toString());
@@ -27,7 +27,7 @@ window.connectSocket = ()=>{
             let value;
             let points;
 
-            if(msg.startsWith("Card:")){
+            if(msg.startsWith("balance:")){
                 let sub = msg.substring(5);
 
                 let part = sub.split(",");
@@ -41,7 +41,21 @@ window.connectSocket = ()=>{
                 });
             }
 
-            if(msg.startsWith("DealerCard:")){
+            if(msg.startsWith("card:")){
+                let sub = msg.substring(5);
+
+                let part = sub.split(",");
+
+                coat = part[0].substring(1);
+
+                value = part[1].substring(1);
+                listener.shift()({
+                    type: coat,
+                    points: value
+                });
+            }
+
+            if(msg.startsWith("dealercard:")){
                 let sub = msg.substring("DealerCard:".length);
 
                 let part = sub.split(",");
@@ -60,9 +74,9 @@ window.connectSocket = ()=>{
                 });
             }
 
-            if(msg.startsWith("DealerCards,")){
+            if(msg.startsWith("dealercards:")){
                 let cardObjects = [];
-                let sub = msg.substring(5);
+                let sub = msg.substring("DealerCards:".length);
 
                 let cards = sub.split(";");
                 for(let singleCard of cards){
@@ -74,13 +88,29 @@ window.connectSocket = ()=>{
                     cardObjects.push({type: coat, points: value});
                 }
 
-                listener.shift()({
-                    cards: cardObjects
-                })
+                listener.shift()(cardObjects);
+            }
+            if(msg.startsWith("chipupdate:")){
+                let updatedChipCount = parseInt(msg.substring("DealerCards:".length - 1));
+                if(updatedChipCount >= 0){
+                    console.log("Chip updated for: " + updatedChipCount);
+                    document.getElementById("ChipCount").innerText = updatedChipCount + "¢";
+                    console.log(updatedChipCount);
+                    listener.shift()(updatedChipCount);
+                }
+                else{
+                    document.getElementById("ChipCount").innerText = chipCount + "¢";
+                    listener.shift()(chipCount);
+                    console.error("Auszahlung nicht erfolgt");
+                }
+            }
+            if(msg.startsWith("bal:")){
+                window.balance = parseFloat(msg.substring("bal:".length));
+                console.log(balance);
+                listener.shift()(balance);
             }
         };
 
-        // Fehlerbehandlung → Bei Wecgsockent kominiaitob
         socket.onerror = (error) => {
             console.error('WebSocket-Fehler:', error);
             // Crash
@@ -117,7 +147,7 @@ window.startNewBidding = (bet)=>new Promise(async resolve => {
 window.startBlackJack = ()=>new Promise(async resolve => {
     const socket = await connectSocket();
     socket.send("Start");
-    resolve();
+    listener.push(resolve);
 })
 window.getGameResults = ()=>new Promise(resolve => {
    resolve("Hallo");
@@ -128,6 +158,12 @@ window.getDealerCards = ()=>new Promise(async resolve => {
 
     listener.push(resolve);
 });
+window.exchange = (chipAmount) =>new Promise(async resolve => {
+    const socket = await connectSocket();
+    socket.send("Exchange:" + chipAmount);
+
+    listener.push(resolve);
+})
 
 window.serverDoubleDown = ()=>{
 

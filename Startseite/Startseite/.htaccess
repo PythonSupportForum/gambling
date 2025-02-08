@@ -1,0 +1,7 @@
+RewriteEngine On
+
+RewriteRule ^login$ index.php?login [L,QSA]
+
+RewriteRule ^register$ index.php?register [L,QSA]
+
+RewriteRule ^imprint$ index.php?page=imprint [L,QSA]
