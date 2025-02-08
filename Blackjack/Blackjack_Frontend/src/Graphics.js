@@ -311,9 +311,9 @@ function draw() {
 
 
 window.GameCard = class GameCard extends AnimationObject {
-    constructor(kartenwert = 0, img, pos = {x: -200, y: -200}) {
+    constructor(cardValue = 0, img, pos = {x: -200, y: -200}) {
         super(img, pos);
-        this.kartenwert = kartenwert; //Um was für eine Karte hanelt es  sich ist Null wenn Srerver noch nicht geantowrtet.
+        this.cardValue = cardValue; //Um was für eine Karte hanelt es  sich ist Null wenn Srerver noch nicht geantowrtet.
         this.wertZaehlen = true; //Der Anteil des Kartenstappelwertes, der noch nicht gerednert wird, da die Animation noch running ist.
         this.StackReference = null; //Auf welchem Stack ist die Karte => Hat nur Grafische Auswirkungne nix Gamepla
     }
@@ -329,7 +329,7 @@ window.GameCard = class GameCard extends AnimationObject {
         return this.StackReference.promise;
     }
     aufdecken({type, points}) {
-        this.kartenwert = points;
+        this.cardValue = points;
         return this.changeSide(type);
     }
 }
@@ -381,7 +381,7 @@ window.Stack = class Stack {
     }
     wert() {
         let w = 0;
-        Object.values(this.cards).forEach(c => w+=(c.wertZaehlen?c.kartenwert:0));
+        Object.values(this.cards).forEach(c => w+=(c.wertZaehlen?c.cardValue:0));
         return w;
     }
     getOberste() {

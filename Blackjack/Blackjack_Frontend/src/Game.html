@@ -16,14 +16,15 @@
   <script src="Communication.js"></script>
 </head>
   <body>
-  <div class="ui">
-    <p>Coins: 0</p>
-  </div>
     <div class="container">
       <h1>Blackjack Online</h1>
       <button id="startGameButton">Start Game</button>
     </div>
     <div class="GameContainer" id="GameContainer">
+      <div class="ui">
+        <button id="ExchangeButton">Umtauschen</button>
+        <p id="ChipCount">Chips: 0¢</p>
+      </div>
       <div class="elements-container">
         <div class="overlay" id="overlay"></div>
         <div class="message-container">
@@ -31,15 +32,36 @@
         </div>
         <canvas id="canvas"></canvas>
       </div>
+      <div class="betPopupContainer" id="exchangePopupContainer">
+        <div class="betPopup">
+          <h2>Wie viele Chips willst du erwerben?</h2>
+          <p>Du kannst deine TiloTaler in Chips umtauschen</p>
+          <div class="slider-container">
+            <input type="range" min="1" max="50" id="exchangeValue" value="1" class="slider">
+            <div class="slider-value" id="sValue">1 ¢hips</div>
+          </div>
+          <div class="bb" id="exchangeButtons">
+            <button id="abortExchangeButton">Abbrechen</button>
+            <button id="setExchangeButton">Umtauschen</button>
+          </div>
+        </div>
+      </div>
+      <div class="betPopupContainer" id="wantsExchangePopupContainer">
+      <div class="betPopup">
+        <h2>Willst du Chips erwerben?</h2>
+        <div class="bb">
+          <button id="wantsButtonYes">Umtauschen</button>
+          <button id="wantsButtonNo">Nicht Umtauschen</button>
+        </div>
+      </div>
+    </div>
       <div class="betPopupContainer" id="betPopupContainer">
         <div class="betPopup">
           <h2>Welchen Betrag willst du setzen</h2>
-          <p>Je mehr Geld du setzt, desto mehr Geld kannst du gewinnen! Minum ist 100 Maximum, ist 100.000!</p>
           <div class="slider-container">
-            <input type="range" min="100" max="100000" id="betValue" value="500" class="slider">
-            <div class="slider-value" id="sliderValue">500 €</div>
+            <input type="range" min="1" max="100000" id="betValue" value="1" class="slider">
+            <div class="slider-value" id="sliderValue">1 ¢hips</div>
           </div>
-          <p>Sobald du den Button gedrückt hast buchen wir das Geld von deinem Konto ab!</p>
           <div class="bb">
             <button id="setBetButton">Setzen</button>
           </div>
