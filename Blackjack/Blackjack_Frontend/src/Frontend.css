@@ -2,9 +2,19 @@
     background-image: url('/../assets/Blackjack.jpg');
     background-repeat: no-repeat;
     background-size: cover;
-}
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
 }
 
+
+main {
+    flex: 1 0 auto;
+}
 
 
 #StartGame {
@@ -19,10 +29,11 @@ margin-top: 230px; /* Optional: Fügt Abstand zwischen den Elementen hinzu */
 
 *{
     font-family: Helvetica;
+    box-sizing: border-box;
 
 }
 
-.Header {
+Header {
     position: fixed;
     top: 0px;
     bottom: 85%;
@@ -109,9 +120,22 @@ color: #e6ac0c;
 opacity: 1;
 }
 
+#PB{
+    position: fixed;
+    top: 10%;
+}
+
+#Kontostand{
+    top: 5%;
+}
+
 #Guthaben {
 font-size: 4vw;
+top: 5%;
 color: #e6ac0c;
+margin-left: 10%;
+margin-right: 10%;
+padding: 0;
 }
 #Taler {
 position: fixed;
@@ -251,28 +275,29 @@ border-radius: 40px;
 z-index: 4;
 }
 
-#footer {
-
+footer {
+flex-shrink: 0;
 width: 100%;
 background-color: #00541d;
 color: #ffffff;
-position: fixed;
-bottom: 0px;
-left: 0px;
-right: 0px;
+position: absolute;
+margin: 0;
+padding: 0;
+margin-top: 10px;
+width: 100%;
+left: 0;
+right: 0;
+bottom: 0;
+}
 
+#Footer-Title{
+    margin-left: 1%;
 }
 
 #regelwerk{
-	margin-left: 0px
-	
+	margin-left: 1.5%;
 	
 }
-
-
-
-
-
 
 /*
 Listen mit der Spielanleitung
