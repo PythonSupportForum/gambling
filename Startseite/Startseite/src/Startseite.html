@@ -1,54 +1,39 @@
 <html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="Startseite.css">
 <head>
-    <title>LetsGoGambling</title>
+<link rel="stylesheet" href="Startseite.css">
+<title>LetsGoGambling</title>
+<link rel="apple-touch-icon" sizes="180x180" href="../../Startseite/Startseite/assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../../Startseite/Startseite/assets/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../../Startseite/Startseite/assets/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/../assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/../assets/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/../assets/favicon-16x16.png">
 </head>
 <body>
 
-<div class="Header">
-    <img id="Logo" src="../assets/Logo_Rand.png"/>
-
-        <div id="Anmelden">
-            <span class="text">Anmelden</span>
-            <div class="form-container">
-                    <h1 style="color: white;">Anedlnen bei LETTS' GMLE</h1>
-                        <p class="error" style="font-size: 16px;"></p>
-                    <div class="form-group">
-                        <label for="username" style="color: white;">Benutzername</label>
-                        <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($username); ?>" required placeholder="Benutzername">
-                    </div>
-                    <div class="form-group">
-                        <label for="password" style="color: white;">Passwort</label>
-                        <input type="password" id="password" name="password" value="<?php echo htmlspecialchars($password); ?>" required placeholder="Passwort">
-                    </div>
-                    <button type="submit" class="btn-submit">Einloggen</button>
-            </div>
-        </div>
+<header>
+    <a href="Startseite.html">
+        <img id="Logo" src="../assets/Logo_Rand.png"/>
+    </a>
+    <button onclick="window.location.href = /* Hier kommt der Link für die Anmeldeseite hin*/ type="button" id="Anmelden">Anmelden</button>
         <div id="Account">
-            <img id="PB" src="../assets/default-profile.png" alt="Profilbild">
             <h2 id="Guthaben">100000</h2>
             <img src="../assets/tilotaler_rand.png" id="Taler"/>
         </div>
-
-</div>
-
+</header>
+<main>
     <div id = "Blackjack">
-        <button>Blackjack</button>
-        <img id = "BlackjackImage" src="../../../Blackjack/Blackjack_Frontend/assets/Blackjack.jpg"/>
-        <button id = "BlackjackButton">BLACKJACK</button>
+        <button class="gleichButton">Blackjack</button>
     </div>
-    <div id = "Slots">
-        <button>Slots</button>
-        <img id = "SlotsImage" src="../../../Slots/assets/Slots.png"/>
-        <button id = "SlotsButton">SLOTS</button>
+    <div  id = "Slots">
+        <button class = "gleichButton">Slots</button>
     </div>
+</main>
+<footer>
 
-    <div id = "Footer"></div>
 
-<div class="main">
-</div>
-
+</footer>
 </body>
 </html>
