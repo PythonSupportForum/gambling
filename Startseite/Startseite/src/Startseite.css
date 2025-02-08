@@ -1,7 +1,9 @@
+body{
+    color: #ffffff;
+}
 
 *{
     font-family: Helvetica;
-    color: #15471c;
 }
 
 Header {
@@ -128,13 +130,45 @@ Header {
     z-index: 1;
 }
 
-Footer {
-    height: 10%;
+.footer {
+    position: fixed;
+    z-index: 2;
+    color: #ffffff;
+    bottom: 0;
+    left: 0;
     width: 100%;
     background-color: #00541d;
-    position: fixed;
-    bottom: 0px;
-    left: 0px;
-    right: 0px;
+    transition: transform 0.3s ease-in-out;
+    transform: translateY(calc(100% - 97px));
+}
 
+.footer:hover {
+    transform: translateY(0);
+}
+
+.footer:hover .footer-hint {
+    opacity: 0;
+}
+
+.footer-content{
+    color: #ffffff;
+    padding: 20px;
+    max-height: 80vh; /* Begrenzt die maximale Höhe auf 80% der Bildschirmhöhe */
+    overflow-y: auto;
+
+}
+
+.footer-hint {
+    margin: 0 auto;
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffffff;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.links {
+    color: #e6b800;
 }
