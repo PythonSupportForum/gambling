@@ -111,10 +111,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="logo">
             <img src="assets/transparent.png" alt="Gambling Logo">
         </div>
-        <div class="left">Q2 INFO</div>
+        <div class="left" onclick="location.href='./'">Q2 INFO</div>
         <div class="buttons">
-            <button onclick="location.href='?login'">Login</button>
-            <button onclick="location.href='?register'">Register</button>
+            <button onclick="location.href='./login'">Login</button>
+            <button onclick="location.href='./register'">Register</button>
         </div>
     </header>
     <main>
@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p>Let\'s Gambling ist ein Projekt aus dem Informatik Unterricht am MEG bei Herrn Engels! Anhand dieser Demonstration soll gezeigt werden, wie eine sichere Datenbankkommunikation in der Praxis aussehen kann. Dazu haben wir ein Account System am Beispiel eines Online Casinos gezeigt. </p>
                 <p>Viel Spaß beim Ausprobieren!</p>
                 <div class="starfButton">
-                    <a href="?register">Jetzt Ausprobieren</a>
+                    <a href="./register">Jetzt Ausprobieren</a>
                 </div>
             </div>
             <div class="bild">
@@ -169,7 +169,7 @@ if (isset($_GET['login']) || isset($_GET['register'])) {
     // Formular für Login oder Register
     if (isset($_GET['login'])) {
         echo "
-            <form action='/' method='post'>
+            <form action='./register' method='post'>
                 <input type='hidden' name='login' value='1'>
                 <input type='text' name='bn' placeholder='Benutzername' value='" . ($_POST['bn'] ?? '') . "' required>
                 <input type='password' name='password' placeholder='Passwort' required>
@@ -180,7 +180,7 @@ if (isset($_GET['login']) || isset($_GET['register'])) {
             </form>";
     } else {
         echo "
-            <form action='/' method='post'>
+            <form action='./login' method='post'>
                 <input type='hidden' name='register' value='1'>
                 <input type='text' name='name' placeholder='Name' value='" . ($_POST['name'] ?? '') . "' required>
                 <input type='text' name='vorname' placeholder='Vorname' value='" . ($_POST['vorname'] ?? '') . "' required>
@@ -208,6 +208,6 @@ if (isset($_GET['login']) || isset($_GET['register'])) {
 ?>
 </body>
 <footer>
-    <p>&copy; 2023 Let's Gambling | <a href="/imprint">Impressum</a></p>
+    <p>&copy; 2023 Let's Gambling | <a href="./imprint">Impressum</a></p>
 </footer>
 </html>
