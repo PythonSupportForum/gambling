@@ -27,31 +27,20 @@ window.connectSocket = ()=>{
             let value;
             let points;
 
-            if(msg.startsWith("balance:")){
-                let sub = msg.substring(5);
-
-                let part = sub.split(",");
-
-                coat = part[0].substring(1);
-
-                value = part[1].substring(1);
-                listener.shift()({
-                    type: coat,
-                    points: value
-                });
-            }
-
             if(msg.startsWith("card:")){
-                let sub = msg.substring(5);
+                let sub = msg.substring("card:".length);
 
                 let part = sub.split(",");
 
-                coat = part[0].substring(1);
+                coat = part[0].substring("c:".length);
 
-                value = part[1].substring(1);
+                value = part[1].substring("v:".length);
+
+                points = part[2].substring("p:".length);
+
                 listener.shift()({
-                    type: coat,
-                    points: value
+                    type: value + "_" + coat,
+                    points: points
                 });
             }
 

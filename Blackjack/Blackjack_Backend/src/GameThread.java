@@ -32,7 +32,7 @@ public class GameThread implements Runnable {
     boolean exchangeInput;
     boolean betInput;
     boolean insuranceInput = false;
-    boolean wantsDoubleDown;
+    boolean inputWait = true;
     boolean doubleDown;
 
     boolean[] cardInput = new boolean[4];
@@ -43,12 +43,13 @@ public class GameThread implements Runnable {
     int coins = 0;
     double balance = 0.0;
     int bet = 0;
-    int testBet = 0;
+    boolean doubleDownInput = false;
+    boolean splitInput = false;
+    int takeCount = 0;
     int splitCount = 0;
     int insuranceBet = 0;
     
     int coinAmount = 0;
-    boolean userTakes = false;
 
     // Ermöglicht Zugriff auf Thread Objekt, wenn GameThread Objekt gefunden wurde
     public Thread currentThread = Thread.currentThread();
@@ -291,7 +292,15 @@ public class GameThread implements Runnable {
             betInput = true;
         }
         else if (message.startsWith("takeuser")) {
-            userTakes = true;
+            takeCount += 1;
+            inputWait = false;
+        }
+        else if (message.startsWith("doubledown")) {
+            doubleDownInput = true;
+        }
+        else if (message.startsWith("split")) {
+            inputWait = false;
+            splitInput = true;
         }
         else if (message.startsWith("insurance:")) {
             insuranceBet = Integer.parseInt(message.substring("insurance:".length()).trim());
@@ -322,7 +331,7 @@ public class GameThread implements Runnable {
             cardInput[1] = false;
             cardInput[2] = false;
             cardInput[3] = false;
-            wantsDoubleDown = false;
+            inputWait = true;
             wantsExchange = false;
             doubleDown = false;
 
@@ -411,7 +420,9 @@ public class GameThread implements Runnable {
             System.out.println("DealerCard:c:" + tempCard.getCoat() + ",v:" + tempCard.getValue() + ",p:" + (currentValue(dealerStack) - pre));
 
             dealerStack.add(deck.pop());
-            if (dealerStack.get(1).getValue() == '0' || dealerStack.get(1).getValue() == 'j' || dealerStack.get(1).getValue() == 'q' || dealerStack.get(1).getValue() == 'k') {
+
+
+            if (dealerStack.get(1).getValue() == 'a') {
                 //region Insurance Bet
                 setGameState(GameState.INSURANCE_BET);
                 while (!insuranceInput) {
@@ -440,43 +451,39 @@ public class GameThread implements Runnable {
 
             setGameState(GameState.PLAYER_DRAW);
 
-            for(int i = 0; i < 2; i++){
-                userTakes = false;
-                while(!userTakes){
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                card = deck.pop();
-                playerStack.get(0).add(card);
-                conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + currentValue(playerStack.get(0)));
-                printCard(card);
-                userTakes = false;
-            }
-
-            if((balance - bet) < 0) { wantsDoubleDown = true;}
-            while (!wantsDoubleDown) {
-                System.out.println("Willst du einen DoubleDown machen?(false, true)(1. Stapel)");
-                Scanner c = new Scanner(System.in);
-                String inputString = c.nextLine();
+            while(takeCount < 2){
                 try {
-                    if (Boolean.parseBoolean(inputString)) {
-                        card = deck.pop();
-                        playerStack.get(0).add(card);
-                        printCard(card);
-                        balance -= bet;
-                        bet *= 2;
-                        wantsDoubleDown = true;
-                        doubleDown = true;
-                        checkGameState();
-                        setGameState(GameState.GAME_END);
-                    } else {
-                        wantsDoubleDown = true;
-                    }
-                } catch (NumberFormatException e) {
-                    continue;
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            for(int i = 0; i < 2 ; i++){
+                card = deck.pop();
+                int j = currentValue(playerStack.get(0));
+                playerStack.get(0).add(card);
+                conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(playerStack.get(0)) - j));
+                printCard(card);
+                takeCount--;
+            }
+            inputWait = true;
+
+            while (inputWait) {
+                if (doubleDownInput){
+                    card = deck.pop();
+                    playerStack.get(0).add(card);
+                    printCard(card);
+                    balance -= bet;
+                    bet *= 2;
+                    inputWait = false;
+                    doubleDown = true;
+                    checkGameState();
+                    setGameState(GameState.GAME_END);
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
 
@@ -655,27 +662,16 @@ public class GameThread implements Runnable {
         }
 
         public void splitCheck(int index){
-            boolean wartet = true;
             if(playerStack.get(index).get(0).getValue() == playerStack.get(index).get(1).getValue()){
-                while (wartet) {
-                        //ist nicht vollständig, nachher mit Frontend lösen
-                    System.out.println("Willst du deinen Stapel splitten?(false, true)");
-                    Scanner c = new Scanner(System.in);
-                    String inputString = c.nextLine();
-                    try {
-                        if (Boolean.parseBoolean(inputString)) {
-                            ArrayList<GameCard> temp = new ArrayList<>();
-                            playerStack.add(temp);
-                            playerStack.get(index + 1).add(playerStack.get(index).get(1));
-                            playerStack.get(index).remove(1);
-                            splitCount++;
-                            states.replace(temp, StackState.RUNNING);
-                            wartet = false;
-                        } else {
-                            wartet = false;
-                        }
-                    } catch (NumberFormatException e) {
-                        continue;
+                while (inputWait) {
+                    if (splitInput) {
+                        ArrayList<GameCard> temp = new ArrayList<>();
+                        playerStack.add(temp);
+                        playerStack.get(index + 1).add(playerStack.get(index).get(1));
+                        playerStack.get(index).remove(1);
+                        splitCount++;
+                        states.replace(temp, StackState.RUNNING);
+                        conn.send("splitacc");
                     }
                 }
             }
