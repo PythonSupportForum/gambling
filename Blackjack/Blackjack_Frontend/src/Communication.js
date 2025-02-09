@@ -43,8 +43,7 @@ window.connectSocket = ()=>{
                     points: points
                 });
             }
-
-            if(msg.startsWith("dealercard:")){
+            else if(msg.startsWith("dealercard:")){
                 let sub = msg.substring("DealerCard:".length);
 
                 let part = sub.split(",");
@@ -62,24 +61,25 @@ window.connectSocket = ()=>{
                     points: points
                 });
             }
-
-            if(msg.startsWith("dealercards:")){
+            else if(msg.startsWith("dealercards:")){
                 let cardObjects = [];
-                let sub = msg.substring("DealerCards:".length);
+                let sub = msg.substring("DealerCards:".length).split(">");
 
-                let cards = sub.split(";");
+
+
+                let cards = sub[0].split(";");
                 for(let singleCard of cards){
                     let part = singleCard.split(",");
 
-                    coat = part[0].substring(1);
+                    coat = part[0].substring("c:".length);
 
-                    value = part[1].substring(1);
-                    cardObjects.push({type: coat, points: value});
+                    value = part[1].substring("v:".length);
+                    cardObjects.push({type: value + "_" + coat, points: 0});
                 }
 
-                listener.shift()(cardObjects);
+                listener.shift()({objects: cardObjects, stackValue: parseInt(sub[1])});
             }
-            if(msg.startsWith("chipupdate:")){
+            else if(msg.startsWith("chipupdate:")){
                 let updatedChipCount = parseInt(msg.substring("DealerCards:".length - 1));
                 if(updatedChipCount >= 0){
                     console.log("Chip updated for: " + updatedChipCount);
@@ -93,10 +93,31 @@ window.connectSocket = ()=>{
                     console.error("Auszahlung nicht erfolgt");
                 }
             }
-            if(msg.startsWith("bal:")){
+            else if(msg.startsWith("bal:")){
                 window.balance = parseFloat(msg.substring("bal:".length));
                 console.log(balance);
                 listener.shift()(balance);
+            }
+            else if(msg.startsWith("stack:")){
+                let part = msg.substring("stack:".length).split(",");
+
+                let points = parseInt(part[0].substring("p:".length));
+
+                let state;
+                state = part[1].substring("s:".length).includes("true");
+
+                listener.shift()({
+                    points: points,
+                    state: state
+                });
+            }
+            else if(msg.startsWith("bust:")){
+                let stackId = parseInt(msg.substring("bust:".length));
+                endStack().then();
+                if(userStack.length === 1){
+                    window.endProcess = true;
+                }
+                console.log("Ehrenlos",stackId);
             }
         };
 
@@ -131,7 +152,7 @@ window.startNewBidding = (bet)=>new Promise(async resolve => {
     const socket = await connectSocket();
     socket.send("Bet:"+bet);
 
-    listener.push(resolve);
+    resolve();
 });
 window.startBlackJack = ()=>new Promise(async resolve => {
     const socket = await connectSocket();
@@ -161,8 +182,6 @@ window.serverDoubleDown = ()=>{
 //Um einen Stack zu schließen
 window.endStackServer = (stackIndex)=>new Promise(async resolve => {
     const socket = await connectSocket();
-
-    resolve({
-
-    });
+    socket.send("EndStack:" + stackIndex);
+    listener.push(resolve);
 });

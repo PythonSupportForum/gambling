@@ -136,11 +136,11 @@ const userTakeCard = async (count = 1) => {
     }));
     buttons.hide();
 
-    end(); //Um Overlay u schließen → Karten aus dem Vordergrund
+    end(); //Um Overlay schließen → Karten aus dem Vordergrund
     if(input === "d") {
         userStack[runningStackId].einsatz*=2;
         userStack[runningStackId].restMaxCount = 1;
-        serverDoubleDown();
+        await serverDoubleDown();
     }
     if(input === "p" || input === "d") {
         const p = [];
@@ -149,24 +149,25 @@ const userTakeCard = async (count = 1) => {
         });
         await Promise.all(p);
         return true;
-    } else if(input === "s") {
-        addUserStack();
-        await Promise.all([
-            ...(cards.length > 1 ? [userStack[runningStackId].add(cards[0])] : []),
-            userStack[userStack.length-1].add(cards.pop()) //Hintere Karte auf neuen Stack
-        ]); //Auf die entsprechenden Stapel verteilen mit Promise für Warten
-        userStack[runningStackId].startShowPoints();
-        userStack[userStack.length-1].startShowPoints();
-
-        userStack[userStack.length-1].einsatz = userStack[runningStackId].einsatz/2;
-        userStack[runningStackId].einsatz = userStack[runningStackId].einsatz/2;
-
-        if(cards.length > 0 && cards[0].cardValue === 11) {
-            userStack[runningStackId].restMaxCount = 1;
-            userStack[runningStackId-1].restMaxCount = 1;
-        }
-        return true;
     }
+    // else if(input === "s") {
+    //     addUserStack();
+    //     await Promise.all([
+    //         ...(cards.length > 1 ? [userStack[runningStackId].add(cards[0])] : []),
+    //         userStack[userStack.length-1].add(cards.pop()) //Hintere Karte auf neuen Stack
+    //     ]); //Auf die entsprechenden Stapel verteilen mit Promise für Warten
+    //     userStack[runningStackId].startShowPoints();
+    //     userStack[userStack.length-1].startShowPoints();
+    //
+    //     userStack[userStack.length-1].einsatz = userStack[runningStackId].einsatz/2;
+    //     userStack[runningStackId].einsatz = userStack[runningStackId].einsatz/2;
+    //
+    //     if(cards.length > 0 && cards[0].cardValue === 11) {
+    //         userStack[runningStackId].restMaxCount = 1;
+    //         userStack[runningStackId-1].restMaxCount = 1;
+    //     }
+    //     return true;
+    // }
 
     console.log("Error! Unbekannte Eingabe:", input);
 }
@@ -204,21 +205,19 @@ const startGame = async ()=> {
     });
 
     await new Promise(resolve => setTimeout(resolve, 2000));
-    await showDealerCards(gameInfoPromise.then(), 0);
+    await showDealerCards(null, 1);
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    await dealerTakes();
 
-    if(dealerLeftStack.getOberste().cardValue === 11) {
-        if((await getInsuranceBet())) {
-            console.log("Set insurance...");
-            await gameInfoPromise;
-            console.log("Start Game");
-            userStack.forEach(s => s.einsatz *= 0.5); //Alle User Stack Einsatz halbieren → Gesamt einsatz wir halbiert
-            window.insuranceBet = (await betPromise)/2;
-        }
-    }
+    // if(dealerLeftStack.getOberste().cardValue === 11) {
+    //     if((await getInsuranceBet())) {
+    //         console.log("Set insurance...");
+    //         await gameInfoPromise;
+    //         console.log("Start Game");
+    //         window.insuranceBet = (await betPromise)/2;
+    //     }
+    // }
 
     await userTakeCard(2);
 
@@ -234,7 +233,7 @@ const startGame = async ()=> {
             if(userStack[runningStackId].restMaxCount === 0) await endStack();
         } else if(eingabe === "s") {
             buttons.hide();
-            await messageQueue.displayMultipleMessages(["Der Stack wurde abgeschlossen!"]);
+            await messageQueue.displayMultipleMessages(["Der Stack wurde geschlossen!"]);
             overlaySetStatus(false);
             await endStack();
         }
@@ -249,22 +248,21 @@ const startGame = async ()=> {
     ]);
 }
 
-const calculateResult = async (dealerCardsPromise)=>{
-    const dealerCards = await dealerCardsPromise;
+const calculateResult = async (dealerCards, stackPoints)=>{
     console.log("Dealer Zieht:", dealerCards);
     dealerLeftStack.startShowPoints();
     for (const c of dealerCards) {
         await showDealerCards(c, 0, true);
-        if(dealerLeftStack.wert() > 21) break; //Breche ab, sobald der dealer mehr als 21 hat
     }
     console.log("All Fertig!");
 }
 
 window.endProcess = false;
+window.endGame = false;
 const endStack = ()=>new Promise(resolve => {
     buttons.hide();
-    endStackServer(runningStackId).then(()=>{});
-    const continues = runningStackId < userStack.length-1; //Ob noch win weitere Stappel durch Spiltlen vegübar ist
+    endStackServer(runningStackId).then();
+    const continues = runningStackId < userStack.length-1;
     if(continues) runningStackId++;
     const {end} = focusElementWithOverlay(Object.values(userStack[runningStackId].cards));
     const dealerCardsPromise = continues ? null : getDealerCards();
@@ -272,12 +270,12 @@ const endStack = ()=>new Promise(resolve => {
         await end();
         if(continues) {
             setTimeout(async ()=>{
-                await userTakeCard(1);
                 resolve();
             }, 1000);
         } else {
-            window.jetztIstAllesVorbei = true;
-            await calculateResult(dealerCardsPromise);
+            window.endGame = true;
+            let delInfo = await dealerCardsPromise;
+            await calculateResult(delInfo.objects);
             resolve();
         }
     }, 2500);

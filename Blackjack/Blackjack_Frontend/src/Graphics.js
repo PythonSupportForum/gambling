@@ -258,7 +258,7 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
 }
 
 window.animationObjects = {};
-window.hicgherAnimationObjektsTop = [];
+window.higherAnimationObjectsTop = [];
 window.gameDrawThreads = {};
 
 window.addDrawingThread = (callback = ()=>{}) => {
@@ -292,7 +292,7 @@ function draw() {
     try {
         Object.values(gameDrawThreads).forEach(c => c(ctx, deltaTime));
         Object.values(getUniqueAttributes(animationObjects, focusElements)).forEach(o => o.update(ctx, deltaTime));
-        hicgherAnimationObjektsTop.forEach(o => o.update(ctx, deltaTime)); //Damit die Kreise höher wiegen, über dem rest geuecgen werden
+        higherAnimationObjectsTop.forEach(o => o.update(ctx, deltaTime)); //Damit die Kreise höher wiegen, über dem rest geuecgen werden
         if(overlayAlpha > 0) {
             ctx.fillStyle = `rgba(0, 0, 0, ${overlayAlpha})`;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -350,13 +350,13 @@ window.Stack = class Stack {
         this.showInfo = true;
         if(this.showPoints) return;
         this.showPoints = true;
-        hicgherAnimationObjektsTop.push(this);
+        higherAnimationObjectsTop.push(this);
     }
     update(ctx, deltaTime) {
         if(!this.showInfo) return;
         const y = this.pos.y;
         const x = this.pos.x + (((this.length() - 1) * this.faecherSteps) / 2);
-        // Kreisgröße berechnen Kreis ist da um Stappel Wergt hervorzugebn
+        // Kreis, in welchem der Wert des aktuellen Stacks angezeigt wird
         const radius = 50; // Größe des Kreises
         // Schwarzen Kreis zeichnen
         ctx.fillStyle = "black";
@@ -373,7 +373,7 @@ window.Stack = class Stack {
         if (this.einsatz && this.einsatz >= 0) {
             ctx.font = "bold 20px Arial";
             ctx.fillStyle = "gold";
-            ctx.fillText(this.einsatz.toString() + "TT", x, y + 20);
+            ctx.fillText(this.einsatz.toString() + "¢", x, y + 20);
         }
     }
     length() {
