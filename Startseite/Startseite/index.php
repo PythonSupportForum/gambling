@@ -43,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
         // Login-Logik
         $bn = $_POST['bn'] ?? '';
         $pwd = $_POST['password'] ?? '';
-
         if (empty($bn) || empty($pwd)) {
             $errors[] = "Benutzername und Passwort sind erforderlich.";
         } else {
@@ -52,10 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
             $stmt->execute();
             $stmt->store_result();
             $stmt->bind_result($id, $pwdhash);
-
-            if ($stmt->fetch() && password_verify($pwd, $pwdhash)) {
-                $_SESSION['kundeId'] = $id; // Benutzer-ID in der Session speichern
-            } else $errors[] = "Benutzername oder Passwort falsch.";
+            if ($stmt->fetch() && password_verify($pwd, $pwdhash)) $_SESSION['kundeId'] = $id; // Benutzer-ID in der Session speichern
+            else $errors[] = "Benutzername oder Passwort falsch.";
             $stmt->close();
         }
     } elseif (isset($_POST['register'])) {
@@ -106,11 +103,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
             // SQL-Query zum Einfügen des neuen Kunden
             $stmt = $conn->prepare("INSERT INTO Kunden (Name, Vorname, bn, pwdhash, pwdsalt, Geburtsdatum, Addresse, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->bind_param("ssssssss", $name, $vorname, $bn, $pwdhash, $salt, $geburtsdatum, $addresse, $t);
-            if ($stmt->execute()) {
-                $_SESSION['kundeId'] = $stmt->insert_id;
-            } else {
-                $errors[] = "Fehler beim Anlegen des Kunden: " . $stmt->error;
-            }
+            if ($stmt->execute()) $_SESSION['kundeId'] = $stmt->insert_id;
+            else $errors[] = "Fehler beim Anlegen des Kunden: " . $stmt->error;
             $stmt->close();
         }
     }
@@ -131,7 +125,7 @@ if (isset($_SESSION['kundeId'])) {
     $stmt->close();
 }
 
-$runGame = $userData ? "./play" : "./register"
+$runGame = $userData ? "./play" : "./register";
 ?>
 
 <!DOCTYPE html>
@@ -139,7 +133,7 @@ $runGame = $userData ? "./play" : "./register"
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glücksspiel Startseite</title>
+    <title>Let's Gambling - Info Q2</title>
     <meta name="description" content="Let's Gambling – Ein sicheres Online-Casino, entwickelt im Informatik-Unterricht am MEG. Erleben Sie moderne Datenbankkommunikation und sicheres Glücksspiel.">
     <meta name="keywords" content="Glücksspiel, Online-Casino, Sicherheit, Datenbank, MEG, Informatik, Projekt">
     <meta name="author" content="Let's Gambling Team">
@@ -148,10 +142,19 @@ $runGame = $userData ? "./play" : "./register"
     <meta property="og:description" content="Erleben Sie sicheres Glücksspiel und moderne Datenbankkommunikation, entwickelt im Informatik-Unterricht am MEG.">
     <meta property="og:image" content="https://deine-website.de/assets/cluster.png">
     <meta property="og:url" content="https://deine-website.de">
-    <meta property="og:type" content="website">
+    <meta property="og:type" content="website">3
     <link rel="stylesheet" href="style.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
 </head>
 <body>
+<?php
+if(!isset($_GET["no-frame"])) {
+?>
 <div class="centerf">
     <header>
         <div class="logo">
@@ -175,6 +178,9 @@ $runGame = $userData ? "./play" : "./register"
         </div>
     </header>
     <main>
+<?php
+}
+?>
         <?php
         // Dynamisches Einbinden von Unterseiten
         if (isset($_GET['page'])) {
@@ -202,8 +208,18 @@ $runGame = $userData ? "./play" : "./register"
             </div>';
         }
         ?>
+
+<?php
+if(!isset($_GET["no-frame"])) {
+?>
     </main>
 </div>
+<footer>
+    <p>&copy; 2023 Let's Gambling | <a href="./imprint">Impressum</a></p>
+</footer>
+<?php
+}
+?>
 
 <?php
 // Popup für Login und Register
@@ -264,7 +280,4 @@ if ((isset($_GET['login']) || isset($_GET['register'])) && !$userData) {
 }
 ?>
 </body>
-<footer>
-    <p>&copy; 2023 Let's Gambling | <a href="./imprint">Impressum</a></p>
-</footer>
 </html>
