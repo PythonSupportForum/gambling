@@ -137,13 +137,12 @@ $runGame = $userData ? "./play" : "./register";
     <meta name="description" content="Let's Gambling – Ein sicheres Online-Casino, entwickelt im Informatik-Unterricht am MEG. Erleben Sie moderne Datenbankkommunikation und sicheres Glücksspiel.">
     <meta name="keywords" content="Glücksspiel, Online-Casino, Sicherheit, Datenbank, MEG, Informatik, Projekt">
     <meta name="author" content="Let's Gambling Team">
-    <!-- Open Graph Meta Tags für Social Media -->
     <meta property="og:title" content="Let's Gambling – Sicheres Online-Casino">
     <meta property="og:description" content="Erleben Sie sicheres Glücksspiel und moderne Datenbankkommunikation, entwickelt im Informatik-Unterricht am MEG.">
     <meta property="og:image" content="https://deine-website.de/assets/cluster.png">
     <meta property="og:url" content="https://deine-website.de">
-    <meta property="og:type" content="website">3
-    <link rel="stylesheet" href="style.css">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="<?php echo isset($_GET['no_frame']) ? "src/Startseite.css" : "style.css"; ?>">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
@@ -153,7 +152,7 @@ $runGame = $userData ? "./play" : "./register";
 </head>
 <body>
 <?php
-if(!isset($_GET["no-frame"])) {
+if(!isset($_GET["no_frame"])) {
 ?>
 <div class="centerf">
     <header>
@@ -210,7 +209,7 @@ if(!isset($_GET["no-frame"])) {
         ?>
 
 <?php
-if(!isset($_GET["no-frame"])) {
+if(!isset($_GET["no_frame"])) {
 ?>
     </main>
 </div>
