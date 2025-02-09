@@ -34,12 +34,12 @@ if (isset($_SESSION['kundeId'])) {
         if(!$userData) {
             ?>
             <button onclick="window.location.href = './?login=true';" type="button" class="AnmeldenButton">Anmelden</button>
-            <button onclick="window.location.href = './?register=true';" type="button" class="AnmeldenButton">Konto Erstellen</button>
+            <button onclick="window.location.href = './?register=true';" type="button" class="AnmeldenButton">Registieren</button>
             <?php
         } else {
             ?>
             <div class="AnmeldenButton">
-                <h2 id="Guthaben">100000</h2>
+                <h2 id="Guthaben"><?php echo htmlspecialchars(str_pad($userData["amount"]."" ?? 0, 5, "0", STR_PAD_LEFT)); ?></h2>
                 <img src="assets/tilotaler_rand.png" id="Taler"/>
             </div>
             <?php
@@ -49,7 +49,7 @@ if (isset($_SESSION['kundeId'])) {
 </header>
 <main>
     <div id="Blackjack">
-        <button onclick="window.location.href = './blackjack'" class="gleichButton">Blackjack</button>
+        <button onclick="window.location.href = './blackjack/'" class="gleichButton">Blackjack</button>
     </div>
     <div  id="Slots">
         <button onclick="window.location.href = './slots/'" class="gleichButton">Slots</button>

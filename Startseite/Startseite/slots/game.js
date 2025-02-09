@@ -210,13 +210,13 @@ window.play = async ()=>{
             if (!startTime) startTime = timestamp;
             const elapsed = timestamp - startTime;
 
+            let ziel = finalImageIndex*imageHeight;
+            if(ziel < currentOffset-0.1) ziel += totalImages*imageHeight;
+
             if(finalImageIndex < 0 || elapsed < duration) {
                 if(speed < 100) speed += 0.5;
                 if(speed < randomReachSpeed) speed += 0.5;
             } else {
-                let ziel = finalImageIndex*imageHeight;
-                if(ziel < currentOffset-0.1) ziel += totalImages*imageHeight;
-
                 const strecke = ziel-currentOffset;
                 let speedProTime = strecke/1000;
                 if(Math.abs(speedProTime) < 5) speedProTime *= 10;
@@ -232,8 +232,9 @@ window.play = async ()=>{
             if(!speed) speed -= 2;
             if(speed < -40) speed += 20;
 
-            if(Math.abs(strecke) < 10 && Math.abs(speed) < 3) {
+            if(Math.abs(ziel-currentOffset) < 10 && Math.abs(speed) < 3) {
                 speed = 0;
+                currentOffset += (ziel-currentOffset)/100;
                 if(isWin) {
                     startConfetti();
                     updateB();
