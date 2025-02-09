@@ -195,8 +195,8 @@ if(!isset($_GET["no_frame"])) {
             // Standardinhalt, wenn keine spezifische Seite angefordert wird
             echo '
             <div class="text">
-                <h1>Let\'s Gambling - Das sind wir</h1>
-                <p>Let\'s Gambling ist ein Projekt aus dem Informatik Unterricht am MEG bei Herrn Engels! Anhand dieser Demonstration soll gezeigt werden, wie eine sichere Datenbankkommunikation in der Praxis aussehen kann. Dazu haben wir ein Account System am Beispiel eines Online Casinos gezeigt. </p>
+                <h1>Lets go Gambling - Das sind wir</h1>
+                <p>Lets go Gambling ist ein Projekt aus dem Informatik Unterricht am MEG bei Herrn Engels! Anhand dieser Demonstration soll gezeigt werden, wie eine sichere Datenbankkommunikation in der Praxis aussehen kann. Dazu haben wir ein Account System am Beispiel eines Online Casinos gezeigt. </p>
                 <p>Viel Spaß beim Ausprobieren!</p>
                 <div class="starfButton">
                     <a href="'.$runGame.'">Jetzt Ausprobieren</a>
@@ -204,7 +204,7 @@ if(!isset($_GET["no_frame"])) {
             </div>
             <div class="bild">
                 <img src="assets/cluster.png" alt="Hochleistung Server von Intel und Lenovo!">
-                <div class="sub">Wir von Lets Gambling setzen auf sicherste Server Infrastruktur mit Hardware von HP und Lenovo!</div>
+                <div class="sub">Wir von Lets go Gambling setzen auf sicherste Server Infrastruktur mit Hardware von HP und Lenovo!</div>
             </div>';
         }
         ?>
