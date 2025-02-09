@@ -2,7 +2,7 @@
     <a href="./">
         <img id="Logo" src="assets/Logo_Rand.png"/>
     </a>
-    <button onclick="window.location.href = './login';" type="button" id="Anmelden">Anmelden</button>
+    <button onclick="window.location.href = './?login=true';" type="button" id="Anmelden">Anmelden</button>
     <div id="Account">
         <h2 id="Guthaben">100000</h2>
         <img src="assets/tilotaler_rand.png" id="Taler"/>
@@ -10,10 +10,10 @@
 </header>
 <main>
     <div id="Blackjack">
-        <button onclick="window.location.href = '../../../Blackjack/Blackjack_Frontend/src/Frontend.html'" class="gleichButton">Blackjack</button>
+        <button onclick="window.location.href = './blackjack'" class="gleichButton">Blackjack</button>
     </div>
     <div  id = "Slots">
-        <button onclick="window.location.href = '../../../Slots/game.html'" class = "gleichButton">Slots</button>
+        <button onclick="window.location.href = './slots'" class = "gleichButton">Slots</button>
     </div>
 </main>
 <footer class="footer">

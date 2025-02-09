@@ -143,6 +143,7 @@ $runGame = $userData ? "./play" : "./register";
     <meta property="og:url" content="https://deine-website.de">
     <meta property="og:type" content="website">
     <link rel="stylesheet" href="<?php echo isset($_GET['no_frame']) ? "src/Startseite.css" : "style.css"; ?>">
+    <link rel="stylesheet" href="popup.css">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
@@ -169,8 +170,8 @@ if(!isset($_GET["no_frame"])) {
                 <?php
             } else {
                 ?>
-                <button onclick="location.href='./login'">Login</button>
-                <button onclick="location.href='./register'">Register</button>
+                <button onclick="location.href='./?login=true'">Login</button>
+                <button onclick="location.href='./?register=true'">Register</button>
                 <?php
             }
             ?>
@@ -241,7 +242,7 @@ if ((isset($_GET['login']) || isset($_GET['register'])) && !$userData) {
     // Formular für Login oder Register
     if (isset($_GET['login'])) {
         echo "
-            <form action='./login' method='post'>
+            <form action='./?login=true' method='post'>
                 <input type='hidden' name='login' value='1'>
                 <input type='text' name='bn' placeholder='Benutzername' value='" . ($_POST['bn'] ?? '') . "' required>
                 <input type='password' name='password' placeholder='Passwort' required>
@@ -252,7 +253,7 @@ if ((isset($_GET['login']) || isset($_GET['register'])) && !$userData) {
             </form>";
     } else {
         echo "
-            <form action='./register' method='post'>
+            <form action='./?register=true' method='post'>
                 <input type='hidden' name='register' value='1'>
                 <input type='text' name='name' placeholder='Name' value='" . ($_POST['name'] ?? '') . "' required>
                 <input type='text' name='vorname' placeholder='Vorname' value='" . ($_POST['vorname'] ?? '') . "' required>
