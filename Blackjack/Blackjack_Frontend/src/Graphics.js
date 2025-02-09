@@ -356,7 +356,7 @@ window.Stack = class Stack {
         if(!this.showInfo) return;
         const y = this.pos.y;
         const x = this.pos.x + (((this.length() - 1) * this.faecherSteps) / 2);
-        // Kreisgröße berechnen Kreis ist da um Stappel Wergt hervorzugebn
+        // Kreis, in welchem der Wert des aktuellen Stacks angezeigt wird
         const radius = 50; // Größe des Kreises
         // Schwarzen Kreis zeichnen
         ctx.fillStyle = "black";
@@ -373,7 +373,7 @@ window.Stack = class Stack {
         if (this.einsatz && this.einsatz >= 0) {
             ctx.font = "bold 20px Arial";
             ctx.fillStyle = "gold";
-            ctx.fillText(this.einsatz.toString() + "TT", x, y + 20);
+            ctx.fillText(this.einsatz.toString() + "¢", x, y + 20);
         }
     }
     length() {

@@ -131,7 +131,7 @@ window.startNewBidding = (bet)=>new Promise(async resolve => {
     const socket = await connectSocket();
     socket.send("Bet:"+bet);
 
-    listener.push(resolve);
+    resolve();
 });
 window.startBlackJack = ()=>new Promise(async resolve => {
     const socket = await connectSocket();

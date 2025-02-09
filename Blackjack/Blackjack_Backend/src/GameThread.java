@@ -295,6 +295,10 @@ public class GameThread implements Runnable {
             takeCount += 1;
             inputWait = false;
         }
+        else if (message.startsWith("takedealer")) {
+            takeCount += 1;
+            inputWait = false;
+        }
         else if (message.startsWith("doubledown")) {
             doubleDownInput = true;
         }
@@ -413,14 +417,23 @@ public class GameThread implements Runnable {
 
             setGameState(GameState.DEALER_START);
 
-            int pre = currentValue(dealerStack);
+            while(takeCount < 1){
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            card = deck.pop();
+            int j = currentValue(dealerStack);
+            dealerStack.add(card);
+            conn.send("DealerCard:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(dealerStack) - j));
+            printCard(card);
+            takeCount--;
+
             GameCard tempCard = deck.pop();
+            printCard(tempCard);
             dealerStack.add(tempCard);
-            conn.send("DealerCard:c:" + tempCard.getCoat() + ",v:" + tempCard.getValue() + ",p:" + (currentValue(dealerStack) - pre));
-            System.out.println("DealerCard:c:" + tempCard.getCoat() + ",v:" + tempCard.getValue() + ",p:" + (currentValue(dealerStack) - pre));
-
-            dealerStack.add(deck.pop());
-
 
             if (dealerStack.get(1).getValue() == 'a') {
                 //region Insurance Bet
@@ -460,7 +473,7 @@ public class GameThread implements Runnable {
             }
             for(int i = 0; i < 2 ; i++){
                 card = deck.pop();
-                int j = currentValue(playerStack.get(0));
+                j = currentValue(playerStack.get(0));
                 playerStack.get(0).add(card);
                 conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(playerStack.get(0)) - j));
                 printCard(card);
@@ -493,6 +506,7 @@ public class GameThread implements Runnable {
                 for(int i = 0; i <= splitCount; i++) {
                     karteZiehen(i);
                 }
+
                 setGameState(GameState.DEALER_DRAW);
 
                 int total = 0;
@@ -641,18 +655,20 @@ public class GameThread implements Runnable {
         public void karteZiehen(int index){
             while (!cardInput[index]) {
                 //ist nicht vollständig, nachher mit Frontend lösen
-                System.out.println("Willst du noch eine Karte nehmen?(false, true)(" + (index + 1) + ". Stapel)");
-
-                Scanner c = new Scanner(System.in);
-                String inputString = c.nextLine();
+                while(inputWait){
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
                 try {
-                    if (Boolean.parseBoolean(inputString)) {
+                    for(; takeCount > 0; takeCount--) {
                         card = deck.pop();
+                        int j = currentValue(playerStack.get(index));
                         playerStack.get(index).add(card);
+                        conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(playerStack.get(0)) - j));
                         printCard(card);
-                        splitCheck(index);
-                    } else {
-                        cardInput[index] = true;
                     }
                 } catch (NumberFormatException e) {
                     continue;
@@ -742,7 +758,7 @@ public class GameThread implements Runnable {
             return false;
         } else {
             coins -= coinAmount;
-            String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum) VALUES (" + client_ID  + ", " + (OLDBALANCE - balance) + ", NOW())";
+        String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum) VALUES (" + client_ID  + ", " + (new DecimalFormat("0.00").format(balance - OLDBALANCE)) + ", NOW())";
             clientDB = getConnection();
             try{
                 // Verbindung zur Datenbank, Veränderung des Kontostandes
