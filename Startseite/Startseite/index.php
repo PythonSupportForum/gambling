@@ -58,7 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
         $geburtsdatum = $_POST['geburtsdatum'] ?? '';
         $addresse = $_POST['addresse'] ?? '';
 
-        // Validierung
+        $errors = [];
+
+        //Ob lles richitg ist
         if (empty($name)) $errors[] = "Name ist erforderlich.";
         if (empty($vorname)) $errors[] = "Vorname ist erforderlich.";
         if (empty($bn)) $errors[] = "Benutzername ist erforderlich.";
@@ -66,14 +68,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
         if (empty($geburtsdatum)) $errors[] = "Geburtsdatum ist erforderlich.";
         if (empty($addresse)) $errors[] = "Adresse ist erforderlich.";
 
-        // Wenn keine Fehler vorhanden sind, Daten in die Datenbank einfügen
+        if (strlen($name) > 64 || preg_match('/\s/', $name)) {
+            $errors[] = "Nachname darf keine Leerzeichen enthalten und maximal 64 Zeichen lang sein.";
+        }
+
+        if (strlen($vorname) > 64) {
+            $errors[] = "Vorname darf maximal 64 Zeichen lang sein.";
+        }
+
+        if (strlen($bn) < 8 || strlen($bn) > 32) {
+            $errors[] = "Benutzername muss zwischen 8 und 32 Zeichen lang sein.";
+        }
+        $today = new DateTime();
+        $birthdate = new DateTime($geburtsdatum);
+        $age = $today->diff($birthdate)->y;
+        if ($age < 18 || $age > 120) {
+            $errors[] = "Das Alter muss zwischen 18 und 120 Jahren liegen.";
+        }
         if (empty($errors)) {
-            // Passwort hashen
-            $pwdhash = password_hash($pwd, PASSWORD_DEFAULT);
+            // Salt generieren
+            $salt = bin2hex(random_bytes(16));
+
+            // Passwort mit Salt hashen
+            $pwdhash = password_hash($pwd . $salt, PASSWORD_DEFAULT);
 
             // SQL-Query zum Einfügen des neuen Kunden
-            $stmt = $conn->prepare("INSERT INTO Kunden (Name, Vorname, bn, pwdhash, Geburtsdatum, Addresse) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("ssssss", $name, $vorname, $bn, $pwdhash, $geburtsdatum, $addresse);
+            $stmt = $conn->prepare("INSERT INTO Kunden (Name, Vorname, bn, pwdhash, pwdsalt, Geburtsdatum, Addresse) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssssss", $name, $vorname, $bn, $pwdhash, $salt, $geburtsdatum, $addresse);
 
             if ($stmt->execute()) {
                 $_SESSION['kundeId'] = $stmt->insert_id;
@@ -82,6 +103,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
             }
 
             $stmt->close();
+        }
+        if (!empty($errors)) {
+            foreach ($errors as $error) {
+                echo $error . "<br>";
+            }
         }
     }
 }
