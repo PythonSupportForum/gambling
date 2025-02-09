@@ -63,19 +63,21 @@ window.connectSocket = ()=>{
             }
             else if(msg.startsWith("dealercards:")){
                 let cardObjects = [];
-                let sub = msg.substring("DealerCards:".length);
+                let sub = msg.substring("DealerCards:".length).split(">");
 
-                let cards = sub.split(";");
+
+
+                let cards = sub[0].split(";");
                 for(let singleCard of cards){
                     let part = singleCard.split(",");
 
-                    coat = part[0].substring(1);
+                    coat = part[0].substring("c:".length);
 
-                    value = part[1].substring(1);
-                    cardObjects.push({type: coat, points: value});
+                    value = part[1].substring("v:".length);
+                    cardObjects.push({type: value + "_" + coat, points: 0});
                 }
 
-                listener.shift()(cardObjects);
+                listener.shift()({objects: cardObjects, stackValue: parseInt(sub[1])});
             }
             else if(msg.startsWith("chipupdate:")){
                 let updatedChipCount = parseInt(msg.substring("DealerCards:".length - 1));
@@ -108,6 +110,14 @@ window.connectSocket = ()=>{
                     points: points,
                     state: state
                 });
+            }
+            else if(msg.startsWith("bust:")){
+                let stackId = parseInt(msg.substring("bust:".length));
+                endStack().then();
+                if(userStack.length === 1){
+                    window.endProcess = true;
+                }
+                console.log("Ehrenlos",stackId);
             }
         };
 

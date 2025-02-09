@@ -33,7 +33,8 @@ public class GameThread implements Runnable {
     boolean betInput;
     boolean insuranceInput = false;
     boolean inputWait = true;
-    boolean doubleDown;
+    boolean doubleDown = false;
+    boolean playerDone = false;
 
     boolean[] cardInput = new boolean[4];
 
@@ -309,7 +310,15 @@ public class GameThread implements Runnable {
         else if (message.startsWith("insurance:")) {
             insuranceBet = Integer.parseInt(message.substring("insurance:".length()).trim());
             insuranceInput = true;
-        } else if (message.startsWith("end")) {
+        }
+        else if (message.startsWith("getdealer")) {
+            playerDone = true;
+            inputWait = false;
+        }
+        else if (message.startsWith("endstack:")) {
+            cardInput[Integer.parseInt(message.substring("endstack:".length()))] = true;
+        }
+        else if (message.startsWith("end")) {
             running = false;
         }
     }
@@ -338,6 +347,7 @@ public class GameThread implements Runnable {
             inputWait = true;
             wantsExchange = false;
             doubleDown = false;
+            playerDone = false;
 
             for(ArrayList<GameCard> stack : playerStack){
                 stack.clear();
@@ -507,6 +517,15 @@ public class GameThread implements Runnable {
                     karteZiehen(i);
                 }
 
+                while(!playerDone){
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                System.out.println("Spieler fertig");
+
                 setGameState(GameState.DEALER_DRAW);
 
                 int total = 0;
@@ -539,6 +558,12 @@ public class GameThread implements Runnable {
                         aceCounter -= 1; // Ass Counter einen herabsetzen
                     }
                 }
+                String sendDealer = "DealerCards:";
+                for(GameCard card : dealerStack) {
+                    sendDealer += "c:" + card.getCoat() + ",v:" + card.getValue() + ";";
+                }
+                conn.send(sendDealer.substring(0, sendDealer.length() - 2) + ">" + currentValue(dealerStack));
+                System.out.println(sendDealer.substring(0, sendDealer.length() - 2) + ">" + currentValue(dealerStack));
                 //Methode zur Bestimmung wer gewonnen oder verloren hat nach unten ausgelagert
                 checkGameState();
             }
@@ -573,7 +598,7 @@ public class GameThread implements Runnable {
         }
 
         setGameState(GameState.END);
-        handleQuit();// Kümmert sich um die ausstehende Verbindung falls diese aktiv sind
+        handleQuit();// Kümmert sich um die ausstehende Verbindung, falls diese aktiv sind
         currentThread.interrupt(); // Beende den Thread
     }
 
@@ -582,10 +607,12 @@ public class GameThread implements Runnable {
         if (currentValue(cardStack) > 21) {
             states.replace(cardStack, StackState.LOST);
             System.out.println("Bust! Du hast auf Stapel " + (index + 1) + " verloren!");
+            conn.send("Bust:"+index);
             cardInput[index] = true;
         }
         else if (currentValue(cardStack) == 21) {
             System.out.println("Herzlichen Glückwunsch! Du hast auf Stapel " + (index + 1) + " einen Blackjack!");
+            conn.send("Blackjack:"+index);
             states.replace(cardStack, StackState.WON);
             cardInput[index] = true;
         }
@@ -654,7 +681,6 @@ public class GameThread implements Runnable {
 
         public void karteZiehen(int index){
             while (!cardInput[index]) {
-                //ist nicht vollständig, nachher mit Frontend lösen
                 while(inputWait){
                     try {
                         Thread.sleep(100);
@@ -662,6 +688,7 @@ public class GameThread implements Runnable {
                         throw new RuntimeException(e);
                     }
                 }
+                if(playerDone){return;}
                 try {
                     for(; takeCount > 0; takeCount--) {
                         card = deck.pop();
