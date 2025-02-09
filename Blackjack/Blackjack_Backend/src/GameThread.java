@@ -444,7 +444,6 @@ public class GameThread implements Runnable {
                 userTakes = false;
                 while(!userTakes){
                     try {
-                        System.out.println("loop");
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);

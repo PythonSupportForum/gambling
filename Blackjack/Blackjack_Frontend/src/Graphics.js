@@ -381,14 +381,14 @@ window.Stack = class Stack {
     }
     wert() {
         let w = 0;
-        Object.values(this.cards).forEach(c => w+=(c.wertZaehlen?c.cardValue:0));
+        Object.values(this.cards).forEach(c => w+=parseInt(c.wertZaehlen?c.cardValue:0));
         return w;
     }
     getOberste() {
         console.log("Get Oberste:", this, this.cards);
         return Object.keys(this.cards).length === 0 ? null : Object.values(this.cards)[Object.values(this.cards).length-1];
     }
-    takeCard(count = 1) { //Macht Dasselbe wie get Oberste nur entfern gleichezig!
+    takeCard(count = 1) { //Macht Dasselbe wie get Oberste nur entfern gleichzeitig!
         const c = this.getObersteViele(count);
         c.forEach(c => c.removeFromStack());
         return c;

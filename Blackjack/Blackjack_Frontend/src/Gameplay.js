@@ -100,17 +100,17 @@ const userTakeCard = async (count = 1) => {
         } else userStack[runningStackId].restMaxCount -= count;
     }
     console.log("User Karten ziehen!");
-    const e = [];
-    while(count > 0) {
-        e.push(await takeCard());
-        count--;
+    const cardsFromServer = [];
+    let i = count;
+    while(i > 0) {
+        cardsFromServer.push(takeCard());
+        i--;
     }
-    const valuePromise = Promise.all(e);
     console.log("Zeige Karten..");
-    const {end, cards, promise} = showCardsInCenter(ziehenStack.takeCard(e.length));
+    const {end, cards, promise} = showCardsInCenter(ziehenStack.takeCard(count));
     console.log("Karten Gezeigt!", cards);
     await promise;
-    const flip = await valuePromise;
+    const flip = await Promise.all(cardsFromServer);
     //Karten gezogen aber noch nicht umgedreht und Rückseitenwert steht bereit weil server antwort
     console.log("Gezogen:",flip);
     //Gezogene Karten umdrehen
@@ -137,7 +137,7 @@ const userTakeCard = async (count = 1) => {
     buttons.hide();
 
     end(); //Um Overlay u schließen → Karten aus dem Vordergrund
-    if(input === "p") {
+    if(input === "d") {
         userStack[runningStackId].einsatz*=2;
         userStack[runningStackId].restMaxCount = 1;
         serverDoubleDown();
@@ -148,10 +148,6 @@ const userTakeCard = async (count = 1) => {
             userStack[runningStackId].startShowPoints();
         });
         await Promise.all(p);
-        if(userStack[runningStackId].wert() > 21) {
-            await closeUserStack(runningStackId);
-            await endStack();
-        }
         return true;
     } else if(input === "s") {
         addUserStack();
@@ -212,13 +208,15 @@ const startGame = async ()=> {
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
+    await dealerTakes();
+
     if(dealerLeftStack.getOberste().cardValue === 11) {
         if((await getInsuranceBet())) {
             console.log("Set insurance...");
             await gameInfoPromise;
             console.log("Start Game");
             userStack.forEach(s => s.einsatz *= 0.5); //Alle User Stack Einsatz halbieren → Gesamt einsatz wir halbiert
-            window.insuranceEinsatz = (await betPromise)/2;
+            window.insuranceBet = (await betPromise)/2;
         }
     }
 
