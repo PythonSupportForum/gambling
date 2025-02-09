@@ -49,6 +49,10 @@ header .left {
     justify-content: center;
     gap: 20px;
 }
+.buttons h2 {
+    margin: 0;
+    padding: 0;
+}
 
 .buttons button {
     background-color: #ffcc00;

@@ -1,10 +1,24 @@
 <?php
+
+error_reporting(E_ALL); // Alle Fehler anzeigen (Notices, Warnings, Fatal Errors usw.)
+ini_set('display_errors', 1); // Fehler direkt auf der Webseite ausgeben
+ini_set('display_startup_errors', 1); // Start-Fehler ebenfalls ausgeben
+
 // Session starten
 session_start();
 
 $conn = new mysqli('db.ontubs.de', 'carl', 'geilo123!', 'gambling');
 if ($conn->connect_error) {
     die("Verbindung fehlgeschlagen: " . $conn->connect_error);
+}
+
+function generateAsciiToken($length = 64) {
+    $characters = '';
+    for ($i = 32; $i <= 126; $i++) $characters .= chr($i);
+    $token = '';
+    $maxIndex = strlen($characters) - 1;
+    for ($i = 0; $i < $length; $i++) $token .= $characters[random_int(0, $maxIndex)];
+    return $token;
 }
 
 function logActivity($conn, $kundeId = null) {
@@ -33,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
         if (empty($bn) || empty($pwd)) {
             $errors[] = "Benutzername und Passwort sind erforderlich.";
         } else {
-            // Benutzer in der Datenbank suchen
             $stmt = $conn->prepare("SELECT id, pwdhash FROM Kunden WHERE bn = ?");
             $stmt->bind_param("s", $bn);
             $stmt->execute();
@@ -41,12 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
             $stmt->bind_result($id, $pwdhash);
 
             if ($stmt->fetch() && password_verify($pwd, $pwdhash)) {
-                // Login erfolgreich
                 $_SESSION['kundeId'] = $id; // Benutzer-ID in der Session speichern
-            } else {
-                $errors[] = "Benutzername oder Passwort falsch.";
-            }
-
+            } else $errors[] = "Benutzername oder Passwort falsch.";
             $stmt->close();
         }
     } elseif (isset($_POST['register'])) {
@@ -92,22 +101,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
             // Passwort mit Salt hashen
             $pwdhash = password_hash($pwd . $salt, PASSWORD_DEFAULT);
 
-            // SQL-Query zum Einfügen des neuen Kunden
-            $stmt = $conn->prepare("INSERT INTO Kunden (Name, Vorname, bn, pwdhash, pwdsalt, Geburtsdatum, Addresse) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("sssssss", $name, $vorname, $bn, $pwdhash, $salt, $geburtsdatum, $addresse);
+            $t = generateAsciiToken();
 
+            // SQL-Query zum Einfügen des neuen Kunden
+            $stmt = $conn->prepare("INSERT INTO Kunden (Name, Vorname, bn, pwdhash, pwdsalt, Geburtsdatum, Addresse, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssssssss", $name, $vorname, $bn, $pwdhash, $salt, $geburtsdatum, $addresse, $t);
             if ($stmt->execute()) {
                 $_SESSION['kundeId'] = $stmt->insert_id;
             } else {
                 $errors[] = "Fehler beim Anlegen des Kunden: " . $stmt->error;
             }
-
             $stmt->close();
-        }
-        if (!empty($errors)) {
-            foreach ($errors as $error) {
-                echo $error . "<br>";
-            }
         }
     }
 }
@@ -115,6 +119,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
 if(isset($_GET['logout'])) {
     unset($_SESSION['kundeId']);
 }
+
+$userData = null;
+if (isset($_SESSION['kundeId'])) {
+    $kundeId = $_SESSION['kundeId'];
+    $stmt = $conn->prepare("SELECT Kunden.id, Name, Vorname, bn, Geburtsdatum, Addresse, SUM(t.Betrag) as amount FROM Kunden LEFT JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id WHERE Kunden.id = ?;");
+    $stmt->bind_param("i", $kundeId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows === 1) $userData = $result->fetch_assoc();
+    $stmt->close();
+}
+
+$runGame = $userData ? "./play" : "./register"
 ?>
 
 <!DOCTYPE html>
@@ -142,8 +159,19 @@ if(isset($_GET['logout'])) {
         </div>
         <div class="left" onclick="location.href='./'">Q2 INFO</div>
         <div class="buttons">
-            <button onclick="location.href='./login'">Login</button>
-            <button onclick="location.href='./register'">Register</button>
+            <?php
+            if(isset($_SESSION['kundeId'])) {
+                ?>
+                <h2><?php echo $userData["Name"]; ?></h2>
+                <div class="amount"><?php echo htmlspecialchars(str_pad($userData["amount"]."" ?? 0, 5, "0", STR_PAD_LEFT)); ?> TT</div>
+                <?php
+            } else {
+                ?>
+                <button onclick="location.href='./login'">Login</button>
+                <button onclick="location.href='./register'">Register</button>
+                <?php
+            }
+            ?>
         </div>
     </header>
     <main>
@@ -165,7 +193,7 @@ if(isset($_GET['logout'])) {
                 <p>Let\'s Gambling ist ein Projekt aus dem Informatik Unterricht am MEG bei Herrn Engels! Anhand dieser Demonstration soll gezeigt werden, wie eine sichere Datenbankkommunikation in der Praxis aussehen kann. Dazu haben wir ein Account System am Beispiel eines Online Casinos gezeigt. </p>
                 <p>Viel Spaß beim Ausprobieren!</p>
                 <div class="starfButton">
-                    <a href="./register">Jetzt Ausprobieren</a>
+                    <a href="'.$runGame.'">Jetzt Ausprobieren</a>
                 </div>
             </div>
             <div class="bild">
@@ -179,7 +207,7 @@ if(isset($_GET['logout'])) {
 
 <?php
 // Popup für Login und Register
-if (isset($_GET['login']) || isset($_GET['register'])) {
+if ((isset($_GET['login']) || isset($_GET['register'])) && !$userData) {
     $type = isset($_GET['login']) ? 'Anmelden' : 'Account erstellen';
     echo "
     <div class='overlay' id='overlay'>
@@ -198,7 +226,7 @@ if (isset($_GET['login']) || isset($_GET['register'])) {
     // Formular für Login oder Register
     if (isset($_GET['login'])) {
         echo "
-            <form action='./register' method='post'>
+            <form action='./login' method='post'>
                 <input type='hidden' name='login' value='1'>
                 <input type='text' name='bn' placeholder='Benutzername' value='" . ($_POST['bn'] ?? '') . "' required>
                 <input type='password' name='password' placeholder='Passwort' required>
@@ -209,7 +237,7 @@ if (isset($_GET['login']) || isset($_GET['register'])) {
             </form>";
     } else {
         echo "
-            <form action='./login' method='post'>
+            <form action='./register' method='post'>
                 <input type='hidden' name='register' value='1'>
                 <input type='text' name='name' placeholder='Name' value='" . ($_POST['name'] ?? '') . "' required>
                 <input type='text' name='vorname' placeholder='Vorname' value='" . ($_POST['vorname'] ?? '') . "' required>
