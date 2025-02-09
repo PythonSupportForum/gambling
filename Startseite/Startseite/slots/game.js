@@ -175,15 +175,15 @@ function startConfetti() {
 updateB().then(()=>{});
 setInterval(updateB, 5*1000);
 
+window.isWin = false;
 window.play = async ()=>{
     console.log("Start Game...");
     document.getElementById("play").disabled = true;
 
     const gamePromise = async () => {
         const {results, winAmount} = await  startGame(token);
-        if(winAmount > 0) startConfetti();
+        window.isWin = winAmount > 0;
         console.log("R:", {results, winAmount});
-        await updateB();
         return results;
     }
     const ergebnisPromise = gamePromise();
@@ -231,6 +231,14 @@ window.play = async ()=>{
             //if(Math.abs(speed) > 40) speed -= Math.max(Math.sqrt(speed), 1);
             if(!speed) speed -= 2;
             if(speed < -40) speed += 20;
+
+            if(Math.abs(strecke) < 10 && Math.abs(speed) < 3) {
+                speed = 0;
+                if(isWin) {
+                    startConfetti();
+                    updateB();
+                }
+            }
 
             currentOffset = (currentOffset+speed)%(totalImages*imageHeight);
 

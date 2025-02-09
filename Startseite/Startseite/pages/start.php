@@ -52,7 +52,7 @@ if (isset($_SESSION['kundeId'])) {
         <button onclick="window.location.href = './blackjack'" class="gleichButton">Blackjack</button>
     </div>
     <div  id="Slots">
-        <button onclick="window.location.href = './slots'" class="gleichButton">Slots</button>
+        <button onclick="window.location.href = './slots/'" class="gleichButton">Slots</button>
     </div>
 </main>
 <footer class="footer">

@@ -98,7 +98,7 @@ Header {
 #Blackjack {
     position: fixed;
     border-radius: 10px;
-    margin-top: 120px;
+    margin-top: 150px;
     margin-bottom: 120px;
     height: 100%;
     max-height: calc(100% - 230px - 120px);
@@ -119,12 +119,11 @@ Header {
 #Slots {
     position: fixed;
     border-radius: 10px;
-    margin-top: 230px;
+    margin-top: 150px;
     margin-bottom: 120px;
     height: 100%;
     max-height: calc(100% - 230px - 120px);
     width: 45%;
-    position: fixed;
     right: 3%;background-image: url('../../../Slots/assets/Slots.png'); !important;
     background-position: center;
     background-repeat: no-repeat;
