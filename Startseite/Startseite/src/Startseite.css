@@ -22,6 +22,14 @@ Header {
     z-index: 3;
 }
 
+.rightFeld {
+    width: 200px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
 #Logo {
     position: fixed;
     top: 3%;
@@ -31,9 +39,10 @@ Header {
     transform: rotate(-10deg);
 }
 
-.Anmelden, .gleichButton {
+.AnmeldenButton, .gleichButton {
     padding: 10px;
-    width: 50%;
+    width: 350px;
+    height: auto;
     font-size: 2vw;
     color: #01471a;
     background-color: #f8bb12;
@@ -53,7 +62,7 @@ Header {
     box-shadow: 15px 15px 10px rgba(0, 0, 0, 0.1);
     z-index: 2;
 }
-#Anmelden:hover, .gleichButton:hover{
+.AnmeldenButton:hover, .gleichButton:hover{
     transform: scale(0.95);
     border-top-color: #d19c08;
     border-left-color: #d19c08;
@@ -89,12 +98,11 @@ Header {
 #Blackjack {
     position: fixed;
     border-radius: 10px;
-    margin-top: 230px;
+    margin-top: 120px;
     margin-bottom: 120px;
     height: 100%;
     max-height: calc(100% - 230px - 120px);
     width: 45%;
-    position: fixed;
     left: 3%;
     background-image: url('../../../Blackjack/Blackjack_Frontend/assets/Blackjack.jpg'); !important;
     background-position: center;

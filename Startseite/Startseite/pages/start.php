@@ -29,21 +29,23 @@ if (isset($_SESSION['kundeId'])) {
     <a href="./">
         <img id="Logo" src="assets/Logo_Rand.png"/>
     </a>
-    <?php
-    if(!$userData) {
-        ?>
-        <button onclick="window.location.href = './?login=true';" type="button" class="Anmelden">Anmelden</button>
-        <button onclick="window.location.href = './?register=true';" type="button" class="Anmelden">Konto Erstellen</button>
+    <div class="right">
         <?php
-    } else {
+        if(!$userData) {
+            ?>
+            <button onclick="window.location.href = './?login=true';" type="button" class="AnmeldenButton">Anmelden</button>
+            <button onclick="window.location.href = './?register=true';" type="button" class="AnmeldenButton">Konto Erstellen</button>
+            <?php
+        } else {
+            ?>
+            <div class="AnmeldenButton">
+                <h2 id="Guthaben">100000</h2>
+                <img src="assets/tilotaler_rand.png" id="Taler"/>
+            </div>
+            <?php
+        }
         ?>
-        <div id="Account">
-            <h2 id="Guthaben">100000</h2>
-            <img src="assets/tilotaler_rand.png" id="Taler"/>
-        </div>
-        <?php
-    }
-    ?>
+    </div>
 </header>
 <main>
     <div id="Blackjack">
