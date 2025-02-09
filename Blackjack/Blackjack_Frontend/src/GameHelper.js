@@ -82,6 +82,7 @@ const initDealerStack = ()=>{
     const positions = calculateCardPositions();
     window.dealerLeftStack = new Stack(positions[0], "faecher", addStackMarginSteps);
     window.dealerRightStack = new Stack(positions[1], "faecher", addStackMarginSteps);
+    console.log("geht");
 }
 const closeUserStack = async (index) => {
     const card = ziehenStack.takeCard(1)[0];

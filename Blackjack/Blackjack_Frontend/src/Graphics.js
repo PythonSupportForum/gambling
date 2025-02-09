@@ -24,7 +24,7 @@ let toLoad = {
     "7_c": "https://gambling.megdb.de/assets/karten/club/7.svg",
     "8_c": "https://gambling.megdb.de/assets/karten/club/8.svg",
     "9_c": "https://gambling.megdb.de/assets/karten/club/9.svg",
-    "10_c": "https://gambling.megdb.de/assets/karten/club/10.svg",
+    "0c": "https://gambling.megdb.de/assets/karten/club/10.svg",
     "j_c": "https://gambling.megdb.de/assets/karten/club/J.svg",
     "q_c": "https://gambling.megdb.de/assets/karten/club/Q.svg",
     "k_c": "https://gambling.megdb.de/assets/karten/club/K.svg",
@@ -38,7 +38,7 @@ let toLoad = {
     "7_d": "https://gambling.megdb.de/assets/karten/diamond/7.svg",
     "8_d": "https://gambling.megdb.de/assets/karten/diamond/8.svg",
     "9_d": "https://gambling.megdb.de/assets/karten/diamond/9.svg",
-    "10_d": "https://gambling.megdb.de/assets/karten/diamond/10.svg",
+    "0d": "https://gambling.megdb.de/assets/karten/diamond/10.svg",
     "j_d": "https://gambling.megdb.de/assets/karten/diamond/J.svg",
     "q_d": "https://gambling.megdb.de/assets/karten/diamond/Q.svg",
     "k_d": "https://gambling.megdb.de/assets/karten/diamond/K.svg",
@@ -52,7 +52,7 @@ let toLoad = {
     "7_h": "https://gambling.megdb.de/assets/karten/heart/7.svg",
     "8_h": "https://gambling.megdb.de/assets/karten/heart/8.svg",
     "9_h": "https://gambling.megdb.de/assets/karten/heart/9.svg",
-    "10_h": "https://gambling.megdb.de/assets/karten/heart/10.svg",
+    "0h": "https://gambling.megdb.de/assets/karten/heart/10.svg",
     "j_h": "https://gambling.megdb.de/assets/karten/heart/J.svg",
     "q_h": "https://gambling.megdb.de/assets/karten/heart/Q.svg",
     "k_h": "https://gambling.megdb.de/assets/karten/heart/K.svg",
@@ -66,7 +66,7 @@ let toLoad = {
     "7_s": "https://gambling.megdb.de/assets/karten/spade/7.svg",
     "8_s": "https://gambling.megdb.de/assets/karten/spade/8.svg",
     "9_s": "https://gambling.megdb.de/assets/karten/spade/9.svg",
-    "10_s": "https://gambling.megdb.de/assets/karten/spade/10.svg",
+    "0_s": "https://gambling.megdb.de/assets/karten/spade/10.svg",
     "j_s": "https://gambling.megdb.de/assets/karten/spade/J.svg",
     "q_s": "https://gambling.megdb.de/assets/karten/spade/Q.svg",
     "k_s": "https://gambling.megdb.de/assets/karten/spade/K.svg",
@@ -388,7 +388,7 @@ window.Stack = class Stack {
         console.log("Get Oberste:", this, this.cards);
         return Object.keys(this.cards).length === 0 ? null : Object.values(this.cards)[Object.values(this.cards).length-1];
     }
-    takeCard(count = 1) { //Macht Dasselbe wie get Oberste nur entfern gleichzeitig!
+    takeCard(count = 1) { //Macht Dasselbe wie get Oberste nur entfern gleichezig!
         const c = this.getObersteViele(count);
         c.forEach(c => c.removeFromStack());
         return c;
