@@ -43,8 +43,7 @@ window.connectSocket = ()=>{
                     points: points
                 });
             }
-
-            if(msg.startsWith("dealercard:")){
+            else if(msg.startsWith("dealercard:")){
                 let sub = msg.substring("DealerCard:".length);
 
                 let part = sub.split(",");
@@ -62,8 +61,7 @@ window.connectSocket = ()=>{
                     points: points
                 });
             }
-
-            if(msg.startsWith("dealercards:")){
+            else if(msg.startsWith("dealercards:")){
                 let cardObjects = [];
                 let sub = msg.substring("DealerCards:".length);
 
@@ -79,7 +77,7 @@ window.connectSocket = ()=>{
 
                 listener.shift()(cardObjects);
             }
-            if(msg.startsWith("chipupdate:")){
+            else if(msg.startsWith("chipupdate:")){
                 let updatedChipCount = parseInt(msg.substring("DealerCards:".length - 1));
                 if(updatedChipCount >= 0){
                     console.log("Chip updated for: " + updatedChipCount);
@@ -93,10 +91,23 @@ window.connectSocket = ()=>{
                     console.error("Auszahlung nicht erfolgt");
                 }
             }
-            if(msg.startsWith("bal:")){
+            else if(msg.startsWith("bal:")){
                 window.balance = parseFloat(msg.substring("bal:".length));
                 console.log(balance);
                 listener.shift()(balance);
+            }
+            else if(msg.startsWith("stack:")){
+                let part = msg.substring("stack:".length).split(",");
+
+                let points = parseInt(part[0].substring("p:".length));
+
+                let state;
+                state = part[1].substring("s:".length).includes("true");
+
+                listener.shift()({
+                    points: points,
+                    state: state
+                });
             }
         };
 
@@ -161,8 +172,6 @@ window.serverDoubleDown = ()=>{
 //Um einen Stack zu schließen
 window.endStackServer = (stackIndex)=>new Promise(async resolve => {
     const socket = await connectSocket();
-
-    resolve({
-
-    });
+    socket.send("EndStack:" + stackIndex);
+    listener.push(resolve);
 });

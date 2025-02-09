@@ -6,6 +6,7 @@
 - Verbindung akzeptiert: "acc"
 - Umtauschen bestätigen: "ChipUpdate:" + chipAmount
 - Kontostand übermitteln: "Bal:" + balance
+- Auflösen eines Stacks: "Stack:p:" + points + ",s" + state
 
 # Client Befehle
 - Dealer Ziehen anfragen: "TakeDealer"
@@ -14,3 +15,4 @@
 - Anfrage Dealer Karten: "GetDealer"
 - (ID senden: "ID:" + id)
 - Umtauschen anfragen: "Exchange:" + ChipCount
+- Beenden des Stacks: "EndStack:" + stackID

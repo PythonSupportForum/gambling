@@ -263,7 +263,7 @@ window.endProcess = false;
 const endStack = ()=>new Promise(resolve => {
     buttons.hide();
     endStackServer(runningStackId).then(()=>{});
-    const continues = runningStackId < userStack.length-1; //Ob noch win weitere Stappel durch Spiltlen vegübar ist
+    const continues = runningStackId < userStack.length-1;
     if(continues) runningStackId++;
     const {end} = focusElementWithOverlay(Object.values(userStack[runningStackId].cards));
     const dealerCardsPromise = continues ? null : getDealerCards();
