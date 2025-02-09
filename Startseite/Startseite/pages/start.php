@@ -1,19 +1,56 @@
+<?php
+
+error_reporting(E_ALL); // Alle Fehler anzeigen (Notices, Warnings, Fatal Errors usw.)
+ini_set('display_errors', 1); // Fehler direkt auf der Webseite ausgeben
+ini_set('display_startup_errors', 1); // Start-Fehler ebenfalls ausgeben
+
+// Session starten
+session_start();
+
+$conn = new mysqli('db.ontubs.de', 'carl', 'geilo123!', 'gambling');
+if ($conn->connect_error) {
+    die("Verbindung fehlgeschlagen: " . $conn->connect_error);
+}
+
+$userData = null;
+if (isset($_SESSION['kundeId'])) {
+    $kundeId = $_SESSION['kundeId'];
+    $stmt = $conn->prepare("SELECT Kunden.id, Name, Vorname, bn, Geburtsdatum, Addresse, SUM(t.Betrag) as amount FROM Kunden LEFT JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id WHERE Kunden.id = ?;");
+    $stmt->bind_param("i", $kundeId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows === 1) $userData = $result->fetch_assoc();
+    $stmt->close();
+}
+
+?>
+
 <header>
     <a href="./">
         <img id="Logo" src="assets/Logo_Rand.png"/>
     </a>
-    <button onclick="window.location.href = './?login=true';" type="button" id="Anmelden">Anmelden</button>
-    <div id="Account">
-        <h2 id="Guthaben">100000</h2>
-        <img src="assets/tilotaler_rand.png" id="Taler"/>
-    </div>
+    <?php
+    if(!$userData) {
+        ?>
+        <button onclick="window.location.href = './?login=true';" type="button" class="Anmelden">Anmelden</button>
+        <button onclick="window.location.href = './?register=true';" type="button" class="Anmelden">Konto Erstellen</button>
+        <?php
+    } else {
+        ?>
+        <div id="Account">
+            <h2 id="Guthaben">100000</h2>
+            <img src="assets/tilotaler_rand.png" id="Taler"/>
+        </div>
+        <?php
+    }
+    ?>
 </header>
 <main>
     <div id="Blackjack">
         <button onclick="window.location.href = './blackjack'" class="gleichButton">Blackjack</button>
     </div>
-    <div  id = "Slots">
-        <button onclick="window.location.href = './slots'" class = "gleichButton">Slots</button>
+    <div  id="Slots">
+        <button onclick="window.location.href = './slots'" class="gleichButton">Slots</button>
     </div>
 </main>
 <footer class="footer">

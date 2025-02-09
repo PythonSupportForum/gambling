@@ -31,8 +31,7 @@ Header {
     transform: rotate(-10deg);
 }
 
-
-#Anmelden, .gleichButton {
+.Anmelden, .gleichButton {
     padding: 10px;
     width: 50%;
     font-size: 2vw;
