@@ -248,21 +248,20 @@ const startGame = async ()=> {
     ]);
 }
 
-const calculateResult = async (dealerCardsPromise)=>{
-    const dealerCards = await dealerCardsPromise;
+const calculateResult = async (dealerCards, stackPoints)=>{
     console.log("Dealer Zieht:", dealerCards);
     dealerLeftStack.startShowPoints();
     for (const c of dealerCards) {
         await showDealerCards(c, 0, true);
-        if(dealerLeftStack.wert() > 21) break; //Breche ab, sobald der dealer mehr als 21 hat
     }
     console.log("All Fertig!");
 }
 
 window.endProcess = false;
+window.endGame = false;
 const endStack = ()=>new Promise(resolve => {
     buttons.hide();
-    endStackServer(runningStackId).then(()=>{});
+    endStackServer(runningStackId).then();
     const continues = runningStackId < userStack.length-1;
     if(continues) runningStackId++;
     const {end} = focusElementWithOverlay(Object.values(userStack[runningStackId].cards));
@@ -271,12 +270,12 @@ const endStack = ()=>new Promise(resolve => {
         await end();
         if(continues) {
             setTimeout(async ()=>{
-                await userTakeCard(1);
                 resolve();
             }, 1000);
         } else {
-            window.jetztIstAllesVorbei = true;
-            await calculateResult(dealerCardsPromise);
+            window.endGame = true;
+            let delInfo = await dealerCardsPromise;
+            await calculateResult(delInfo.objects);
             resolve();
         }
     }, 2500);

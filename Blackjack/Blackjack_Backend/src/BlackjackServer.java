@@ -71,8 +71,6 @@ class BlackjackServer extends WebSocketServer {
     @Override
     public void onError(WebSocket conn, Exception ex) {
         System.out.println("Ein Fehler ist aufgetreten: " + ex.getMessage());
-        ex.printStackTrace();
-        conn.close();
         clientThreads.remove(conn);
         try {
             this.stop();

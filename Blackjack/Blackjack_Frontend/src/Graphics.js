@@ -258,7 +258,7 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
 }
 
 window.animationObjects = {};
-window.hicgherAnimationObjektsTop = [];
+window.higherAnimationObjectsTop = [];
 window.gameDrawThreads = {};
 
 window.addDrawingThread = (callback = ()=>{}) => {
@@ -292,7 +292,7 @@ function draw() {
     try {
         Object.values(gameDrawThreads).forEach(c => c(ctx, deltaTime));
         Object.values(getUniqueAttributes(animationObjects, focusElements)).forEach(o => o.update(ctx, deltaTime));
-        hicgherAnimationObjektsTop.forEach(o => o.update(ctx, deltaTime)); //Damit die Kreise höher wiegen, über dem rest geuecgen werden
+        higherAnimationObjectsTop.forEach(o => o.update(ctx, deltaTime)); //Damit die Kreise höher wiegen, über dem rest geuecgen werden
         if(overlayAlpha > 0) {
             ctx.fillStyle = `rgba(0, 0, 0, ${overlayAlpha})`;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -350,7 +350,7 @@ window.Stack = class Stack {
         this.showInfo = true;
         if(this.showPoints) return;
         this.showPoints = true;
-        hicgherAnimationObjektsTop.push(this);
+        higherAnimationObjectsTop.push(this);
     }
     update(ctx, deltaTime) {
         if(!this.showInfo) return;
