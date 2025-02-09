@@ -295,7 +295,6 @@ const showDealerCards = async (gameInfoPromise = null, countCoveredCards = 1, fa
         const card = ziehenStack.takeCard(1)[0];
         await Promise.all([dealerLeftStack.add(card), card.aufdecken(await gameInfoPromise)]);
     }
-    if(dealerLeftStack.wert() > 21) await closeDealerStack(dealerLeftStack);
     console.log("Dealer hat gezogen!");
 }
 
