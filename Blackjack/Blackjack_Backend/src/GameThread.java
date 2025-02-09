@@ -434,16 +434,17 @@ public class GameThread implements Runnable {
                     throw new RuntimeException(e);
                 }
             }
+
+            GameCard tempCard = deck.pop();
+            printCard(tempCard);
+            dealerStack.add(tempCard);
+
             card = deck.pop();
             int j = currentValue(dealerStack);
             dealerStack.add(card);
             conn.send("DealerCard:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(dealerStack) - j));
             printCard(card);
             takeCount--;
-
-            GameCard tempCard = deck.pop();
-            printCard(tempCard);
-            dealerStack.add(tempCard);
 
             if (dealerStack.get(1).getValue() == 'a') {
                 //region Insurance Bet
@@ -562,8 +563,8 @@ public class GameThread implements Runnable {
                 for(GameCard card : dealerStack) {
                     sendDealer += "c:" + card.getCoat() + ",v:" + card.getValue() + ";";
                 }
-                conn.send(sendDealer.substring(0, sendDealer.length() - 2) + ">" + currentValue(dealerStack));
-                System.out.println(sendDealer.substring(0, sendDealer.length() - 2) + ">" + currentValue(dealerStack));
+                conn.send(sendDealer.substring(0, sendDealer.length() - 1) + ">" + currentValue(dealerStack));
+                System.out.println(sendDealer.substring(0, sendDealer.length() - 1) + ">" + currentValue(dealerStack));
                 //Methode zur Bestimmung wer gewonnen oder verloren hat nach unten ausgelagert
                 checkGameState();
             }

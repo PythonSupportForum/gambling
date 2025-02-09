@@ -381,7 +381,11 @@ window.Stack = class Stack {
     }
     wert() {
         let w = 0;
-        Object.values(this.cards).forEach(c => w+=parseInt(c.wertZaehlen?c.cardValue:0));
+        Object.values(this.cards).forEach(c =>{
+            if(!isNaN(Number(c.wertZaehlen?c.cardValue:0))){
+                w += Number(c.wertZaehlen?c.cardValue:0)
+            }
+        });
         return w;
     }
     getOberste() {

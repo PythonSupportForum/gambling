@@ -62,10 +62,10 @@ window.connectSocket = ()=>{
                 });
             }
             else if(msg.startsWith("dealercards:")){
+                console.log("Empfängt Dealer Karten");
+
                 let cardObjects = [];
                 let sub = msg.substring("DealerCards:".length).split(">");
-
-
 
                 let cards = sub[0].split(";");
                 for(let singleCard of cards){
@@ -160,7 +160,7 @@ window.startBlackJack = ()=>new Promise(async resolve => {
     listener.push(resolve);
 })
 window.getGameResults = ()=>new Promise(resolve => {
-   resolve("Hallo");
+    resolve("Hallo");
 });
 window.getDealerCards = ()=>new Promise(async resolve => {
     const socket = await connectSocket();

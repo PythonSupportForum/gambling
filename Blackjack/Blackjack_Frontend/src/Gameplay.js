@@ -222,7 +222,7 @@ const startGame = async ()=> {
     await userTakeCard(2);
 
     console.log("Gameplay loop");
-    while(!endProcess){
+    while(!endGame){
         await new Promise(resolve => setTimeout(resolve, 100));
         const eingabe = await new Promise(resolve => buttons.show({
             take: ()=>resolve("t"),
@@ -249,25 +249,30 @@ const startGame = async ()=> {
 }
 
 const calculateResult = async (dealerCards, stackPoints)=>{
-    console.log("Dealer Zieht:", dealerCards);
-    dealerLeftStack.startShowPoints();
+    console.log("Dealer Zieht:",dealerCards,stackPoints);
+    await Object.values(dealerLeftStack.cards)[0].aufdecken(dealerCards.shift());
+    dealerCards.shift();
     for (const c of dealerCards) {
-        await showDealerCards(c, 0, true);
+        await showDealerCards(c, 0);
     }
+    Object.values(dealerLeftStack.cards).forEach(c => c.cardValue = 0);
+    dealerLeftStack.getOberste().cardValue = stackPoints;
+    dealerLeftStack.startShowPoints();
     console.log("All Fertig!");
 }
 
-window.endProcess = false;
 window.endGame = false;
-const endStack = ()=>new Promise(resolve => {
+const endStack = ()=> new Promise(resolve => {
     buttons.hide();
     endStackServer(runningStackId).then();
     const continues = runningStackId < userStack.length-1;
     if(continues) runningStackId++;
     const {end} = focusElementWithOverlay(Object.values(userStack[runningStackId].cards));
     const dealerCardsPromise = continues ? null : getDealerCards();
+    console.log("continues",continues);
     setTimeout(async ()=>{
         await end();
+        console.log("ehre");
         if(continues) {
             setTimeout(async ()=>{
                 resolve();
@@ -275,7 +280,9 @@ const endStack = ()=>new Promise(resolve => {
         } else {
             window.endGame = true;
             let delInfo = await dealerCardsPromise;
-            await calculateResult(delInfo.objects);
+            console.log("delInfo:");
+            await calculateResult(delInfo.objects,delInfo.stackValue);
+            console.log("calculateResult");
             resolve();
         }
     }, 2500);
