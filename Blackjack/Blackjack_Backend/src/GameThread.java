@@ -261,6 +261,11 @@ public class GameThread implements Runnable {
         game(); // ruft Hauptmethode des Spiels auf, beginnt Spiel mit dem Client
     }
 
+    //Um den Text anzuzeigen im Frontend der i Ergebiss popup seht
+    public void sendGameErgebnissText(String t) {
+        conn.send("text:"+t);
+    }
+
     // Verarbeiten einer einkommenden Nachricht vom Client
     public void handleMessage(String message) {
         System.out.println("Nachricht von Client " + client_ID + " empfangen: " + message + "\n");
@@ -721,11 +726,11 @@ public class GameThread implements Runnable {
             }
         }
         public void checkGameState(){
+            StringBuilder t = new StringBuilder(); //Text wird gesammelt mit allen Ergebiss Infos!
             if (insuranceBet > 0 && dealerStack.get(0).getValue() == 'a') {
                 coins += insuranceBet;
-                System.out.println("Du hast den Insurance Bet erhalten!");
+                t.append("Du hast den Insurance Bet erhalten!\n");
             }
-
             for(int i = 0; i <= splitCount; i++) {
                 ArrayList<GameCard> a = playerStack.get(i);
                 if(states.get(a) == StackState.RUNNING){
@@ -736,27 +741,29 @@ public class GameThread implements Runnable {
                     } else if (currentValue(dealerStack) > currentValue(a)) {
                         states.replace(a, StackState.LOST);
                     } else {
-                        System.out.println("Ups??!? Ein Fehler ist aufgetreten! 1");
+                        t.append("Ups??!? Ein Fehler ist aufgetreten! 1\n");
                     }
                 }
                 if(states.get(a) == StackState.WON)
                 {
-                    System.out.println("Auf Stapel " + (i + 1) + " hast du gewonnen!");
+                    t.append("Auf Stapel " + (i + 1) + " hast du gewonnen!\n");
                     coins += 2 * bet;
-                    System.out.println("Du hast " + bet + " Coins gewonnen");
+                    t.append("Du hast " + bet + " Coins gewonnen\n");
                 } else if (states.get(a) == StackState.PUSH) {
-                    System.out.println("Push auf Stapel " + (i + 1) + "!");
+                    t.append("Push auf Stapel " + (i + 1) + "!");
                     coins += bet;
-                    System.out.println("Du hast " + bet + " Coins zurück erhalten!");
+                    t.append("Du hast " + bet + " Coins zurück erhalten!\n");
                 }
                 else if (states.get(a) == StackState.LOST) {
-                    System.out.println("Du hast auf Stapel " + (i + 1) + " verloren!");
-                    System.out.println("Du hast " + bet + " Coins verloren!");
+                    t.append("Du hast auf Stapel " + (i + 1) + " verloren!\n");
+                    t.append("Du hast " + bet + " Coins verloren!\n");
                 }
                 else {
-                    System.out.println("Ups??!? Ein Fehler ist aufgetreten! 2");
+                    t.append("Ups??!? Ein Fehler ist aufgetreten! 2\n");
                 }
             }
+            System.out.println(t); //Alles Ausgeben
+            this.sendGameErgebnissText(t.toString()); //send ans Frontent den Text als Ergebisse
             setGameState(GameState.GAME_END);
         }
     // Methode zum Erstellen der Verbindung
