@@ -70,10 +70,16 @@ const getBet = ()=> new Promise(resolve => {
 const getInsuranceBet = ()=>new Promise(resolve => {
     overlaySetStatus(true);
     document.getElementById("insuranceBetPopupContainer").classList.add("show");
+    const slider = document.getElementById("betIValue");
+    slider.max = chipCount;
+    const output = document.getElementById("sliderValue");
+    slider.oninput = function() {
+        output.innerHTML = slider.value + " ¢hips";
+    };
     document.getElementById("setBetButtonYes").onclick = ()=>{
         document.getElementById("insuranceBetPopupContainer").classList.remove("show");
         overlaySetStatus(false);
-        resolve(true);
+        resolve(slider.value);
     }
     document.getElementById("setBetButtonNo").onclick = ()=>{
         document.getElementById("insuranceBetPopupContainer").classList.remove("show");
