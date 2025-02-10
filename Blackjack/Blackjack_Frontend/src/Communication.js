@@ -148,6 +148,10 @@ window.connectSocket = ()=>{
                         console.log("Frage nach Double..");
                         const r = await buttons.addDynamicYesOrNeinButton("double");
                         console.log("Double Answer erhalten:", r);
+                        if(r) {
+                            userStack[runningStackId].einsatz*=2;
+                            userStack[runningStackId].restMaxCount = 1;
+                        }
                         answer(r?"true":"false");
                         break;
                     case "split":
@@ -215,10 +219,15 @@ window.startBlackJack = ()=>new Promise(async resolve => {
 let gameResult = null;
 let onGameResult = [];
 window.setGameResultText = (t) => {
-    console.log("Got Game Result Text:", t);
-    if(!t) console.trace("Error! No Game Result Text empfangen!",t);
-    gameResult = t;
-    onGameResult.forEach(c => c(t));
+    try {
+        console.log("Got Game Result Text:", t);
+        if(!t) console.trace("Error! No Game Result Text empfangen!",t);
+        gameResult = t;
+        onGameResult.forEach(c => c(t));
+        onButtonsAbbruch();
+    } catch(e) {
+        console.log(e);
+    }
 }
 window.getGameResults = ()=>new Promise(resolve => {
     if(gameResult) return resolve(gameResult);

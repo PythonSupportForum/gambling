@@ -89,6 +89,24 @@ const showResults  = (text)=>new Promise(resolve => { //Nicht wirklich Einsatz, 
         resolve();
     }
 });
+
+async function runSplit(cards) {
+    addUserStack();
+    await Promise.all([
+        ...(cards.length > 1 ? [userStack[runningStackId].add(cards[0])] : []),
+        userStack[userStack.length-1].add(cards.pop()) //Hintere Karte auf neuen Stack
+    ]); //Auf die entsprechenden Stapel verteilen mit Promise für Warten
+    userStack[runningStackId].startShowPoints();
+    userStack[userStack.length-1].startShowPoints();
+
+    userStack[userStack.length-1].einsatz = userStack[runningStackId].einsatz/2;
+    userStack[runningStackId].einsatz = userStack[runningStackId].einsatz/2;
+
+    if(cards.length > 0 && cards[0].cardValue === 11) {
+        userStack[runningStackId].restMaxCount = 1;
+        userStack[runningStackId-1].restMaxCount = 1;
+    }
+}
 const userTakeCard = async (count = 1) => {
     if(userStack[runningStackId].restMaxCount !== -1) {
         if(count > userStack[runningStackId].restMaxCount) {
@@ -124,14 +142,13 @@ const userTakeCard = async (count = 1) => {
         proceed: ()=>resolve("p"),
         _split: ()=>resolve("s"),
         _double: ()=>resolve("p"), //Zum Beisiel weil Spit oder Double Down ausgefürht urd
-    }));
+    }, ()=>resolve("p")));
     buttons.hide();
 
     end(); //Um Overlay schließen → Karten aus dem Vordergrund
     if(input === "d") {
         userStack[runningStackId].einsatz*=2;
         userStack[runningStackId].restMaxCount = 1; //Man dar fnur noch einmal ziehen
-        await serverDoubleDown();
     }
     if(input === "p" || input === "d") {
         const p = [];
@@ -142,24 +159,9 @@ const userTakeCard = async (count = 1) => {
         return true;
     }
     else if(input === "s") { //Kann so bleiben, weil keine Änderung an der Logig, sondern nur Karte auf anderem Stappel dargestellt wird
-         addUserStack();
-         await Promise.all([
-             ...(cards.length > 1 ? [userStack[runningStackId].add(cards[0])] : []),
-             userStack[userStack.length-1].add(cards.pop()) //Hintere Karte auf neuen Stack
-         ]); //Auf die entsprechenden Stapel verteilen mit Promise für Warten
-         userStack[runningStackId].startShowPoints();
-         userStack[userStack.length-1].startShowPoints();
-
-         userStack[userStack.length-1].einsatz = userStack[runningStackId].einsatz/2;
-         userStack[runningStackId].einsatz = userStack[runningStackId].einsatz/2;
-
-         if(cards.length > 0 && cards[0].cardValue === 11) {
-             userStack[runningStackId].restMaxCount = 1;
-             userStack[runningStackId-1].restMaxCount = 1;
-         }
+         await runSplit(cards);
          return true;
     }
-
     console.log("Error! Unbekannte Eingabe:", input);
 }
 
@@ -216,16 +218,19 @@ const startGame = async ()=> {
         await new Promise(resolve => setTimeout(resolve, 100));
         const eingabe = await new Promise(resolve => buttons.show({
             take: ()=>resolve("t"),
-            stop: ()=>resolve("s")
-        }));
+            stop: ()=>resolve("n"),
+            _split: ()=>resolve("s")
+        }, ()=>resolve("-")));
         if(eingabe === "t") {
             await userTakeCard(1);
             if(userStack[runningStackId].restMaxCount === 0) await endStack();
-        } else if(eingabe === "s") {
+        } else if(eingabe === "n") {
             buttons.hide();
             await messageQueue.displayMultipleMessages(["Der Stack wurde geschlossen!"]);
             overlaySetStatus(false);
             await endStack();
+        } else if(eingabe === "s") {
+            await runSplit(userStack[runningStackId].getObersteViele(2));
         }
     }
 

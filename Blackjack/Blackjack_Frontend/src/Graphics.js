@@ -139,6 +139,8 @@ function resizeCanvas(){
 
 let nextButtons = {};
 let resolveJaOrNo = [];
+
+window.onButtonsAbbruch = ()=>{}; //Wenn während Buttons Blackjack kommt
 window.buttons = {
     addDynamicYesOrNeinButton: (name)=>new Promise(r => {
         console.log("Add Dynmaic button:", name);
@@ -164,14 +166,20 @@ window.buttons = {
             });
         }
     }),
-    show: (types) =>{
+    show: (types, obAbbruch = ()=>{}) =>{
+        window.onButtonsAbbruch = obAbbruch;
         console.log("Show Buttons:", types, nextButtons);
         types = {...types};
         Object.keys(nextButtons).forEach(k => {
            const old = types[k];
+           const f = nextButtons[k];
            types[k] = ()=>{
-               if(old) old();
-               nextButtons[k]();
+               try {
+                   if(old) old();
+                   f();
+               } catch(e) {
+                   console.log(e, types, f, k);
+               }
            }
         });
         nextButtons = {};

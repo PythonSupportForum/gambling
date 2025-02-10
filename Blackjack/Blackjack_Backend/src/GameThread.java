@@ -710,7 +710,7 @@ public class GameThread implements Runnable {
         }
 
         public void splitCheck(int index){
-            if(playerStack.get(index).get(0).getValue() == playerStack.get(index).get(1).getValue()){
+            if(playerStack.get(index).get(0).getValue() == playerStack.get(index).get(1).getValue() || true){
                 String a = askFrontent("split");
                 String[] r = a.split(";");
                 if(Objects.equals(r[0], "true")) {
