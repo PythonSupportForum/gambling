@@ -228,7 +228,6 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
         });
     }
     endMove() {
-        console.log("Move End! => Promise!");
         this.onMoveEnd.forEach(c => c()); //Promise Auflösen
         this.isMoving = false;
     }
@@ -416,7 +415,6 @@ window.Stack = class Stack {
     _add(card, time = normalMoveTime) {
         const id = Math.random().toString();
         const cardPos = {y: this.pos.y, x: this.type === "faecher" ? this.pos.x+this.faecherSteps*Object.keys(this.cards).length : this.pos.x}
-        console.log("Add To Stack:", this, id);
         if(!this.direktWertUpdate) card.wertZaehlen = false;
         this.cards[id] = card;
         const promise = card.moveTo(cardPos, time);

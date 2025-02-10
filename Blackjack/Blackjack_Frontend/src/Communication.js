@@ -4,11 +4,13 @@ window.listener = {};
 window.results = {};
 
 function addListener(type, callback = ()=>{}) {
+    console.log("Add Listner:", type, callback);
     if(!(type in listener)) listener[type] = [];
     listener[type].push(callback);
     while((type in results) && listener[type].length > 0 ) listener[type].shift()(...results[type]);
 }
 function getListener(type, save) {
+    console.log("Get Listner:", type, save);
     if(save) return (...a)=>{
         results[type] = a;
         if(type in listener) listener[type].forEach(c => c(...a));
