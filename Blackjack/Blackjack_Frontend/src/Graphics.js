@@ -174,6 +174,8 @@ window.buttons = {
                nextButtons[k]();
            }
         });
+        nextButtons = {};
+
         document.getElementById("buttonsDiv").classList.add("show");
         [...document.getElementById("buttonsDiv").querySelectorAll("button")].forEach(b => b.classList.remove("show"))
         Object.keys(types).forEach(t => {
