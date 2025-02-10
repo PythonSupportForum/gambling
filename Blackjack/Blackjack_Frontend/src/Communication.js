@@ -166,7 +166,7 @@ window.connectSocket = ()=>{
                             answer("false");
                             document.getElementById("result").classList.remove("show");
 
-                            await StappelAufAusgangsrotation([...userStack, dealerLeftStack]);
+                            await stackToDefaultRotation([...userStack, dealerLeftStack]);
 
                             await startGame();
                         }

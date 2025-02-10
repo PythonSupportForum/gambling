@@ -281,9 +281,9 @@ const endStack = ()=> new Promise(resolve => {
 });
 
 
-const StappelAufAusgangsrotation = (stappels)=> {
+const stackToDefaultRotation = (stacks)=> {
     let p = [];
-    stappels.forEach(async s => p.push((async ()=> {
+    stacks.forEach(async s => p.push((async ()=> {
         console.log("Stappel:", s);
         const cards = Object.values(s.cards);
         console.log("Karts:", cards);
