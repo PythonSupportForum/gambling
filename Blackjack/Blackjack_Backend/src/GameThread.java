@@ -682,7 +682,7 @@ public class GameThread implements Runnable {
 
     public void karteZiehen(int index){
         while (!cardInput[index] || (doubleDown && cardsAfterSetDouble == 0)) {
-            
+            if(doubleDown && cardsAfterSetDouble >= 1) break;
             while(inputWait){
                 try {
                     Thread.sleep(100);
@@ -699,6 +699,7 @@ public class GameThread implements Runnable {
                     int j = currentValue(playerStack.get(index));
                     playerStack.get(index).add(card);
                     cardsAfterSetDouble++;
+                    if(doubleDown && cardsAfterSetDouble >= 1) break;
                     conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(playerStack.get(0)) - j));
                     printCard(card);
                 }
