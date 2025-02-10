@@ -231,13 +231,16 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
         this.onMoveEnd.forEach(c => c()); //Promise Auflösen
         this.isMoving = false;
     }
-    async changeSide(img = null) {
-        if(!img) img = b.back;
-        if(typeof img === "string") img = (await getGraphicsData())[img];
-        this.imgNacher = img.cloneNode(true);
-        this.isFlipping = true;
-        this.startFlippingTime = Date.now();
-        console.log("Drehen angefangen", this);
+    changeSide(img = null) {
+        return new Promise(async resolve => {
+            if(!img) img = b.back;
+            if(typeof img === "string") img = (await getGraphicsData())[img];
+            this.imgNacher = img.cloneNode(true);
+            this.isFlipping = true;
+            this.startFlippingTime = Date.now();
+            console.log("Drehen angefangen", this);
+            this.onMoveEnd.push(resolve);
+        });
     }
     update(ctx, deltaTime) {
         if(this.isMoving) sinVel(this, {...this.pos});
@@ -250,6 +253,7 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
                 this.widthAnteil = 1;
                 this.img = this.imgNacher;
                 console.log("Drehen Abgeschlossen!");
+                this.endMove();
             }
         }
         ctx.drawImage(this.img, this.pos.x - (growFactor * this.widthAnteil * cardWidth * this.allgemeinScale) / 2, this.pos.y - (growFactor * cardHeight * this.allgemeinScale) / 2, growFactor * cardWidth * this.allgemeinScale * this.widthAnteil, growFactor * cardHeight * this.allgemeinScale);
