@@ -251,6 +251,7 @@ const startGame = async ()=> {
 const calculateResult = async (dealerCards, stackPoints)=>{
     console.log("Dealer Zieht:",dealerCards,stackPoints);
     await Object.values(dealerLeftStack.cards)[0].aufdecken(dealerCards.shift());
+    await new Promise(resolve => setTimeout(resolve, 200));
     dealerCards.shift();
     for (const c of dealerCards) {
         await showDealerCards(c, 0);
