@@ -81,14 +81,10 @@ const getInsuranceBet = ()=>new Promise(resolve => {
         resolve(false);
     }
 });
-const showResults  = (text)=>new Promise(resolve => { //Nicht wirklich Einsatz, sondern nur ja nein popup aber weil grad kein besserer name da war, besser als in den informatik klausuren, wo die methoden einfahc nur "ichmacheetwas" heißen
+function showResults (text) { //Nicht wirklich Einsatz, sondern nur ja nein popup aber weil grad kein besserer name da war, besser als in den informatik klausuren, wo die methoden einfahc nur "ichmacheetwas" heißen
     document.getElementById("resultText").innerText = text;
     document.getElementById("result").classList.add("show");
-    document.getElementById("playAgain").onclick = ()=>{
-        window.location.reload();
-        resolve();
-    }
-});
+}
 const userTakeCard = async (count = 1) => {
     if(userStack[runningStackId].restMaxCount !== -1) {
         if(count > userStack[runningStackId].restMaxCount) {
@@ -103,7 +99,7 @@ const userTakeCard = async (count = 1) => {
         i--;
     }
     console.log("Zeige Karten..");
-    const {end, cards, promise} = showCardsInCenter(ziehenStack.takeCard(count));
+    const {end, cards, promise} = showCardsInCenter(cardDeck.takeCard(count));
     console.log("Karten Gezeigt!", cards);
     await promise;
     const flip = await Promise.all(cardsFromServer);
@@ -131,7 +127,6 @@ const userTakeCard = async (count = 1) => {
     if(input === "d") {
         userStack[runningStackId].einsatz*=2;
         userStack[runningStackId].restMaxCount = 1; //Man dar fnur noch einmal ziehen
-        await serverDoubleDown();
     }
     if(input === "p" || input === "d") {
         const p = [];
@@ -168,6 +163,7 @@ window.chipCount = 0;
 window.insuranceBet = 0; // Einsatz der auf Dealer Blackjack gewettet wurde
 const startGame = async ()=> {
 
+
     window.betPromise = getBet();
 
     if(showIntro) {
@@ -183,7 +179,7 @@ const startGame = async ()=> {
         console.log("Einleitungs Animation fertig!");
     } else { // Wenn kein Intro Karten so füllen
         const z = await getGraphicsData();
-        for(let i = 0; i < 40; i++) await ziehenStack.add(new GameCard(null, z["back"]), 0.05);
+        for(let i = 0; i < 40; i++) await cardDeck.add(new GameCard(null, z["back"]), 0.05);
     }
     overlaySetStatus(false); // Overlay Kontrolle
     initDealerStack();
@@ -261,7 +257,6 @@ const endStack = ()=> new Promise(resolve => {
     console.log("continues",continues);
     setTimeout(async ()=>{
         await end();
-        console.log("ehre");
         if(continues) {
             setTimeout(async ()=>{
                 resolve();
@@ -281,19 +276,19 @@ const showDealerCards = async (gameInfoPromise = null, countCoveredCards = 1, fa
     dealerLeftStack.direktWertUpdate = false;
     if(!gameInfoPromise) gameInfoPromise = await dealerTakes();
     if(!fastFlip) {
-        await ziehenStack.copyStack(dealerLeftStack, 1 + countCoveredCards);
+        await cardDeck.copyStack(dealerLeftStack, 1 + countCoveredCards);
         const gameInfo = await gameInfoPromise; //Wichtig: Mischen und Ziehen Animation auch vor einsatz abgeben, erst vor dem Umdrehen muss auf einSatz + Server Antwort gewartet werden
         console.log("Dealer First:", gameInfo);
         await dealerLeftStack.getOberste().aufdecken(gameInfo);
     } else {
-        const card = ziehenStack.takeCard(1)[0];
+        const card = cardDeck.takeCard(1)[0];
         await Promise.all([dealerLeftStack.add(card), card.aufdecken(await gameInfoPromise)]);
     }
     console.log("Dealer hat gezogen!");
 }
 
 
-window.ziehenStack = null;
+window.cardDeck = null;
 const initVariables = ()=>{
     window.ziehenStack = new Stack({x: window.innerWidth-cardWidth/2, y: 120}, "normal");
     window.userStack = [];
