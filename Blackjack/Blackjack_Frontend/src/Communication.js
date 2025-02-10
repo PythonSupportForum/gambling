@@ -141,6 +141,12 @@ window.connectSocket = ()=>{
                             answer("true;"+(insuranceBet).toString()); //Wie viel Insurance
                         }
                         break;
+                    case "double":
+                        console.log("Frage nach Double..");
+                        const r = await buttons.addDynamicYesOrNeinButton("double");
+                        console.log("Double Answer erhalten:", r);
+                        answer(r?"true":"false");
+                        break;
                     default:
                         console.log("Error! Server labert Müll!", text);
                         break;
@@ -221,10 +227,6 @@ window.exchange = (chipAmount) =>new Promise(async resolve => {
 
     addListener("chipupdate", resolve);
 })
-
-window.serverDoubleDown = ()=>{
-
-}
 
 //Um einen Stack zu schließen
 window.endStackServer = (stackIndex)=>new Promise(async resolve => {

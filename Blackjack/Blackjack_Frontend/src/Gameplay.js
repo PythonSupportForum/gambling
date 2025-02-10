@@ -120,15 +120,11 @@ const userTakeCard = async (count = 1) => {
 
     const currentUserCard = [...Object.values(userStack[runningStackId].cards), ...cards];
     const canSplit = currentUserCard.length === 2 && currentUserCard[0].cardValue === currentUserCard[1].cardValue && userStack.length < 4; //Kann nur Splitten bei Zwei gleichen Karten und nur maximal 4 mal spittem
-    const canDoubleDown = currentUserCard.length === 2 && userStack[runningStackId].restMaxCount === -1;
     const input = await new Promise(resolve => buttons.show({
         proceed: ()=>resolve("p"),
         ...(canSplit ? {
             split: ()=>resolve("s")
-        } : {}),
-        ...(canDoubleDown ? {
-            double: ()=>resolve("d")
-        } : {}),
+        } : {})
     }));
     buttons.hide();
 

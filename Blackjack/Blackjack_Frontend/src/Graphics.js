@@ -137,8 +137,32 @@ function resizeCanvas(){
 
 // Frame Generation
 
+let nextButtons = {};
+let resolveJaOrNo = [];
 window.buttons = {
+    addDynamicYesOrNeinButton: (name)=>new Promise(r => {
+        console.log("Add Dynmaic button:", name);
+        let resolved = false;
+        const resolve = (...p)=>{
+            console.log("Resolve Frage nach!");
+            if(resolved) return;
+            resolved = true;
+            r(...p);
+        }
+        resolveJaOrNo.push(resolve);
+        console.log(document.getElementById("buttonsDiv").classList.contains("show"));
+        if(!document.getElementById("buttonsDiv").classList.contains("show")) nextButtons[name] = ()=>resolve(true);
+        else {
+            console.log("Show Button:", name, document.getElementById("buttonsDiv").querySelectorAll("."+name));
+            [...document.getElementById("buttonsDiv").querySelectorAll("."+name)].forEach(b => {
+                b.onclick = ()=>resolve(true);
+                b.classList.add("show");
+            });
+        }
+    }),
     show: (types) =>{
+        console.log("Show Buttons:", types, nextButtons);
+        types = {...types, ...nextButtons};
         document.getElementById("buttonsDiv").classList.add("show");
         [...document.getElementById("buttonsDiv").querySelectorAll("button")].forEach(b => b.classList.remove("show"))
         Object.keys(types).forEach(t => {
@@ -149,6 +173,8 @@ window.buttons = {
         });
     },
     hide: ()=>{
+        resolveJaOrNo.forEach(c => c(false));
+        resolveJaOrNo = [];
         document.getElementById("buttonsDiv").classList.remove("show");
     }
 }

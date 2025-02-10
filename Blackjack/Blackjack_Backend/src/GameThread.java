@@ -309,9 +309,6 @@ public class GameThread implements Runnable {
             takeCount += 1;
             inputWait = false;
         }
-        else if (message.startsWith("doubledown")) {
-            doubleDownInput = true;
-        }
         else if (message.startsWith("split")) {
             inputWait = false;
             splitInput = true;
@@ -463,7 +460,7 @@ public class GameThread implements Runnable {
             printCard(card);
             takeCount--;
 
-            if ((dealerStack.get(1).getValue() == 'a' && bet > 1) || true) {
+            if (dealerStack.get(1).getValue() == 'a' && bet > 1) {
                 //region Insurance Bet
                 setGameState(GameState.INSURANCE_BET);
 
@@ -499,25 +496,23 @@ public class GameThread implements Runnable {
                 printCard(card);
                 takeCount--;
             }
-            inputWait = true;
 
-            while (inputWait) {
-                if (doubleDownInput){
-                    card = deck.pop();
-                    playerStack.get(0).add(card);
-                    printCard(card);
-                    balance -= bet;
-                    bet *= 2;
-                    inputWait = false;
-                    doubleDown = true;
-                    checkGameState();
-                    setGameState(GameState.GAME_END);
-                }
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+            String a = askFrontent("double");
+            String[] r = a.split(";");
+            if(Objects.equals(r[0], "true")) {
+                System.out.println("Der Spieler hat Double Down gestezt!");
+
+                card = deck.pop();
+                playerStack.get(0).add(card);
+                printCard(card);
+                balance -= bet;
+                bet *= 2;
+                inputWait = false;
+                doubleDown = true;
+                checkGameState();
+                setGameState(GameState.GAME_END);
+            } else {
+                System.out.println("Der Spiller hat kein Double Down gesetzt!");
             }
 
             if (getGameState() == GameState.PLAYER_DRAW) {
