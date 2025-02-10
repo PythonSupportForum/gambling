@@ -166,6 +166,7 @@ window.connectSocket = ()=>{
                             answer("false");
                             document.getElementById("result").classList.remove("show");
 
+                            window.animationObjects = {};
                             dealerLeftStack.stopZeigenPunkt()
                             await stackToDefaultPPotation([...userStack, dealerLeftStack]);
                             window.userStack = [];
