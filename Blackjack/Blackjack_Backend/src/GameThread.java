@@ -53,6 +53,8 @@ public class GameThread implements Runnable {
 
     int coinAmount = 0;
 
+    int cardsAfterSetDouble = 0;
+
     // Ermöglicht Zugriff auf Thread Objekt, wenn GameThread Objekt gefunden wurde
     public Thread currentThread = Thread.currentThread();
 
@@ -508,15 +510,12 @@ public class GameThread implements Runnable {
             if(Objects.equals(r[0], "true")) {
                 System.out.println("Der Spieler hat Double Down gesetzt!");
 
-                card = deck.pop();
-                playerStack.get(0).add(card);
-                printCard(card);
                 balance -= bet;
                 bet *= 2;
                 inputWait = false;
                 doubleDown = true;
-                checkGameState();
-                setGameState(GameState.DEALER_DRAW);
+
+                cardsAfterSetDouble = 0;
             } else {
                 System.out.println("Der Spieler hat kein Double Down gesetzt!");
             }
@@ -527,7 +526,6 @@ public class GameThread implements Runnable {
                 for(int i = 0; i <= splitCount; i++) {
                     karteZiehen(i);
                 }
-
                 while(!playerDone){
                     try {
                         Thread.sleep(100);
@@ -683,7 +681,8 @@ public class GameThread implements Runnable {
     }
 
     public void karteZiehen(int index){
-        while (!cardInput[index]) {
+        while (!cardInput[index] || (doubleDown && cardsAfterSetDouble == 0)) {
+            
             while(inputWait){
                 try {
                     Thread.sleep(100);
@@ -691,12 +690,15 @@ public class GameThread implements Runnable {
                     throw new RuntimeException(e);
                 }
             }
-            if(playerDone){return;}
+            if(!(doubleDown && cardsAfterSetDouble < 1)) {
+                if(playerDone) return;
+            }
             try {
                 for(; takeCount > 0; takeCount--) {
                     card = deck.pop();
                     int j = currentValue(playerStack.get(index));
                     playerStack.get(index).add(card);
+                    cardsAfterSetDouble++;
                     conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(playerStack.get(0)) - j));
                     printCard(card);
                 }

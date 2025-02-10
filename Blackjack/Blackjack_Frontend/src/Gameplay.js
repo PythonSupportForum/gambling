@@ -163,7 +163,7 @@ const userTakeCard = async (count = 1) => {
     }
     else if(input === "s") { //Kann so bleiben, weil keine Änderung an der Logig, sondern nur Karte auf anderem Stappel dargestellt wird
         await runSplit(cards);
-         return true;
+        return true;
     }
 
     console.log("Error! Unbekannte Eingabe:", input);

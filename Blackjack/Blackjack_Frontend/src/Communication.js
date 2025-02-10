@@ -185,6 +185,7 @@ window.connectSocket = ()=>{
                         }
                         document.getElementById("end").onclick = () => {
                             answer("true");
+                            window.location.href = "/";
                         }
                         break;
                     case "coins":
@@ -213,6 +214,8 @@ window.connectSocket = ()=>{
         socket.onerror = (error) => {
             console.error('WebSocket-Fehler:', error);
             // Crash
+            window.socket = null;
+            connectSocket();
         };
 
         // Verbindung geschlossen => Handlen
@@ -283,6 +286,6 @@ window.exchange = (chipAmount) =>new Promise(async resolve => {
 //Um einen Stack zu schließen
 window.endStackServer = (stackIndex)=>new Promise(async resolve => {
     const socket = await connectSocket();
-    socket.send("EndStack:" + stackIndex);
+    socket.send("endstack:" + stackIndex);
 });
 
