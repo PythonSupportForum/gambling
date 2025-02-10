@@ -112,6 +112,9 @@ window.connectSocket = ()=>{
                     console.error("Auszahlung nicht erfolgt");
                 }
             }
+            else if(msg.startsWith("text:")) setGameResultText(msg.substring("text:".length));
+
+
             else if(msg.startsWith("bal:")){
                 window.balance = parseFloat(msg.substring("bal:".length));
                 console.log(balance);
@@ -178,9 +181,19 @@ window.startBlackJack = ()=>new Promise(async resolve => {
     socket.send("Start");
 
     addListener("bal", resolve);
-})
+});
+
+let gameResult = null;
+let onGameResult = [];
+window.setGameResultText = (t) => {
+    console.log("Got Game Result Text:", t);
+    if(!t) console.trace("Error! No Game Result Text empfangen!",t);
+    gameResult = t;
+    onGameResult.forEach(c => c(t));
+}
 window.getGameResults = ()=>new Promise(resolve => {
-    resolve("Hallo");
+    if(gameResult) return resolve(gameResult);
+    onGameResult.push(resolve);
 });
 window.getDealerCards = ()=>new Promise(async resolve => {
     const socket = await connectSocket();
@@ -205,3 +218,4 @@ window.endStackServer = (stackIndex)=>new Promise(async resolve => {
     socket.send("EndStack:" + stackIndex);
     listener.push(resolve);
 });
+
