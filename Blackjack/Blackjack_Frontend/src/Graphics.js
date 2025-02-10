@@ -252,7 +252,7 @@ function getUniqueAttributes(obj1, obj2) { //Um die Elemente übern dem Overlay 
     return result;
 }
 
-class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
+class AnimationObject {
     constructor(img, pos = {x: -100, y: -100}) {
         this.isMoving = false;
         this.isFlipping = false;
@@ -260,14 +260,14 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
         this.pos = pos;
         this.img = img ? img.cloneNode(true) : null;
         this.widthAnteil = 1;
-        this.id = Math.random().toString(); //Um Effizient key => Vlaue zugriff in objects
+        this.id = Math.random().toString(); //Um Effizient key => Value zugriff in objects
         animationObjects[this.id] = this;
-        this.allgemeinScale = 1; //Um Karte in Vordergrund bringen zu kömnen
+        this.allgemeinScale = 1; //Um Karte in Vordergrund bringen zu können
     }
     moveTo(posB, _time = 0.5) {
-        return new Promise((resolve)=>{ //Wenn Bewegung Beended ist, damit für Gameplay
+        return new Promise((resolve)=>{ //Wenn Bewegung beendet ist, damit für Gameplay
             this.onMoveEnd.push(resolve);
-            this.startPoint = {...this.pos}; //Gleifsetzen reicht nicht, da sont nur Object Pointer und nicht Werte kopiert. Durch JS Funktion werden alle werte einzelnt geklont also x und y
+            this.startPoint = {...this.pos}; // Hard Copy
             this.time = _time;
             this.endPoint = posB;
             this.dx = (this.endPoint.x - this.startPoint.x) / this.time;
@@ -304,7 +304,7 @@ class AnimationObject { // @Carl Klassennamen schreibt man immer groß xD
                 this.widthAnteil = 1;
                 this.img = this.imgNacher;
                 console.log("Drehen Abgeschlossen!");
-                this.endMove();
+                this.onMoveEnd.forEach(c => c());
             }
         }
         ctx.drawImage(this.img, this.pos.x - (growFactor * this.widthAnteil * cardWidth * this.allgemeinScale) / 2, this.pos.y - (growFactor * cardHeight * this.allgemeinScale) / 2, growFactor * cardWidth * this.allgemeinScale * this.widthAnteil, growFactor * cardHeight * this.allgemeinScale);
@@ -386,7 +386,7 @@ window.GameCard = class GameCard extends AnimationObject {
         this.cardValue = points;
         return this.changeSide(type);
     }
-    verrecken() {
+    changeBack() {
         return this.changeSide();
     }
 }
@@ -463,7 +463,7 @@ window.Stack = class Stack {
         return Object.keys(this.cards).length === 0 ? [] : Object.values(this.cards).slice(-count);
     }
     moveTo(posB, time = normalMoveTime) { //Um Stack mit allen Karten zu bewegen
-        const diff = {x: posB.x-this.pos.x, y:  posB.y-this.pos.y}; //Relwtive Befweung des Stappels
+        const diff = {x: posB.x-this.pos.x, y:  posB.y-this.pos.y};
         console.log("Mve S:", diff);
         this.showInfo = false;
         this.pos = posB;

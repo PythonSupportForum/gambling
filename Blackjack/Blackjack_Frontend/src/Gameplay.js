@@ -166,28 +166,30 @@ const userTakeCard = async (count = 1) => {
 window.balance = 0;
 window.chipCount = 0;
 window.insuranceBet = 0; // Einsatz der auf Dealer Blackjack gewettet wurde
-const startGame = async ()=> {
-
+const startGame = async (first = true)=> {
+    window.endGame = false;
     window.betPromise = getBet();
 
-    if(showIntro) {
-        await Promise.all([
-            messageQueue.displayMultipleMessages([
-                "Hallo!",
-                "Willkommen bei Blackjack!",
-                "Der Dealer ist dem Spiel beigetreten...",
-                "Die Karten werden gemischt..."
-            ]),
-            mixAnimationDealer()
-        ]);
-        console.log("Einleitungs Animation fertig!");
-    } else { // Wenn kein Intro Karten so füllen
-        const z = await getGraphicsData();
-        for(let i = 0; i < 40; i++) await cardDeck.add(new GameCard(null, z["back"]), 0.05);
-    }
-    overlaySetStatus(false); // Overlay Kontrolle
-    initDealerStack();
+    if(first){
+        if(showIntro) {
+            await Promise.all([
+                messageQueue.displayMultipleMessages([
+                    "Hallo!",
+                    "Willkommen bei Blackjack!",
+                    "Der Dealer ist dem Spiel beigetreten...",
+                    "Die Karten werden gemischt..."
+                ]),
+                mixAnimationDealer()
+            ]);
+            console.log("Einleitungs Animation fertig!");
+        } else { // Wenn kein Intro Karten so füllen
+            const z = await getGraphicsData();
+            for(let i = 0; i < 40; i++) await cardDeck.add(new GameCard(null, z["back"]), 0.05);
+        }
+        overlaySetStatus(false); // Overlay Kontrolle
+        initDealerStack();
 
+    }
     addUserStack(); // Ersten User Stack vor erstem Splitten
 
     window.gameInfoPromise = betPromise.then(bet => {
@@ -280,13 +282,13 @@ const endStack = ()=> new Promise(resolve => {
     }, 2500);
 });
 
-const stackToDefaultPPotation = async (stacks)=> {
+const stackToDefaultPosition = async (stacks)=> {
     for(const s of stacks) {
-        console.log("Stappel:", s);
+        console.log("Stack:", s);
         const cards = Object.values(s.cards);
-        console.log("Karts:", cards);
+        console.log("Karten:", cards);
         for(const c of cards) {
-            await Promise.all([cardDeck.add(c), c.verrecken()]);
+            await Promise.all([cardDeck.add(c), c.changeBack()]);
         }
     }
 }

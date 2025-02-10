@@ -164,14 +164,19 @@ window.connectSocket = ()=>{
                         console.log("Frage nach Ende..");
                         document.getElementById("dontEnd").onclick = async () => {
                             answer("false");
+
+                            userStack.forEach(s => {
+                                s.stopZeigenPunkt();
+                            });
+
                             document.getElementById("result").classList.remove("show");
 
-                            window.animationObjects = {};
-                            dealerLeftStack.stopZeigenPunkt()
-                            await stackToDefaultPPotation([...userStack, dealerLeftStack]);
+                            dealerLeftStack.stopZeigenPunkt();
+                            await stackToDefaultPosition([...userStack, dealerLeftStack]);
                             window.userStack = [];
 
-                            await startGame();
+                            overlaySetStatus(false);
+                            await startGame(false);
                         }
                         document.getElementById("end").onclick = () => {
                             answer("true");

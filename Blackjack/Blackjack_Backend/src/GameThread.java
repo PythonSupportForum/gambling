@@ -724,9 +724,7 @@ public class GameThread implements Runnable {
         }
         for(int i = 0; i <= splitCount; i++) {
             ArrayList<GameCard> a = playerStack.get(i);
-            System.out.println(a.get(0) + " Map 1 : " + states + " ahh " + states.get(i));
             if(states.get(i) == StackState.RUNNING){
-                System.out.println("Drin");
                 if(currentValue(dealerStack) > 21){
                     states.replace(i, StackState.WON);
                 } else if (currentValue(dealerStack) < currentValue(a)) {
@@ -739,7 +737,6 @@ public class GameThread implements Runnable {
                     t.append("Ups??!? Ein Fehler ist aufgetreten! 1\n");
                 }
             }
-            System.out.println("Map 2 : " + states);
             if(states.get(i) == StackState.WON) {
                 t.append("Auf Stapel " + (i + 1) + " hast du gewonnen!\n");
                 coins += 2 * bet;
