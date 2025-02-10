@@ -216,6 +216,5 @@ window.serverDoubleDown = ()=>{
 window.endStackServer = (stackIndex)=>new Promise(async resolve => {
     const socket = await connectSocket();
     socket.send("EndStack:" + stackIndex);
-    listener.push(resolve);
 });
 
