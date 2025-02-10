@@ -122,9 +122,8 @@ const userTakeCard = async (count = 1) => {
     const canSplit = currentUserCard.length === 2 && currentUserCard[0].cardValue === currentUserCard[1].cardValue && userStack.length < 4; //Kann nur Splitten bei Zwei gleichen Karten und nur maximal 4 mal spittem
     const input = await new Promise(resolve => buttons.show({
         proceed: ()=>resolve("p"),
-        ...(canSplit ? {
-            split: ()=>resolve("s")
-        } : {})
+        split: ()=>resolve("s"),
+        double: ()=>resolve("p"), //Zum Beisiel weil Spit oder Douvle Down ausgefürht urd
     }));
     buttons.hide();
 

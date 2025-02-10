@@ -109,7 +109,7 @@ window.connectSocket = ()=>{
                 }
             } else if (msg.startsWith("text:")) {
                 setGameResultText(msg.substring("text:".length));
-                endGame = true; //Falls noch nicht true zum Beispiel weil vorzeitiger abbruch durch double down
+                window.endGame = true; //Falls noch nicht true zum Beispiel weil vorzeitiger abbruch durch double down
             }
 
 

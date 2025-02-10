@@ -162,7 +162,14 @@ window.buttons = {
     }),
     show: (types) =>{
         console.log("Show Buttons:", types, nextButtons);
-        types = {...types, ...nextButtons};
+        types = {...types};
+        Object.keys(nextButtons).forEach(k => {
+           const old = types[k];
+           types[k] = ()=>{
+               if(old) old();
+               nextButtons[k]();
+           }
+        });
         document.getElementById("buttonsDiv").classList.add("show");
         [...document.getElementById("buttonsDiv").querySelectorAll("button")].forEach(b => b.classList.remove("show"))
         Object.keys(types).forEach(t => {
