@@ -130,10 +130,16 @@ window.connectSocket = ()=>{
                     state: state
                 });
             } else if (msg.startsWith("ask:")) {
-                const text = msg.substring("ask:".length);
-                console.log("Server Asked Frontent:", text);
-                const answer = (t) => socket.send("answer:" + t);
-
+                const textArray = msg.substring("ask:".length).split("$");
+                const text = textArray[0];
+                console.log("Server Asked Frontend:", text);
+                let answered = false;
+                const answer = (t) => {
+                    if(answered) return; //Nur einmal debugging
+                    answered = true;
+                    console.log("Send Answer:", text, t); //Anfrage und Antwort darauf ausgeben
+                    socket.send("answer:" + t);
+                }
                 switch (text) {
                     case "insurance":
                         const setInsurance = await getInsuranceBet();
@@ -180,6 +186,13 @@ window.connectSocket = ()=>{
                         document.getElementById("end").onclick = () => {
                             answer("true");
                         }
+                        break;
+                    case "coins":
+                        answer("ok"); //Server Wartet auf OK!
+                        const newCoinsCount = Number(textArray[1]);
+                        console.log("Got New Coins Count!!!", chipCount, newCoinsCount);
+                        window.chipCount = newCoinsCount;
+                        document.getElementById("ChipCount").innerText = chipCount + "¢";
                         break;
                     default:
                         console.log("Error! Server labert Müll!", text);

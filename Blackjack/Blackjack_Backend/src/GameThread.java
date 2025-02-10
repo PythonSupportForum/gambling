@@ -325,6 +325,10 @@ public class GameThread implements Runnable {
         }
     }
 
+    public void sendChipCount(int c) {
+        this.askFrontend("coins$"+c);
+    }
+
     public String askFrontend(String query) { //Allgemein für alles Mögliche! => Nicht so viele Variableb
         conn.send("ask:"+query);
         while(askInput.length() == 0) {
@@ -368,6 +372,8 @@ public class GameThread implements Runnable {
             }
             dealerStack.clear();
             deck.clear();
+
+            sendChipCount(coins);
 
             if(coins == 0 && balance == 0){
                 running = false;
@@ -756,6 +762,7 @@ public class GameThread implements Runnable {
         }
         System.out.println(t); //Alles Ausgeben
         this.sendGameErgebnissText(t.toString()); //send ans Frontent den Text als Ergebisse
+        sendChipCount(coins);
         setGameState(GameState.GAME_END);
     }
     // Methode zum Erstellen der Verbindung
@@ -785,6 +792,7 @@ public class GameThread implements Runnable {
             return false;
         } else {
             coins -= coinAmount;
+            sendChipCount(coins);
             String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum) VALUES (" + client_ID  + ", " + (new DecimalFormat("0.00").format(balance - OLDBALANCE)) + ", NOW())";
             clientDB = getConnection();
             try{
