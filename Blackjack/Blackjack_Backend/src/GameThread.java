@@ -21,7 +21,7 @@ public class GameThread implements Runnable {
 
     List<GameCard> dealerStack = new ArrayList<>();
     ArrayList<ArrayList<GameCard>> playerStack = new ArrayList<>();
-    HashMap<ArrayList<GameCard>, StackState> states;
+    HashMap<Integer, StackState> states;
     Stack<GameCard> deck = new Stack<>();
     GameCard card;
 
@@ -346,7 +346,7 @@ public class GameThread implements Runnable {
 
         ArrayList<GameCard> temp = new ArrayList<>();
         playerStack.add(temp);
-        states.put(temp, StackState.RUNNING);
+        states.put(0, StackState.RUNNING);
 
         // Loop zum erneuten Spielen
         while (running) {
@@ -573,16 +573,8 @@ public class GameThread implements Runnable {
                 checkGameState();
             }
 
-            while(true){
-                System.out.println("Aufhören?(true, false)");
-                String input = c.nextLine();
-                try {
-                    if(Boolean.parseBoolean(input)){
-                        running = false;
-                    }
-                    break;
-                }catch(Exception ignored){}
-            }
+            String askEnd = askFrontend("end");
+            running = !askEnd.equals("true");
         }
 
         setGameState(GameState.WITHDRAW);
@@ -610,7 +602,7 @@ public class GameThread implements Runnable {
     private void checkValue(int index) {
         ArrayList<GameCard> cardStack = playerStack.get(index);
         if (currentValue(cardStack) > 21) {
-            states.replace(cardStack, StackState.LOST);
+            states.replace(index, StackState.LOST);
             System.out.println("Bust! Du hast auf Stapel " + (index + 1) + " verloren!");
             conn.send("Bust:"+index);
             cardInput[index] = true;
@@ -618,7 +610,7 @@ public class GameThread implements Runnable {
         else if (currentValue(cardStack) == 21) {
             System.out.println("Herzlichen Glückwunsch! Du hast auf Stapel " + (index + 1) + " einen Blackjack!");
             conn.send("Blackjack:"+index);
-            states.replace(cardStack, StackState.WON);
+            states.replace(index, StackState.WON);
             cardInput[index] = true;
         }
     }
@@ -720,40 +712,44 @@ public class GameThread implements Runnable {
                     playerStack.get(index + 1).add(playerStack.get(index).get(1));
                     playerStack.get(index).remove(1);
                     splitCount++;
-                    states.replace(temp, StackState.RUNNING);
+                    states.replace(index, StackState.RUNNING);
                 } else System.out.println("Frontend möchte nicht splitten!");
             }
         }
         public void checkGameState(){
             StringBuilder t = new StringBuilder(); //Text wird gesammelt mit allen Ergebnis Infos!
-            if (insuranceBet > 0 && dealerStack.get(0).getValue() == 'a') {
+            if (insuranceBet > 0 && dealerStack.getFirst().getValue() == 'a') {
                 coins += insuranceBet;
                 t.append("Du hast den Insurance Bet erhalten!\n");
             }
             for(int i = 0; i <= splitCount; i++) {
                 ArrayList<GameCard> a = playerStack.get(i);
-                if(states.get(a) == StackState.RUNNING){
-                    if (currentValue(dealerStack) < currentValue(a)) {
-                        states.replace(a, StackState.WON);
+                System.out.println(a.getFirst() + " Map 1 : " + states + " ahh " + states.get(i));
+                if(states.get(i) == StackState.RUNNING){
+                    System.out.println("Drin");
+                    if(currentValue(dealerStack) > 21){
+                        states.replace(i, StackState.WON);
+                    } else if (currentValue(dealerStack) < currentValue(a)) {
+                        states.replace(i, StackState.WON);
                     } else if(currentValue(dealerStack) == currentValue(a)){
-                        states.replace(a, StackState.PUSH);
+                        states.replace(i, StackState.PUSH);
                     } else if (currentValue(dealerStack) > currentValue(a)) {
-                        states.replace(a, StackState.LOST);
+                        states.replace(i, StackState.LOST);
                     } else {
                         t.append("Ups??!? Ein Fehler ist aufgetreten! 1\n");
                     }
                 }
-                if(states.get(a) == StackState.WON)
-                {
+                System.out.println("Map 2 : " + states);
+                if(states.get(i) == StackState.WON) {
                     t.append("Auf Stapel " + (i + 1) + " hast du gewonnen!\n");
                     coins += 2 * bet;
                     t.append("Du hast " + bet + " Coins gewonnen\n");
-                } else if (states.get(a) == StackState.PUSH) {
-                    t.append("Push auf Stapel " + (i + 1) + "!");
+                } else if (states.get(i) == StackState.PUSH) {
+                    t.append("Push auf Stapel " + (i + 1) + "!\n");
                     coins += bet;
                     t.append("Du hast " + bet + " Coins zurück erhalten!\n");
                 }
-                else if (states.get(a) == StackState.LOST) {
+                else if (states.get(i) == StackState.LOST) {
                     t.append("Du hast auf Stapel " + (i + 1) + " verloren!\n");
                     t.append("Du hast " + bet + " Coins verloren!\n");
                 }

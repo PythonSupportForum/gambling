@@ -36,7 +36,7 @@ const mixAnimationDealer = () => {
             console.log("Start Copy!");
             await aS.copyStack(bS, -1, true, 0.2);
             console.log("Copy to Ziehen!");
-            await bS.copyStack(ziehenStack, -1, false); //Am Ende der Einleitungs Animation fliegen alle Karten zu dem ZiehStack
+            await bS.copyStack(cardDeck, -1, false); //Am Ende der Einleitungs Animation fliegen alle Karten zu dem ZiehStack
             console.log("Copied to ziehen!");
             resolve();
         }, 1000);
@@ -85,7 +85,7 @@ const initDealerStack = ()=>{
     console.log("geht");
 }
 const closeUserStack = async (index) => {
-    const card = ziehenStack.takeCard(1)[0];
+    const card = cardDeck.takeCard(1)[0];
     userStack[index].showInfo = false;
     await Promise.all([
         userStack[index].add(card),
@@ -94,7 +94,7 @@ const closeUserStack = async (index) => {
 }
 const closeDealerStack = async (s) => {
     await new Promise(resolve => setTimeout(resolve, 500)); //Um den Fail zu sehen
-    const card = ziehenStack.takeCard(1)[0];
+    const card = cardDeck.takeCard(1)[0];
     s.showInfo = false;
     await Promise.all([
         s.add(card),
