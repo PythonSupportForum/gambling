@@ -167,7 +167,7 @@ window.connectSocket = ()=>{
                             document.getElementById("result").classList.remove("show");
 
                             await StappelAufAusgangsrotation([...userStack, dealerLeftStack]);
-                            
+
                             await startGame();
                         }
                         document.getElementById("end").onclick = () => {
