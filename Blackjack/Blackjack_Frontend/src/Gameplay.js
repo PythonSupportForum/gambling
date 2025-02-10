@@ -72,9 +72,10 @@ const getInsuranceBet = ()=>new Promise(resolve => {
     document.getElementById("insuranceBetPopupContainer").classList.add("show");
     const slider = document.getElementById("betIValue");
     slider.max = chipCount;
-    const output = document.getElementById("sliderValue");
+    const output = document.getElementById("sliderIValue");
     slider.oninput = function() {
-        output.innerHTML = slider.value + " ¢hips";
+        console.log("Change Value Slider!", slider.value);
+        output.innerText = slider.value + " ¢hips";
     };
     document.getElementById("setBetButtonYes").onclick = ()=>{
         document.getElementById("insuranceBetPopupContainer").classList.remove("show");

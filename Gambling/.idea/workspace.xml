@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="be33c79b-a562-4225-a0f3-c2e5d51e687f" name="Changes" comment="" />
+    <list default="true" id="be33c79b-a562-4225-a0f3-c2e5d51e687f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../Blackjack/Blackjack_Frontend/src/Gameplay.js" beforeDir="false" afterPath="$PROJECT_DIR$/../Blackjack/Blackjack_Frontend/src/Gameplay.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -40,6 +42,7 @@
       <workItem from="1736523433082" duration="24000" />
       <workItem from="1736953078470" duration="19000" />
       <workItem from="1739021347156" duration="6000" />
+      <workItem from="1739207594316" duration="3000" />
     </task>
     <servers />
   </component>

@@ -182,3 +182,7 @@ header h1 {
     transform: rotate(-10deg);
     z-index: 3;
 }
+
+.hidden {
+    display: none;
+}
