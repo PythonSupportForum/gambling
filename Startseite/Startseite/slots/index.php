@@ -15,12 +15,32 @@
         <main>
 
             <header>
-                <a href="../../../Startseite/Startseite/src/Startseite.html">
+                <a href="../../../Startseite/Startseite/index.php">
                     <img id="Logo" src="../assets/Logo_Rand.png"/>
                 </a>
                 <div class="u">
                     <h1>Slot-Machine - Play and WIN!</h1>
                 </div>
+
+
+
+                <?php
+                if(isset($_SESSION["user_id"])){
+                    ?>
+                    <button onclick="window.location.href = '../../../Startseite/Startseite/index.php'" type="button" id="Anmelden">Anmelden</button>
+                    <?php
+                }
+                else{
+                    ?>
+                    <button onclick="window.location.href = '../../../Startseite/Startseite/src/logout.php'" type="button" id="Logout">Anmelden</button>
+                    <?php
+                }
+                ?>
+
+
+
+
+
 
             </header>
             <div class="machine-container">
@@ -41,7 +61,7 @@
                         </div>
                     </div>
                     <div class="c">
-                        <button id="play" onclick="play();">SPIN</button>
+                        <button id="play" onclick="play();">🎰 SPIN</button>
                     </div>
                 </div>
                 <div class="balance" id="balance">---</div>
