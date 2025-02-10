@@ -140,8 +140,7 @@ window.connectSocket = ()=>{
                         if(!setInsurance) answer("false;0");
                         else {
                             await gameInfoPromise; //Sicherstellen, dass schon gesetzt wurde, eig. Unnötig aber aus Prinzip
-                            window.insuranceBet = Math.ceil((await betPromise)/2);
-                            answer("true;"+(insuranceBet).toString()); //Wie viel Insurance
+                            answer("true;"+(setInsurance).toString()); //Wie viel Insurance
                         }
                         break;
                     case "double":
