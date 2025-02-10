@@ -18,9 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
         await startBlackJack();
         console.log(balance);
 
-        if(window.chipCount === 0){
-            window.chipCount = await getExchange();
-        }
+        if(window.chipCount === 0) window.chipCount = await getExchange();
 
         setTimeout(startGame, 1000);
     };
@@ -36,9 +34,7 @@ const getExchange = ()=>new Promise(resolve => {
        if(v < 1 || v > balance * 100) return;
        document.getElementById("exchangePopupContainer").classList.remove("show");
        return exchange(v).then(chipAmount => {
-           if(chipAmount !== -1){
-               resolve(chipAmount);
-           }
+           if(chipAmount !== -1) resolve(chipAmount);
        });
    }
    document.getElementById("abortExchangeButton").onclick = ()=>{
@@ -253,9 +249,7 @@ const calculateResult = async (dealerCards, stackPoints)=>{
     await Object.values(dealerLeftStack.cards)[0].aufdecken(dealerCards.shift());
     await new Promise(resolve => setTimeout(resolve, 200));
     dealerCards.shift();
-    for (const c of dealerCards) {
-        await showDealerCards(c, 0);
-    }
+    for (const c of dealerCards) await showDealerCards(c, 0);
     Object.values(dealerLeftStack.cards).forEach(c => c.cardValue = 0);
     dealerLeftStack.getOberste().cardValue = stackPoints;
     dealerLeftStack.startShowPoints();
