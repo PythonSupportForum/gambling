@@ -510,9 +510,9 @@ public class GameThread implements Runnable {
                 inputWait = false;
                 doubleDown = true;
                 checkGameState();
-                setGameState(GameState.GAME_END);
+                setGameState(GameState.DEALER_DRAW);
             } else {
-                System.out.println("Der Spiller hat kein Double Down gesetzt!");
+                System.out.println("Der Spieler hat kein Double Down gesetzt!");
             }
 
             if (getGameState() == GameState.PLAYER_DRAW) {
