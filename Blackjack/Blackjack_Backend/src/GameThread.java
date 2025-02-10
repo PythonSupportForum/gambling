@@ -620,6 +620,7 @@ public class GameThread implements Runnable {
         else if (currentValue(cardStack) == 21) {
             System.out.println("Herzlichen Glückwunsch! Du hast auf Stapel " + (index + 1) + " einen Blackjack!");
             conn.send("blackjack:"+index);
+            this.sendGameErgebnissText("Herzlichen Glückwunsch! Du hast auf Stapel " + (index + 1) + " einen Blackjack!\n");
             states.replace(index, StackState.WON);
             cardInput[index] = true;
         }

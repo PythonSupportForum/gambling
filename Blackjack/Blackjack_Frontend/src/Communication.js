@@ -201,7 +201,8 @@ window.connectSocket = ()=>{
                 }
             } else if (msg.startsWith("blackjack:")) {
                 console.log("Blackjack!!!!");
-
+                window.endProcess = true; //Weil ich nicht weiß wie die variable hieß zwei setzen
+                window.endGame = true;
             } else if (msg.startsWith("bust:")) {
                 let stackId = parseInt(msg.substring("bust:".length));
                 endStack().then();
