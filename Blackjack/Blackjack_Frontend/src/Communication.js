@@ -162,16 +162,13 @@ window.connectSocket = ()=>{
                         break;
                     case "end":
                         console.log("Frage nach Ende..");
-                        document.getElementById("dontEnd").onclick = () => {
+                        document.getElementById("dontEnd").onclick = async () => {
                             answer("false");
                             document.getElementById("result").classList.remove("show");
-                            dealerLeftStack.getObersteViele()
-                            userStack.getObersteViele()
 
-                            dealerLeftStack.copyStack(cardDeck);
-                            userStack.copyStack(cardDeck);
+                            await StappelAufAusgangsrotation([...userStack, dealerLeftStack]);
 
-                            startGame();
+                            await startGame();
                         }
                         document.getElementById("end").onclick = () => {
                             answer("true");

@@ -718,13 +718,13 @@ public class GameThread implements Runnable {
     }
     public void checkGameState(){
         StringBuilder t = new StringBuilder(); //Text wird gesammelt mit allen Ergebnis Infos!
-        if (insuranceBet > 0 && dealerStack.getFirst().getValue() == 'a') {
+        if (insuranceBet > 0 && dealerStack.get(0).getValue() == 'a') {
             coins += insuranceBet;
             t.append("Du hast den Insurance Bet erhalten!\n");
         }
         for(int i = 0; i <= splitCount; i++) {
             ArrayList<GameCard> a = playerStack.get(i);
-            System.out.println(a.getFirst() + " Map 1 : " + states + " ahh " + states.get(i));
+            System.out.println(a.get(0) + " Map 1 : " + states + " ahh " + states.get(i));
             if(states.get(i) == StackState.RUNNING){
                 System.out.println("Drin");
                 if(currentValue(dealerStack) > 21){
