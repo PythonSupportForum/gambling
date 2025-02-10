@@ -140,7 +140,7 @@ function resizeCanvas(){
 let nextButtons = {};
 let resolveJaOrNo = [];
 window.buttons = {
-    addDynamicYesOrNeinButton: (name)=>new Promise(r => {
+    addDynamicYesOrNoButton: (name)=>new Promise(r => {
         console.log("Add Dynmaic button:", name);
         let resolved = false;
         const resolve = (...p)=>{

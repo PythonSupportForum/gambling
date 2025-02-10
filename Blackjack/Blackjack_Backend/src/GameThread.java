@@ -325,7 +325,7 @@ public class GameThread implements Runnable {
         }
     }
 
-    public String askFrontent(String query) { //Allgemein für alles Mögliche! => Nicht so viele Variableb
+    public String askFrontend(String query) { //Allgemein für alles Mögliche! => Nicht so viele Variableb
         conn.send("ask:"+query);
         while(askInput.length() == 0) {
             try {
@@ -466,7 +466,7 @@ public class GameThread implements Runnable {
 
                 System.out.print("Willst du eine Insurance bet ablegen?(false, true)\n");
 
-                String a = askFrontent("insurance");
+                String a = askFrontend("insurance");
                 String[] r = a.split(";");
                 if(Objects.equals(r[0], "true")) {
                     insuranceInput = true;
@@ -497,7 +497,7 @@ public class GameThread implements Runnable {
                 takeCount--;
             }
 
-            String a = askFrontent("double");
+            String a = askFrontend("double");
             String[] r = a.split(";");
             if(Objects.equals(r[0], "true")) {
                 System.out.println("Der Spieler hat Double Down gestezt!");
@@ -711,21 +711,21 @@ public class GameThread implements Runnable {
 
         public void splitCheck(int index){
             if(playerStack.get(index).get(0).getValue() == playerStack.get(index).get(1).getValue()){
-                String a = askFrontent("split");
+                String a = askFrontend("split");
                 String[] r = a.split(";");
                 if(Objects.equals(r[0], "true")) {
-                    System.out.println("Frontent Möchte SPlitten");
+                    System.out.println("Frontend Möchte Splitten");
                     ArrayList<GameCard> temp = new ArrayList<>();
                     playerStack.add(temp);
                     playerStack.get(index + 1).add(playerStack.get(index).get(1));
                     playerStack.get(index).remove(1);
                     splitCount++;
                     states.replace(temp, StackState.RUNNING);
-                } else System.out.println("Frontent möchte nicht splitten!");
+                } else System.out.println("Frontend möchte nicht splitten!");
             }
         }
         public void checkGameState(){
-            StringBuilder t = new StringBuilder(); //Text wird gesammelt mit allen Ergebiss Infos!
+            StringBuilder t = new StringBuilder(); //Text wird gesammelt mit allen Ergebnis Infos!
             if (insuranceBet > 0 && dealerStack.get(0).getValue() == 'a') {
                 coins += insuranceBet;
                 t.append("Du hast den Insurance Bet erhalten!\n");

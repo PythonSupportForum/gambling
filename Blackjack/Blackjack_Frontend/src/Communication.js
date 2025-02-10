@@ -146,15 +146,15 @@ window.connectSocket = ()=>{
                         break;
                     case "double":
                         console.log("Frage nach Double..");
-                        const r = await buttons.addDynamicYesOrNeinButton("double");
+                        const r = await buttons.addDynamicYesOrNoButton("double");
                         console.log("Double Answer erhalten:", r);
                         answer(r?"true":"false");
                         break;
                     case "split":
                         console.log("Frage nach Spilt..");
-                        const doSpit = await buttons.addDynamicYesOrNeinButton("split");
-                        console.log("Split Answer erhalten:", doSpit);
-                        answer(doSpit?"true":"false");
+                        const doSplit = await buttons.addDynamicYesOrNoButton("split");
+                        console.log("Split Answer erhalten:", doSplit);
+                        answer(doSplit?"true":"false");
                         break;
                     default:
                         console.log("Error! Server labert Müll!", text);
