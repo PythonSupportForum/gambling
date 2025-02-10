@@ -280,17 +280,15 @@ const endStack = ()=> new Promise(resolve => {
     }, 2500);
 });
 
-const stackToDefaultPPotation = (stacks)=> {
-    let p = [];
-    stacks.forEach(async s => p.push((async ()=> {
+const stackToDefaultPPotation = async (stacks)=> {
+    for(const s of stacks) {
         console.log("Stappel:", s);
         const cards = Object.values(s.cards);
         console.log("Karts:", cards);
         for(const c of cards) {
             await Promise.all([cardDeck.add(c), c.verrecken()]);
         }
-    })()));
-    return Promise.all(p);
+    }
 }
 
 const showDealerCards = async (gameInfoPromise = null, countCoveredCards = 1, fastFlip = false)=>{
