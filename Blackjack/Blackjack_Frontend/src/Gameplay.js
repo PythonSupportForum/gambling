@@ -139,7 +139,7 @@ const userTakeCard = async (count = 1) => {
         proceed: ()=>resolve("p"),
         _split: ()=>resolve("s"),
         _double: ()=>resolve("p"), //Zum Beisiel weil Spit oder Double Down ausgefürht urd
-    }, ()=>resolve("p"))));
+    }, ()=>resolve("p")));
     buttons.hide();
 
     end(); //Um Overlay schließen → Karten aus dem Vordergrund
