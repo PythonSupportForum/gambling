@@ -107,7 +107,10 @@ window.connectSocket = ()=>{
                     getListener("chipupdate")(chipCount);
                     console.error("Auszahlung nicht erfolgt");
                 }
-            } else if (msg.startsWith("text:")) setGameResultText(msg.substring("text:".length));
+            } else if (msg.startsWith("text:")) {
+                setGameResultText(msg.substring("text:".length));
+                endGame = true; //Falls noch nicht true zum Beispiel weil vorzeitiger abbruch durch double down
+            }
 
 
             else if (msg.startsWith("bal:")) {
