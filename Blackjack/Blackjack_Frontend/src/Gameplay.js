@@ -81,14 +81,6 @@ const getInsuranceBet = ()=>new Promise(resolve => {
         resolve(false);
     }
 });
-const showResults  = (text)=>new Promise(resolve => { //Nicht wirklich Einsatz, sondern nur ja nein popup aber weil grad kein besserer name da war, besser als in den informatik klausuren, wo die methoden einfahc nur "ichmacheetwas" heißen
-    document.getElementById("resultText").innerText = text;
-    document.getElementById("result").classList.add("show");
-    document.getElementById("playAgain").onclick = ()=>{
-        window.location.reload();
-        resolve();
-    }
-});
 
 async function runSplit(cards) {
     addUserStack();
@@ -107,6 +99,11 @@ async function runSplit(cards) {
         userStack[runningStackId-1].restMaxCount = 1;
     }
 }
+
+const showResults  = (text)=> { //Nicht wirklich Einsatz, sondern nur ja nein popup aber weil grad kein besserer name da war, besser als in den informatik klausuren, wo die methoden einfahc nur "ichmacheetwas" heißen
+    document.getElementById("resultText").innerText = text;
+    document.getElementById("result").classList.add("show");
+};
 const userTakeCard = async (count = 1) => {
     if(userStack[runningStackId].restMaxCount !== -1) {
         if(count > userStack[runningStackId].restMaxCount) {
@@ -142,7 +139,7 @@ const userTakeCard = async (count = 1) => {
         proceed: ()=>resolve("p"),
         _split: ()=>resolve("s"),
         _double: ()=>resolve("p"), //Zum Beisiel weil Spit oder Double Down ausgefürht urd
-    }, ()=>resolve("p")));
+    }, ()=>resolve("p"))));
     buttons.hide();
 
     end(); //Um Overlay schließen → Karten aus dem Vordergrund
@@ -159,9 +156,10 @@ const userTakeCard = async (count = 1) => {
         return true;
     }
     else if(input === "s") { //Kann so bleiben, weil keine Änderung an der Logig, sondern nur Karte auf anderem Stappel dargestellt wird
-         await runSplit(cards);
+        await runSplit(cards);
          return true;
     }
+
     console.log("Error! Unbekannte Eingabe:", input);
 }
 

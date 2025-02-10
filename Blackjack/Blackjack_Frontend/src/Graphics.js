@@ -142,7 +142,7 @@ let resolveJaOrNo = [];
 
 window.onButtonsAbbruch = ()=>{}; //Wenn während Buttons Blackjack kommt
 window.buttons = {
-    addDynamicYesOrNeinButton: (name)=>new Promise(r => {
+    addDynamicYesOrNoButton: (name)=>new Promise(r => {
         console.log("Add Dynmaic button:", name);
         let resolved = false;
         const resolve = (...p)=>{

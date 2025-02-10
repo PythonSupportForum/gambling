@@ -21,7 +21,7 @@ public class GameThread implements Runnable {
 
     List<GameCard> dealerStack = new ArrayList<>();
     ArrayList<ArrayList<GameCard>> playerStack = new ArrayList<>();
-    HashMap<ArrayList<GameCard>, StackState> states;
+    HashMap<Integer, StackState> states;
     Stack<GameCard> deck = new Stack<>();
     GameCard card;
 
@@ -50,7 +50,7 @@ public class GameThread implements Runnable {
     int takeCount = 0;
     int splitCount = 0;
     int insuranceBet = 0;
-    
+
     int coinAmount = 0;
 
     // Ermöglicht Zugriff auf Thread Objekt, wenn GameThread Objekt gefunden wurde
@@ -256,7 +256,7 @@ public class GameThread implements Runnable {
         // Warte auf Startsignal vom Client
         while(!start){
             try{
-            Thread.sleep(100);
+                Thread.sleep(100);
             }catch(Exception ignored){}
         }
         game(); // ruft Hauptmethode des Spiels auf, beginnt Spiel mit dem Client
@@ -325,7 +325,7 @@ public class GameThread implements Runnable {
         }
     }
 
-    public String askFrontent(String query) { //Allgemein für alles Mögliche! => Nicht so viele Variableb
+    public String askFrontend(String query) { //Allgemein für alles Mögliche! => Nicht so viele Variableb
         conn.send("ask:"+query);
         while(askInput.length() == 0) {
             try {
@@ -346,7 +346,7 @@ public class GameThread implements Runnable {
 
         ArrayList<GameCard> temp = new ArrayList<>();
         playerStack.add(temp);
-        states.put(temp, StackState.RUNNING);
+        states.put(0, StackState.RUNNING);
 
         // Loop zum erneuten Spielen
         while (running) {
@@ -466,7 +466,7 @@ public class GameThread implements Runnable {
 
                 System.out.print("Willst du eine Insurance bet ablegen?(false, true)\n");
 
-                String a = askFrontent("insurance");
+                String a = askFrontend("insurance");
                 String[] r = a.split(";");
                 if(Objects.equals(r[0], "true")) {
                     insuranceInput = true;
@@ -497,7 +497,7 @@ public class GameThread implements Runnable {
                 takeCount--;
             }
 
-            String a = askFrontent("double");
+            String a = askFrontend("double");
             String[] r = a.split(";");
             if(Objects.equals(r[0], "true")) {
                 System.out.println("Der Spieler hat Double Down gestezt!");
@@ -573,16 +573,8 @@ public class GameThread implements Runnable {
                 checkGameState();
             }
 
-            while(true){
-                System.out.println("Aufhören?(true, false)");
-                String input = c.nextLine();
-                try {
-                    if(Boolean.parseBoolean(input)){
-                        running = false;
-                    }
-                    break;
-                }catch(Exception ignored){}
-            }
+            String askEnd = askFrontend("end");
+            running = !askEnd.equals("true");
         }
 
         setGameState(GameState.WITHDRAW);
@@ -610,7 +602,7 @@ public class GameThread implements Runnable {
     private void checkValue(int index) {
         ArrayList<GameCard> cardStack = playerStack.get(index);
         if (currentValue(cardStack) > 21) {
-            states.replace(cardStack, StackState.LOST);
+            states.replace(index, StackState.LOST);
             System.out.println("Bust! Du hast auf Stapel " + (index + 1) + " verloren!");
             conn.send("Bust:"+index);
             cardInput[index] = true;
@@ -618,153 +610,157 @@ public class GameThread implements Runnable {
         else if (currentValue(cardStack) == 21) {
             System.out.println("Herzlichen Glückwunsch! Du hast auf Stapel " + (index + 1) + " einen Blackjack!");
             conn.send("Blackjack:"+index);
-            states.replace(cardStack, StackState.WON);
+            states.replace(index, StackState.WON);
             cardInput[index] = true;
         }
     }
 
-        public int currentValue (List<GameCard> cardStack) {
-            int totalValue = 0;
-            int aceCount = 0;
+    public int currentValue (List<GameCard> cardStack) {
+        int totalValue = 0;
+        int aceCount = 0;
 
-            for (GameCard card : cardStack) {
-                char valueOfCard = card.getValue();
+        for (GameCard card : cardStack) {
+            char valueOfCard = card.getValue();
 
-                if (valueOfCard >= '2' && valueOfCard <= '9') {
-                    // Numerische Karten: '2' bis '9'
-                    totalValue += Character.getNumericValue(valueOfCard);
-                } else if (valueOfCard == '0' || valueOfCard == 'j' || valueOfCard == 'q' || valueOfCard == 'k') {
-                    // Zehner ('0'), Bube ('j'), Dame ('q'), König ('k'): Wert 10
-                    totalValue += 10;
-                } else if (valueOfCard == 'a') {
-                    // Ass: Hat zunächst den Wert 11
-                    totalValue += 11;
-                    aceCount++;
-                }
+            if (valueOfCard >= '2' && valueOfCard <= '9') {
+                // Numerische Karten: '2' bis '9'
+                totalValue += Character.getNumericValue(valueOfCard);
+            } else if (valueOfCard == '0' || valueOfCard == 'j' || valueOfCard == 'q' || valueOfCard == 'k') {
+                // Zehner ('0'), Bube ('j'), Dame ('q'), König ('k'): Wert 10
+                totalValue += 10;
+            } else if (valueOfCard == 'a') {
+                // Ass: Hat zunächst den Wert 11
+                totalValue += 11;
+                aceCount++;
             }
-
-            // Wenn der Gesamtwert > 21 ist, wird der Wert der Asse reduziert (11 → 1)
-            while (totalValue > 21 && aceCount > 0) {
-                totalValue -= 10; // Ein Ass wird von 11 auf 1 reduziert
-                aceCount--;       // Ein Ass weniger mit Wert 11
-            }
-
-            return totalValue;
         }
 
-        //region Getter and Setter
-        public GameState getGameState () {
-            return gameState;
+        // Wenn der Gesamtwert > 21 ist, wird der Wert der Asse reduziert (11 → 1)
+        while (totalValue > 21 && aceCount > 0) {
+            totalValue -= 10; // Ein Ass wird von 11 auf 1 reduziert
+            aceCount--;       // Ein Ass weniger mit Wert 11
         }
 
-        public void setGameState (GameState gameState){
-            this.gameState = gameState;
-        }
-        //endregion
+        return totalValue;
+    }
 
-        void printCard(GameCard card){
+    //region Getter and Setter
+    public GameState getGameState () {
+        return gameState;
+    }
+
+    public void setGameState (GameState gameState){
+        this.gameState = gameState;
+    }
+    //endregion
+
+    void printCard(GameCard card){
         String coat = "";
-            System.out.print("Wert: " + card.getValue() + " ");
-            switch (card.getCoat()){
-                case 'c':
-                    coat = "Clubs";
-                    break;
-                case 'd':
-                    coat = "Diamonds";
-                    break;
-                case 'h':
-                    coat = "Hearts";
-                    break;
-                case 's':
-                    coat = "Spades";
-                    break;
-                default:
-                    break;
-            }
-            System.out.print("Farbe: " + coat + "\n");
+        System.out.print("Wert: " + card.getValue() + " ");
+        switch (card.getCoat()){
+            case 'c':
+                coat = "Clubs";
+                break;
+            case 'd':
+                coat = "Diamonds";
+                break;
+            case 'h':
+                coat = "Hearts";
+                break;
+            case 's':
+                coat = "Spades";
+                break;
+            default:
+                break;
         }
+        System.out.print("Farbe: " + coat + "\n");
+    }
 
-        public void karteZiehen(int index){
-            while (!cardInput[index]) {
-                while(inputWait){
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                if(playerDone){return;}
+    public void karteZiehen(int index){
+        while (!cardInput[index]) {
+            while(inputWait){
                 try {
-                    for(; takeCount > 0; takeCount--) {
-                        card = deck.pop();
-                        int j = currentValue(playerStack.get(index));
-                        playerStack.get(index).add(card);
-                        conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(playerStack.get(0)) - j));
-                        printCard(card);
-                    }
-                } catch (NumberFormatException e) {
-                    continue;
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-                checkValue(index);
             }
+            if(playerDone){return;}
+            try {
+                for(; takeCount > 0; takeCount--) {
+                    card = deck.pop();
+                    int j = currentValue(playerStack.get(index));
+                    playerStack.get(index).add(card);
+                    conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(playerStack.get(0)) - j));
+                    printCard(card);
+                }
+            } catch (NumberFormatException e) {
+                continue;
+            }
+            checkValue(index);
         }
+    }
 
-        public void splitCheck(int index){
-            if(playerStack.get(index).get(0).getValue() == playerStack.get(index).get(1).getValue() || true){
-                String a = askFrontent("split");
-                String[] r = a.split(";");
-                if(Objects.equals(r[0], "true")) {
-                    System.out.println("Frontent Möchte SPlitten");
-                    ArrayList<GameCard> temp = new ArrayList<>();
-                    playerStack.add(temp);
-                    playerStack.get(index + 1).add(playerStack.get(index).get(1));
-                    playerStack.get(index).remove(1);
-                    splitCount++;
-                    states.replace(temp, StackState.RUNNING);
-                } else System.out.println("Frontent möchte nicht splitten!");
+    public void splitCheck(int index){
+        if(playerStack.get(index).get(0).getValue() == playerStack.get(index).get(1).getValue()){
+            String a = askFrontend("split");
+            String[] r = a.split(";");
+            if(Objects.equals(r[0], "true")) {
+                System.out.println("Frontend Möchte Splitten");
+                ArrayList<GameCard> temp = new ArrayList<>();
+                playerStack.add(temp);
+                playerStack.get(index + 1).add(playerStack.get(index).get(1));
+                playerStack.get(index).remove(1);
+                splitCount++;
+                states.replace(index, StackState.RUNNING);
+            } else System.out.println("Frontend möchte nicht splitten!");
+        }
+    }
+    public void checkGameState(){
+        StringBuilder t = new StringBuilder(); //Text wird gesammelt mit allen Ergebnis Infos!
+        if (insuranceBet > 0 && dealerStack.getFirst().getValue() == 'a') {
+            coins += insuranceBet;
+            t.append("Du hast den Insurance Bet erhalten!\n");
+        }
+        for(int i = 0; i <= splitCount; i++) {
+            ArrayList<GameCard> a = playerStack.get(i);
+            System.out.println(a.getFirst() + " Map 1 : " + states + " ahh " + states.get(i));
+            if(states.get(i) == StackState.RUNNING){
+                System.out.println("Drin");
+                if(currentValue(dealerStack) > 21){
+                    states.replace(i, StackState.WON);
+                } else if (currentValue(dealerStack) < currentValue(a)) {
+                    states.replace(i, StackState.WON);
+                } else if(currentValue(dealerStack) == currentValue(a)){
+                    states.replace(i, StackState.PUSH);
+                } else if (currentValue(dealerStack) > currentValue(a)) {
+                    states.replace(i, StackState.LOST);
+                } else {
+                    t.append("Ups??!? Ein Fehler ist aufgetreten! 1\n");
+                }
+            }
+            System.out.println("Map 2 : " + states);
+            if(states.get(i) == StackState.WON) {
+                t.append("Auf Stapel " + (i + 1) + " hast du gewonnen!\n");
+                coins += 2 * bet;
+                t.append("Du hast " + bet + " Coins gewonnen\n");
+            } else if (states.get(i) == StackState.PUSH) {
+                t.append("Push auf Stapel " + (i + 1) + "!\n");
+                coins += bet;
+                t.append("Du hast " + bet + " Coins zurück erhalten!\n");
+            }
+            else if (states.get(i) == StackState.LOST) {
+                t.append("Du hast auf Stapel " + (i + 1) + " verloren!\n");
+                t.append("Du hast " + bet + " Coins verloren!\n");
+            }
+            else {
+                t.append("Ups??!? Ein Fehler ist aufgetreten! 2\n");
             }
         }
-        public void checkGameState(){
-            StringBuilder t = new StringBuilder(); //Text wird gesammelt mit allen Ergebiss Infos!
-            if (insuranceBet > 0 && dealerStack.get(0).getValue() == 'a') {
-                coins += insuranceBet;
-                t.append("Du hast den Insurance Bet erhalten!\n");
-            }
-            for(int i = 0; i <= splitCount; i++) {
-                ArrayList<GameCard> a = playerStack.get(i);
-                if(states.get(a) == StackState.RUNNING){
-                    if (currentValue(dealerStack) < currentValue(a)) {
-                        states.replace(a, StackState.WON);
-                    } else if(currentValue(dealerStack) == currentValue(a)){
-                        states.replace(a, StackState.PUSH);
-                    } else if (currentValue(dealerStack) > currentValue(a)) {
-                        states.replace(a, StackState.LOST);
-                    } else {
-                        t.append("Ups??!? Ein Fehler ist aufgetreten! 1\n");
-                    }
-                }
-                if(states.get(a) == StackState.WON)
-                {
-                    t.append("Auf Stapel " + (i + 1) + " hast du gewonnen!\n");
-                    coins += 2 * bet;
-                    t.append("Du hast " + bet + " Coins gewonnen\n");
-                } else if (states.get(a) == StackState.PUSH) {
-                    t.append("Push auf Stapel " + (i + 1) + "!");
-                    coins += bet;
-                    t.append("Du hast " + bet + " Coins zurück erhalten!\n");
-                }
-                else if (states.get(a) == StackState.LOST) {
-                    t.append("Du hast auf Stapel " + (i + 1) + " verloren!\n");
-                    t.append("Du hast " + bet + " Coins verloren!\n");
-                }
-                else {
-                    t.append("Ups??!? Ein Fehler ist aufgetreten! 2\n");
-                }
-            }
-            System.out.println(t); //Alles Ausgeben
-            this.sendGameErgebnissText(t.toString()); //send ans Frontent den Text als Ergebisse
-            setGameState(GameState.GAME_END);
-        }
+        System.out.println(t); //Alles Ausgeben
+        this.sendGameErgebnissText(t.toString()); //send ans Frontent den Text als Ergebisse
+        setGameState(GameState.GAME_END);
+    }
     // Methode zum Erstellen der Verbindung
     public static Connection getConnection() {
         // Verknüpfung zur Datenbank
@@ -792,7 +788,7 @@ public class GameThread implements Runnable {
             return false;
         } else {
             coins -= coinAmount;
-        String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum) VALUES (" + client_ID  + ", " + (new DecimalFormat("0.00").format(balance - OLDBALANCE)) + ", NOW())";
+            String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum) VALUES (" + client_ID  + ", " + (new DecimalFormat("0.00").format(balance - OLDBALANCE)) + ", NOW())";
             clientDB = getConnection();
             try{
                 // Verbindung zur Datenbank, Veränderung des Kontostandes

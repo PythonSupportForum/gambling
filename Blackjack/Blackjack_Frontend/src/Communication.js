@@ -139,14 +139,14 @@ window.connectSocket = ()=>{
                         const setInsurance = await getInsuranceBet();
                         if(!setInsurance) answer("false;0");
                         else {
-                            await gameInfoPromise; //Sicherstellen, dass schon gesetzt wrude, eig. Unnötig aber aus Prinzip
+                            await gameInfoPromise; //Sicherstellen, dass schon gesetzt wurde, eig. Unnötig aber aus Prinzip
                             window.insuranceBet = Math.ceil((await betPromise)/2);
                             answer("true;"+(insuranceBet).toString()); //Wie viel Insurance
                         }
                         break;
                     case "double":
                         console.log("Frage nach Double..");
-                        const r = await buttons.addDynamicYesOrNeinButton("double");
+                        const r = await buttons.addDynamicYesOrNoButton("double");
                         console.log("Double Answer erhalten:", r);
                         if(r) {
                             userStack[runningStackId].einsatz*=2;
@@ -156,9 +156,26 @@ window.connectSocket = ()=>{
                         break;
                     case "split":
                         console.log("Frage nach Spilt..");
-                        const doSpit = await buttons.addDynamicYesOrNeinButton("split");
-                        console.log("Split Answer erhalten:", doSpit);
-                        answer(doSpit?"true":"false");
+                        const doSplit = await buttons.addDynamicYesOrNoButton("split");
+                        console.log("Split Answer erhalten:", doSplit);
+                        answer(doSplit?"true":"false");
+                        break;
+                    case "end":
+                        console.log("Frage nach Ende..");
+                        document.getElementById("dontEnd").onclick = () => {
+                            answer("false");
+                            document.getElementById("result").classList.remove("show");
+                            dealerLeftStack.getObersteViele()
+                            userStack.getObersteViele()
+
+                            dealerLeftStack.copyStack(cardDeck);
+                            userStack.copyStack(cardDeck);
+
+                            startGame();
+                        }
+                        document.getElementById("end").onclick = () => {
+                            answer("true");
+                        }
                         break;
                     default:
                         console.log("Error! Server labert Müll!", text);

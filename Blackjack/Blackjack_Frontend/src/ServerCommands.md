@@ -7,6 +7,7 @@
 - Umtauschen bestätigen: "ChipUpdate:" + chipAmount
 - Kontostand übermitteln: "Bal:" + balance
 - Auflösen eines Stacks: "Stack:p:" + points + ",s" + state
+- Beenden?: "End"
 
 # Client Befehle
 - Dealer Ziehen anfragen: "TakeDealer"
@@ -16,3 +17,4 @@
 - (ID senden: "ID:" + id)
 - Umtauschen anfragen: "Exchange:" + ChipCount
 - Beenden des Stacks: "EndStack:" + stackID
+- Beenden Ja/Nein: "End:true/false"

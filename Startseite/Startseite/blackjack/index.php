@@ -13,22 +13,55 @@ CSS-Datei, Favicons und JS-Datei einbinden
 <link rel="apple-touch-icon" sizes="180x180" href="/../assets/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/../assets/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/../assets/favicon-16x16.png">
-<script src="Frontend.js"></script>
+<script src="blackjack-frontend.js"></script>
 </head>
 <body>
 <!--
 Obere Leiste mit Logo
 -->
 <header>
-  <a href="../../../Startseite/Startseite/src/Startseite.html">
+  <a href="../../../Startseite/Startseite/index.php">
     <img id="Logo" src="../assets/Logo_Rand.png"/>
   </a>
 
   <!--
   Anmelde-Button
   -->
+  <?php
+  if(isset($_SESSION["user_id"])){
+    ?>
+    <button onclick="window.location.href = '../../../Startseite/Startseite/index.php'" type="button" id="Anmelden">Anmelden</button>
+    <?php
+  }
+  else{
+    ?>
+    <button onclick="window.location.href = '../../../Startseite/Startseite/src/logout.php'" type="button" id="Logout">Anmelden</button>
+    <?php
+  }
+  ?>
 
-  <button onclick="window.location.href = '../../../Startseite/Startseite/src/Startseite.html'" type="button" id="Anmelden">Anmelden</button>
+
+<!-- Script für alternative Anmelde-Button-Logik (nicht fertig)
+  <button onclick="window.location.href = '../../../Startseite/Startseite/index.php'" type="button" id="Anmelden">Anmelden</button>
+  <script>
+    const isLoggedIn = checkIfUserIsLoggedIn();
+    const anmeldenButton = document.getElementById("Anmelden");
+    if (isLoggedIn) {
+    anmeldenButton.textContent = "Ausloggen";
+    anmeldenButton.onclick = function() {
+      window.location.href = "../../../Startseite/Startseite/src/logout.php";
+    };
+    } else {
+    anmeldenButton.textContent = "Anmelden";
+    anmeldenButton.onclick = function() {
+      window.location.href = '../../../Startseite/Startseite/index.php'; // Oder deine Anmeldeseite
+    };
+  }
+</script>
+-->
+
+
+
 
   <div id="Kontostand">
     <img id="PB" src="../assets/default-profile.png" alt="Profilbild">
