@@ -460,7 +460,7 @@ public class GameThread implements Runnable {
             printCard(card);
             takeCount--;
 
-            if (dealerStack.get(1).getValue() == 'a' && bet > 1) {
+            if (dealerStack.get(1).getValue() == 'a' || true) {
                 //region Insurance Bet
                 setGameState(GameState.INSURANCE_BET);
 

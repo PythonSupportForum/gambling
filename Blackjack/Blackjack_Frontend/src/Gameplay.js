@@ -97,8 +97,7 @@ async function runSplit(cards) {
     userStack[runningStackId].startShowPoints();
     userStack[userStack.length-1].startShowPoints();
 
-    userStack[userStack.length-1].einsatz = userStack[runningStackId].einsatz/2;
-    userStack[runningStackId].einsatz = userStack[runningStackId].einsatz/2;
+    userStack[userStack.length-1].einsatz = userStack[runningStackId].einsatz;
 
     if(cards.length > 0 && cards[0].cardValue === 11) {
         userStack[runningStackId].restMaxCount = 1;
