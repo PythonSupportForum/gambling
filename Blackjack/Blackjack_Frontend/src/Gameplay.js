@@ -111,6 +111,7 @@ const showResults  = (text)=> { //Nicht wirklich Einsatz, sondern nur ja nein po
     document.getElementById("result").classList.add("show");
 };
 const userTakeCard = async (count = 1) => {
+    if(runningStackId > userStack.length) await addUserStack();
     if(userStack[runningStackId].restMaxCount !== -1) {
         if(count > userStack[runningStackId].restMaxCount) {
             console.log("Error! Try to Ziehen mehr als erlaubt!");
