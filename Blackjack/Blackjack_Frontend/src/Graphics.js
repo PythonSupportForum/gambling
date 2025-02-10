@@ -403,6 +403,9 @@ window.Stack = class Stack {
         this.restMaxCount = -1;
         this.direktWertUpdate = true; //Soll der angezeigte Wert schon beim Losfliegen aktualisiert werden
     }
+    stopZeigenPunkt() {
+        this.showInfo = false;
+    }
     startShowPoints() {
         this.showInfo = true;
         if(this.showPoints) return;
