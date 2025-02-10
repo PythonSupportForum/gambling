@@ -386,6 +386,9 @@ window.GameCard = class GameCard extends AnimationObject {
         this.cardValue = points;
         return this.changeSide(type);
     }
+    verrecken() {
+        return this.changeSide();
+    }
 }
 
 window.Stack = class Stack {
