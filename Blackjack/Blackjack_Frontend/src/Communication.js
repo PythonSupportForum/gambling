@@ -33,10 +33,10 @@ window.connectSocket = ()=>{
         };
 
          // Nachricht vom Server empfangen → Allgemein für alle Nachrichten (Websocket protokoll)
-        socket.onmessage = (event) => {
-            console.log("Nachricht vom Server:",event.data);
+        socket.onmessage = async (event) => {
+            console.log("Nachricht vom Server:", event.data);
             const msg = event.data.toString().toLowerCase();
-            if(event.data.toString().toLowerCase().indexOf('acc') === 0) {
+            if (event.data.toString().toLowerCase().indexOf('acc') === 0) {
                 console.log("ID: " + clientID.toString());
                 socket.send("ID:" + clientID.toString());
                 window.approved = true;
@@ -46,7 +46,7 @@ window.connectSocket = ()=>{
             let value;
             let points;
 
-            if(msg.startsWith("card:")){
+            if (msg.startsWith("card:")) {
                 let sub = msg.substring("card:".length);
 
                 let part = sub.split(",");
@@ -61,8 +61,7 @@ window.connectSocket = ()=>{
                     type: value + "_" + coat,
                     points: points
                 });
-            }
-            else if(msg.startsWith("dealercard:")){
+            } else if (msg.startsWith("dealercard:")) {
                 let sub = msg.substring("DealerCard:".length);
 
                 let part = sub.split(",");
@@ -73,21 +72,20 @@ window.connectSocket = ()=>{
 
                 points = part[2].substring("p:".length);
 
-                console.log("points", points,"card",value + "_" + coat);
+                console.log("points", points, "card", value + "_" + coat);
 
                 getListener("dealercard")({
                     type: value + "_" + coat,
                     points: points
                 });
-            }
-            else if(msg.startsWith("dealercards:")){
+            } else if (msg.startsWith("dealercards:")) {
                 console.log("Empfängt Dealer Karten");
 
                 let cardObjects = [];
                 let sub = msg.substring("DealerCards:".length).split(">");
 
                 let cards = sub[0].split(";");
-                for(let singleCard of cards){
+                for (let singleCard of cards) {
                     let part = singleCard.split(",");
 
                     coat = part[0].substring("c:".length);
@@ -97,30 +95,26 @@ window.connectSocket = ()=>{
                 }
 
                 getListener("dealercards")({objects: cardObjects, stackValue: parseInt(sub[1])}, true);
-            }
-            else if(msg.startsWith("chipupdate:")){
+            } else if (msg.startsWith("chipupdate:")) {
                 let updatedChipCount = parseInt(msg.substring("DealerCards:".length - 1));
-                if(updatedChipCount >= 0){
+                if (updatedChipCount >= 0) {
                     console.log("Chip updated for: " + updatedChipCount);
                     document.getElementById("ChipCount").innerText = updatedChipCount + "¢";
                     console.log(updatedChipCount);
                     getListener("chipupdate")(updatedChipCount);
-                }
-                else{
+                } else {
                     document.getElementById("ChipCount").innerText = chipCount + "¢";
                     getListener("chipupdate")(chipCount);
                     console.error("Auszahlung nicht erfolgt");
                 }
-            }
-            else if(msg.startsWith("text:")) setGameResultText(msg.substring("text:".length));
+            } else if (msg.startsWith("text:")) setGameResultText(msg.substring("text:".length));
 
 
-            else if(msg.startsWith("bal:")){
+            else if (msg.startsWith("bal:")) {
                 window.balance = parseFloat(msg.substring("bal:".length));
                 console.log(balance);
                 getListener("bal")(balance);
-            }
-            else if(msg.startsWith("stack:")){
+            } else if (msg.startsWith("stack:")) {
                 let part = msg.substring("stack:".length).split(",");
 
                 let points = parseInt(part[0].substring("p:".length));
@@ -132,14 +126,34 @@ window.connectSocket = ()=>{
                     points: points,
                     state: state
                 });
-            }
-            else if(msg.startsWith("bust:")){
+            } else if (msg.startsWith("ask:")) {
+                const text = msg.substring("ask:".length);
+                console.log("Server Asked Frontent:", text);
+                const answer = (t) => socket.send("answer:" + t);
+
+                switch (text) {
+                    case "insurance":
+                        const setInsurance = await getInsuranceBet();
+                        if(!setInsurance) answer("false;0");
+                        else {
+                            await gameInfoPromise; //Sicherstellen, dass schon gesetzt wrude, eig. Unnötig aber aus Prinzip
+                            window.insuranceBet = (await betPromise)/2;
+                            answer("true;"+(insuranceBet).toString()); //Wie viel Insurance
+                        }
+                        break;
+                    default:
+                        console.log("Error! Server labert Müll!", text);
+                        break;
+                }
+            } else if (msg.startsWith("bust:")) {
                 let stackId = parseInt(msg.substring("bust:".length));
                 endStack().then();
-                if(userStack.length === 1){
+                if (userStack.length === 1) {
                     window.endProcess = true;
                 }
-                console.log("Ehrenlos",stackId);
+                console.log("Ehrenlos", stackId);
+            } else {
+                console.log("Error! Unknown Server Message:", msg);
             }
         };
 

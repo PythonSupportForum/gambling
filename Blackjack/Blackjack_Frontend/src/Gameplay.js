@@ -135,7 +135,7 @@ const userTakeCard = async (count = 1) => {
     end(); //Um Overlay schließen → Karten aus dem Vordergrund
     if(input === "d") {
         userStack[runningStackId].einsatz*=2;
-        userStack[runningStackId].restMaxCount = 1;
+        userStack[runningStackId].restMaxCount = 1; //Man dar fnur noch einmal ziehen
         await serverDoubleDown();
     }
     if(input === "p" || input === "d") {
@@ -173,7 +173,7 @@ window.chipCount = 0;
 window.insuranceBet = 0; // Einsatz der auf Dealer Blackjack gewettet wurde
 const startGame = async ()=> {
 
-    const betPromise = getBet();
+    window.betPromise = getBet();
 
     if(showIntro) {
         await Promise.all([
@@ -195,7 +195,7 @@ const startGame = async ()=> {
 
     addUserStack(); // Ersten User Stack vor erstem Splitten
 
-    const gameInfoPromise = betPromise.then(bet => {
+    window.gameInfoPromise = betPromise.then(bet => {
         userStack[0].einsatz = bet;
         return startNewBidding(bet);
     });
@@ -205,9 +205,8 @@ const startGame = async ()=> {
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-
     // if(dealerLeftStack.getOberste().cardValue === 11) {
-    //     if((await getInsuranceBet())) {
+    //     if(()) {
     //         console.log("Set insurance...");
     //         await gameInfoPromise;
     //         console.log("Start Game");

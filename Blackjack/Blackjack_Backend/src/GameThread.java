@@ -31,6 +31,7 @@ public class GameThread implements Runnable {
     boolean wantsExchange;
     boolean exchangeInput;
     boolean betInput;
+    String askInput = ""; //Allgemein für Nachfragen ans Frontent
     boolean insuranceInput = false;
     boolean inputWait = true;
     boolean doubleDown = false;
@@ -297,6 +298,9 @@ public class GameThread implements Runnable {
             }
             betInput = true;
         }
+        else if (message.startsWith("answer:")) {
+            askInput = message.substring("answer:".length());
+        }
         else if (message.startsWith("takeuser")) {
             takeCount += 1;
             inputWait = false;
@@ -312,10 +316,6 @@ public class GameThread implements Runnable {
             inputWait = false;
             splitInput = true;
         }
-        else if (message.startsWith("insurance:")) {
-            insuranceBet = Integer.parseInt(message.substring("insurance:".length()).trim());
-            insuranceInput = true;
-        }
         else if (message.startsWith("getdealer")) {
             playerDone = true;
             inputWait = false;
@@ -326,6 +326,18 @@ public class GameThread implements Runnable {
         else if (message.startsWith("end")) {
             running = false;
         }
+    }
+
+    public String askFrontent(String query) { //Allgemein für alles Mögliche! => Nicht so viele Variableb
+        conn.send("ask:"+query);
+        while(askInput.length() == 0) {
+            try {
+                Thread.sleep(100);
+            }
+            catch (Exception ignored) {}
+        }
+        System.out.println("Frontent Answer:"+askInput);
+        return askInput;
     }
 
     // Funktioniert als Hauptmethode für das Blackjack Spiel
@@ -454,26 +466,18 @@ public class GameThread implements Runnable {
             if (dealerStack.get(1).getValue() == 'a') {
                 //region Insurance Bet
                 setGameState(GameState.INSURANCE_BET);
-                while (!insuranceInput) {
-                    //ist nicht vollständig, nachher mit Frontend lösen
-                    System.out.print("Willst du eine Insurance bet ablegen?(false, true)\n");
 
-                    Scanner c = new Scanner(System.in);
-                    String inputString = c.nextLine();
-                    if(inputString.equals("true")){
-                        System.out.println("Wieviel?");
-                        inputString = c.nextLine();
-                        try {
-                            insuranceBet = Integer.parseInt(inputString);
-                            System.out.println("Du hast " + insuranceBet + " als Insurance Bet gesetzt");
-                            insuranceInput = true;
-                        } catch (NumberFormatException e) {
-                        }
-                    }
-                    else{
-                        insuranceBet = 0;
-                        insuranceInput = true;
-                    }
+                System.out.print("Willst du eine Insurance bet ablegen?(false, true)\n");
+
+                String a = askFrontent("insurance");
+                String[] r = a.split(";");
+                if(Objects.equals(r[0], "true")) {
+                    insuranceInput = true;
+                    insuranceBet = Integer.parseInt(r[1]);
+                    System.out.println("Du hast " + insuranceBet + " als Insurance Bet gesetzt");
+                } else {
+                    insuranceInput = true;
+                    insuranceBet = 0;
                 }
                 //endregion
             }
