@@ -155,7 +155,11 @@ window.buttons = {
         else {
             console.log("Show Button:", name, document.getElementById("buttonsDiv").querySelectorAll("."+name));
             [...document.getElementById("buttonsDiv").querySelectorAll("."+name)].forEach(b => {
-                b.onclick = ()=>resolve(true);
+                let old = b.onclick;
+                b.onclick = ()=>{
+                    if(old) old();
+                    resolve(true);
+                }
                 b.classList.add("show");
             });
         }
@@ -173,9 +177,13 @@ window.buttons = {
         document.getElementById("buttonsDiv").classList.add("show");
         [...document.getElementById("buttonsDiv").querySelectorAll("button")].forEach(b => b.classList.remove("show"))
         Object.keys(types).forEach(t => {
-            [...document.getElementById("buttonsDiv").querySelectorAll("."+t)].forEach(b => {
-                b.onclick = types[t];
-                b.classList.add("show");
+            [...document.getElementById("buttonsDiv").querySelectorAll("."+t.replace("_", ""))].forEach(b => {
+                let old = b.onclick;
+                b.onclick = ()=>{
+                    if(old) old();
+                    types[t]();
+                }
+                if(!t.startsWith("_")) b.classList.add("show"); //Damit nur als Platzhalter fürs Frontent
             });
         });
     },

@@ -711,17 +711,17 @@ public class GameThread implements Runnable {
 
         public void splitCheck(int index){
             if(playerStack.get(index).get(0).getValue() == playerStack.get(index).get(1).getValue()){
-                while (inputWait) {
-                    if (splitInput) {
-                        ArrayList<GameCard> temp = new ArrayList<>();
-                        playerStack.add(temp);
-                        playerStack.get(index + 1).add(playerStack.get(index).get(1));
-                        playerStack.get(index).remove(1);
-                        splitCount++;
-                        states.replace(temp, StackState.RUNNING);
-                        conn.send("splitacc");
-                    }
-                }
+                String a = askFrontent("split");
+                String[] r = a.split(";");
+                if(Objects.equals(r[0], "true")) {
+                    System.out.println("Frontent Möchte SPlitten");
+                    ArrayList<GameCard> temp = new ArrayList<>();
+                    playerStack.add(temp);
+                    playerStack.get(index + 1).add(playerStack.get(index).get(1));
+                    playerStack.get(index).remove(1);
+                    splitCount++;
+                    states.replace(temp, StackState.RUNNING);
+                } else System.out.println("Frontent möchte nicht splitten!");
             }
         }
         public void checkGameState(){

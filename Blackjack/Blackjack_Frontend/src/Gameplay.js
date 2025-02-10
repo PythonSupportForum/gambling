@@ -122,8 +122,8 @@ const userTakeCard = async (count = 1) => {
     const canSplit = currentUserCard.length === 2 && currentUserCard[0].cardValue === currentUserCard[1].cardValue && userStack.length < 4; //Kann nur Splitten bei Zwei gleichen Karten und nur maximal 4 mal spittem
     const input = await new Promise(resolve => buttons.show({
         proceed: ()=>resolve("p"),
-        split: ()=>resolve("s"),
-        double: ()=>resolve("p"), //Zum Beisiel weil Spit oder Douvle Down ausgefürht urd
+        _split: ()=>resolve("s"),
+        _double: ()=>resolve("p"), //Zum Beisiel weil Spit oder Double Down ausgefürht urd
     }));
     buttons.hide();
 
@@ -141,24 +141,24 @@ const userTakeCard = async (count = 1) => {
         await Promise.all(p);
         return true;
     }
-    // else if(input === "s") {
-    //     addUserStack();
-    //     await Promise.all([
-    //         ...(cards.length > 1 ? [userStack[runningStackId].add(cards[0])] : []),
-    //         userStack[userStack.length-1].add(cards.pop()) //Hintere Karte auf neuen Stack
-    //     ]); //Auf die entsprechenden Stapel verteilen mit Promise für Warten
-    //     userStack[runningStackId].startShowPoints();
-    //     userStack[userStack.length-1].startShowPoints();
-    //
-    //     userStack[userStack.length-1].einsatz = userStack[runningStackId].einsatz/2;
-    //     userStack[runningStackId].einsatz = userStack[runningStackId].einsatz/2;
-    //
-    //     if(cards.length > 0 && cards[0].cardValue === 11) {
-    //         userStack[runningStackId].restMaxCount = 1;
-    //         userStack[runningStackId-1].restMaxCount = 1;
-    //     }
-    //     return true;
-    // }
+    else if(input === "s") { //Kann so bleiben, weil keine Änderung an der Logig, sondern nur Karte auf anderem Stappel dargestellt wird
+         addUserStack();
+         await Promise.all([
+             ...(cards.length > 1 ? [userStack[runningStackId].add(cards[0])] : []),
+             userStack[userStack.length-1].add(cards.pop()) //Hintere Karte auf neuen Stack
+         ]); //Auf die entsprechenden Stapel verteilen mit Promise für Warten
+         userStack[runningStackId].startShowPoints();
+         userStack[userStack.length-1].startShowPoints();
+
+         userStack[userStack.length-1].einsatz = userStack[runningStackId].einsatz/2;
+         userStack[runningStackId].einsatz = userStack[runningStackId].einsatz/2;
+
+         if(cards.length > 0 && cards[0].cardValue === 11) {
+             userStack[runningStackId].restMaxCount = 1;
+             userStack[runningStackId-1].restMaxCount = 1;
+         }
+         return true;
+    }
 
     console.log("Error! Unbekannte Eingabe:", input);
 }
