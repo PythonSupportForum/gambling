@@ -214,8 +214,10 @@ window.connectSocket = ()=>{
         socket.onerror = (error) => {
             console.error('WebSocket-Fehler:', error);
             // Crash
-            window.socket = null;
-            connectSocket();
+            setTimeout(()=>{
+                window.socket = null;
+                connectSocket();
+            }, 10000);
         };
 
         // Verbindung geschlossen => Handlen

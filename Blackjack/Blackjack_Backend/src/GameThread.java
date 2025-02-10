@@ -332,6 +332,7 @@ public class GameThread implements Runnable {
     }
 
     public String askFrontend(String query) { //Allgemein für alles Mögliche! => Nicht so viele Variableb
+        askInput = ""; //Damit nicht von vorher noch da
         conn.send("ask:"+query);
         while(askInput.length() == 0) {
             try {
