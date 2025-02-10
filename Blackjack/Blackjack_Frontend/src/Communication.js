@@ -1,6 +1,23 @@
 window.socket = null;
 window.approved = false;
-window.listener = [];
+window.listener = {};
+window.results = {};
+
+function addListener(type, callback = ()=>{}) {
+    if(!(type in listener)) listener[type] = [];
+    listener[type].push(callback);
+    while((type in results) && listener[type].length > 0 ) listener[type].shift()(...results[type]);
+}
+function getListener(type, save) {
+    if(save) return (...a)=>{
+        results[type] = a;
+        if(type in listener) listener[type].forEach(c => c(...a));
+        listener[type] = [];
+    }
+    if(type in listener) return listener[type].shift();
+    console.log("Error! Versuche Listner auszuführen von dem es keinen meher gibt!", type);
+    return ()=>{};
+}
 
 window.connectSocket = ()=>{
     return new Promise(resolve => {
@@ -38,7 +55,7 @@ window.connectSocket = ()=>{
 
                 points = part[2].substring("p:".length);
 
-                listener.shift()({
+                getListener("card")({
                     type: value + "_" + coat,
                     points: points
                 });
@@ -56,7 +73,7 @@ window.connectSocket = ()=>{
 
                 console.log("points", points,"card",value + "_" + coat);
 
-                listener.shift()({
+                getListener("dealercard")({
                     type: value + "_" + coat,
                     points: points
                 });
@@ -77,7 +94,7 @@ window.connectSocket = ()=>{
                     cardObjects.push({type: value + "_" + coat, points: 0});
                 }
 
-                listener.shift()({objects: cardObjects, stackValue: parseInt(sub[1])});
+                getListener("dealercards")({objects: cardObjects, stackValue: parseInt(sub[1])}, true);
             }
             else if(msg.startsWith("chipupdate:")){
                 let updatedChipCount = parseInt(msg.substring("DealerCards:".length - 1));
@@ -85,18 +102,18 @@ window.connectSocket = ()=>{
                     console.log("Chip updated for: " + updatedChipCount);
                     document.getElementById("ChipCount").innerText = updatedChipCount + "¢";
                     console.log(updatedChipCount);
-                    listener.shift()(updatedChipCount);
+                    getListener("chipupdate")(updatedChipCount);
                 }
                 else{
                     document.getElementById("ChipCount").innerText = chipCount + "¢";
-                    listener.shift()(chipCount);
+                    getListener("chipupdate")(chipCount);
                     console.error("Auszahlung nicht erfolgt");
                 }
             }
             else if(msg.startsWith("bal:")){
                 window.balance = parseFloat(msg.substring("bal:".length));
                 console.log(balance);
-                listener.shift()(balance);
+                getListener("bal")(balance);
             }
             else if(msg.startsWith("stack:")){
                 let part = msg.substring("stack:".length).split(",");
@@ -106,7 +123,7 @@ window.connectSocket = ()=>{
                 let state;
                 state = part[1].substring("s:".length).includes("true");
 
-                listener.shift()({
+                getListener("stack")({
                     points: points,
                     state: state
                 });
@@ -139,13 +156,13 @@ window.takeCard = ()=>new Promise(async resolve => {
     const socket = await connectSocket();
     socket.send("TakeUser");
 
-    listener.push(resolve);
+    addListener("card", resolve);
 });
 window.dealerTakes = ()=>new Promise(async resolve => {
     const socket = await connectSocket();
     socket.send("TakeDealer");
 
-    listener.push(resolve);
+    addListener("dealercard", resolve);
 });
 //Um ein neues Spiel zu starten → Übergeben wird der einseatz => Muss an derver gegeben werden, Zurückgegeben wird die erste sichtbare umgedrehte karte des dealers.
 window.startNewBidding = (bet)=>new Promise(async resolve => {
@@ -157,7 +174,8 @@ window.startNewBidding = (bet)=>new Promise(async resolve => {
 window.startBlackJack = ()=>new Promise(async resolve => {
     const socket = await connectSocket();
     socket.send("Start");
-    listener.push(resolve);
+
+    addListener("bal", resolve);
 })
 window.getGameResults = ()=>new Promise(resolve => {
     resolve("Hallo");
@@ -166,13 +184,13 @@ window.getDealerCards = ()=>new Promise(async resolve => {
     const socket = await connectSocket();
     socket.send("GetDealer");
 
-    listener.push(resolve);
+    addListener("dealercards", resolve);
 });
 window.exchange = (chipAmount) =>new Promise(async resolve => {
     const socket = await connectSocket();
     socket.send("Exchange:" + chipAmount);
 
-    listener.push(resolve);
+    addListener("chipupdate", resolve);
 })
 
 window.serverDoubleDown = ()=>{
