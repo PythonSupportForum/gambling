@@ -166,8 +166,8 @@ window.connectSocket = ()=>{
                             answer("false");
                             document.getElementById("result").classList.remove("show");
 
-                            dealerLeftStack.stopZeigenPunkt();
-                            await StappelAufAusgangsrotation([...userStack, dealerLeftStack]);
+                            dealerLeftStack.stopZeigenPunkt()
+                            await stackToDefaultPPotation([...userStack, dealerLeftStack]);
                             window.userStack = [];
 
                             await startGame();

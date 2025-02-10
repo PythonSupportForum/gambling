@@ -280,10 +280,9 @@ const endStack = ()=> new Promise(resolve => {
     }, 2500);
 });
 
-
-const StappelAufAusgangsrotation = (stappels)=> {
+const stackToDefaultPPotation = (stacks)=> {
     let p = [];
-    stappels.forEach(async s => p.push((async ()=> {
+    stacks.forEach(async s => p.push((async ()=> {
         console.log("Stappel:", s);
         const cards = Object.values(s.cards);
         console.log("Karts:", cards);
@@ -293,6 +292,7 @@ const StappelAufAusgangsrotation = (stappels)=> {
     })()));
     return Promise.all(p);
 }
+
 const showDealerCards = async (gameInfoPromise = null, countCoveredCards = 1, fastFlip = false)=>{
     dealerLeftStack.direktWertUpdate = false;
     if(!gameInfoPromise) gameInfoPromise = await dealerTakes();

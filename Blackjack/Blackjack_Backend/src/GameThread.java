@@ -500,7 +500,7 @@ public class GameThread implements Runnable {
             String a = askFrontend("double");
             String[] r = a.split(";");
             if(Objects.equals(r[0], "true")) {
-                System.out.println("Der Spieler hat Double Down gestezt!");
+                System.out.println("Der Spieler hat Double Down gesetzt!");
 
                 card = deck.pop();
                 playerStack.get(0).add(card);
