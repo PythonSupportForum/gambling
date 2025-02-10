@@ -199,11 +199,15 @@ window.connectSocket = ()=>{
                         console.log("Error! Server labert Müll!", text);
                         break;
                 }
+            } else if (msg.startsWith("blackjack:")) {
+                console.log("Blackjack!!!!");
+
             } else if (msg.startsWith("bust:")) {
                 let stackId = parseInt(msg.substring("bust:".length));
                 endStack().then();
                 if (userStack.length === 1) {
                     window.endProcess = true;
+                    window.endGame = true;
                 }
                 console.log("Ehrenlos", stackId);
             } else {

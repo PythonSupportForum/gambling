@@ -320,7 +320,9 @@ public class GameThread implements Runnable {
             inputWait = false;
         }
         else if (message.startsWith("endstack:")) {
-            cardInput[Integer.parseInt(message.substring("endstack:".length()))] = true;
+            int i = Integer.parseInt(message.substring("endstack:".length()));
+            System.out.println("Got End Stack! " + i);
+            cardInput[i] = true;
         }
         else if (message.startsWith("end")) {
             running = false;
@@ -518,17 +520,16 @@ public class GameThread implements Runnable {
 
                 cardsAfterSetDouble = 0;
             } else {
+                doubleDown = false;
                 System.out.println("Der Spieler hat kein Double Down gesetzt!");
             }
 
             if (getGameState() == GameState.PLAYER_DRAW) {
                 // Main Split Logic
                 splitCheck(0);
-                System.out.println("Checked Split!");
-                for(int i = 0; i <= splitCount; i++) {
-                    karteZiehen(i);
-                }
-                System.out.println("Alle Karten gezogen!");
+                System.out.println("Checked Split! "+splitCount);
+                for(int i = 0; i <= splitCount; i++) karteZiehen(i);
+                System.out.println("Alle Karten gezogen! "+cardInput[0]+" "+playerDone);
                 while(!playerDone){
                     try {
                         Thread.sleep(100);
@@ -613,12 +614,12 @@ public class GameThread implements Runnable {
         if (currentValue(cardStack) > 21) {
             states.replace(index, StackState.LOST);
             System.out.println("Bust! Du hast auf Stapel " + (index + 1) + " verloren!");
-            conn.send("Bust:"+index);
+            conn.send("bust:"+index);
             cardInput[index] = true;
         }
         else if (currentValue(cardStack) == 21) {
             System.out.println("Herzlichen Glückwunsch! Du hast auf Stapel " + (index + 1) + " einen Blackjack!");
-            conn.send("Blackjack:"+index);
+            conn.send("blackjack:"+index);
             states.replace(index, StackState.WON);
             cardInput[index] = true;
         }
@@ -686,6 +687,8 @@ public class GameThread implements Runnable {
     }
 
     public void karteZiehen(int index){
+        System.out.println("Z: "+cardInput[index]+" "+index+" "+cardsAfterSetDouble);
+        boolean vorher = (!cardInput[index] || (doubleDown && cardsAfterSetDouble == 0));
         while (!cardInput[index] || (doubleDown && cardsAfterSetDouble == 0)) {
             if(doubleDown && cardsAfterSetDouble >= 1) break;
             while(inputWait){
@@ -703,15 +706,19 @@ public class GameThread implements Runnable {
                     card = deck.pop();
                     int j = currentValue(playerStack.get(index));
                     playerStack.get(index).add(card);
-                    cardsAfterSetDouble++;
-                    if(doubleDown && cardsAfterSetDouble >= 1) break;
                     conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(playerStack.get(0)) - j));
                     printCard(card);
+                    cardsAfterSetDouble++;
+                    if(doubleDown && cardsAfterSetDouble >= 1) break;
                 }
             } catch (NumberFormatException e) {
                 continue;
             }
             checkValue(index);
+        }
+        if(vorher) {
+            cardInput[index] = true; //Zum nächsten und double down für diesen Stappel deaktivieren
+            doubleDown = false;
         }
     }
 
