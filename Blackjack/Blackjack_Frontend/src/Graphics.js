@@ -171,16 +171,18 @@ window.buttons = {
         console.log("Show Buttons:", types, nextButtons);
         types = {...types};
         Object.keys(nextButtons).forEach(k => {
-           const old = types[k];
-           const f = nextButtons[k];
-           types[k] = ()=>{
-               try {
-                   if(old) old();
-                   f();
-               } catch(e) {
-                   console.log(e, types, f, k);
-               }
-           }
+            console.log("Next Buttons:", k);
+            const old = types[k];
+            const f = nextButtons[k];
+            types[k] = ()=>{
+                console.log("Run:", types[k]);
+                try {
+                    if(old) old();
+                    f();
+                } catch(e) {
+                    console.log("ERROR", e, types, f, k);
+                }
+            }
         });
         nextButtons = {};
 
@@ -190,6 +192,7 @@ window.buttons = {
             [...document.getElementById("buttonsDiv").querySelectorAll("."+t.replace("_", ""))].forEach(b => {
                 let old = b.onclick;
                 b.onclick = ()=>{
+                    console.log("Klick Button:", b, old, types[t]);
                     if(old) old();
                     types[t]();
                 }
@@ -198,6 +201,7 @@ window.buttons = {
         });
     },
     hide: ()=>{
+        console.log("Run Hide!");
         resolveJaOrNo.forEach(c => c(false));
         resolveJaOrNo = [];
         document.getElementById("buttonsDiv").classList.remove("show");

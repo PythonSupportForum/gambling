@@ -227,6 +227,7 @@ const startGame = async (first = true)=> {
             stop: ()=>resolve("n"),
             _split: ()=>resolve("s")
         }, ()=>resolve("-")));
+        buttons.hide(); //Wer hatte das Weggemacht???
         if(eingabe === "t") {
             await userTakeCard(1);
             if(userStack[runningStackId].restMaxCount === 0) await endStack();

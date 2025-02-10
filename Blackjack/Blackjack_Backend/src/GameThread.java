@@ -524,9 +524,11 @@ public class GameThread implements Runnable {
             if (getGameState() == GameState.PLAYER_DRAW) {
                 // Main Split Logic
                 splitCheck(0);
+                System.out.println("Checked Split!");
                 for(int i = 0; i <= splitCount; i++) {
                     karteZiehen(i);
                 }
+                System.out.println("Alle Karten gezogen!");
                 while(!playerDone){
                     try {
                         Thread.sleep(100);
@@ -577,6 +579,8 @@ public class GameThread implements Runnable {
                 //Methode zur Bestimmung wer gewonnen oder verloren hat nach unten ausgelagert
                 checkGameState();
             }
+
+            System.out.println("Ask Frontend for End!");
 
             String askEnd = askFrontend("end");
             running = !askEnd.equals("true");
