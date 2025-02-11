@@ -1,5 +1,5 @@
 body{
-    background-image: url('../assets/Blackjack.jpg'); !important;
+    background-image: url('/assets/Blackjack.jpg'); !important;
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -27,7 +27,6 @@ main {
 }
 
 #Titel{
-    font-size: 100;
     color: #ffbf00;
     text-decoration: underline;
 }
@@ -66,10 +65,10 @@ GameStart{
 
 Header {
     position: fixed;
-    top: 0px;
+    top: 0;
     bottom: 85%;
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
     background-color: #00541d;
     display: flex;
     justify-content: flex-end;

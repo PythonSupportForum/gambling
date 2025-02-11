@@ -22,14 +22,14 @@ function generateAsciiToken($length = 64) {
 }
 
 function logActivity($conn, $kundeId = null) {
-    $ip = $_SERVER['REMOTE_ADDR']; // IP-Adresse des Benutzers achtung, wenn Bneutzerp Poxy benutzt ist nicht die echte
+    $ip = $_SERVER['REMOTE_ADDR']; // IP-Adresse des Benutzers achtung, wenn Benutzer Proxy benutzt ist nicht die echte
     $url = $_SERVER['REQUEST_URI']; // Aufgerufene URL
 
     $stmt = $conn->prepare("INSERT INTO Logs (kundeId, ip, url) VALUES (?, ?, ?)");
     $stmt->bind_param("iss", $kundeId, $ip, $url);
 
     if (!$stmt->execute()) {
-        error_log("Fehler beim Erstellen des Log-Eintrags: " . $stmt->error); //Wird nicht im forntent ausgegeben aber kommt in die Apache Logs
+        error_log("Fehler beim Erstellen des Log-Eintrags: " . $stmt->error); //Wird nicht im Frontend ausgegeben aber kommt in die Apache Logs
     }
 
     $stmt->close();
@@ -53,6 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
             $stmt->bind_result($id, $pwdhash, $salt);
             if ($stmt->fetch() && password_verify($pwd . $salt, $pwdhash)) $_SESSION['kundeId'] = $id; // Benutzer-ID in der Session speichern
             else $errors[] = "Benutzername oder Passwort falsch.";
+
+            echo "P:".$pwd . $salt." : ".$pwdhash;
+
             $stmt->close();
         }
     } elseif (isset($_POST['register'])) {
@@ -62,17 +65,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
         $bn = $_POST['bn'] ?? '';
         $pwd = $_POST['password'] ?? '';
         $geburtsdatum = $_POST['geburtsdatum'] ?? '';
-        $addresse = $_POST['addresse'] ?? '';
+        $stadt = $_POST['stadt'] ?? '';
+        $postleitzahl = $_POST['postleitzahl'] ?? '';
+        $straße = $_POST['straße'] ?? '';
+        $hausnummer = $_POST['hausnummer'] ?? '';
 
         $errors = [];
 
-        //Ob lles richitg ist
+        // Überprüfen, ob alle Felder ausgefüllt sind
         if (empty($name)) $errors[] = "Name ist erforderlich.";
         if (empty($vorname)) $errors[] = "Vorname ist erforderlich.";
         if (empty($bn)) $errors[] = "Benutzername ist erforderlich.";
         if (empty($pwd)) $errors[] = "Passwort ist erforderlich.";
         if (empty($geburtsdatum)) $errors[] = "Geburtsdatum ist erforderlich.";
-        if (empty($addresse)) $errors[] = "Adresse ist erforderlich.";
+        if (empty($stadt)) $errors[] = "Stadt ist erforderlich.";
+        if (empty($postleitzahl)) $errors[] = "Postleitzahl ist erforderlich.";
+        if (empty($straße)) $errors[] = "Straße ist erforderlich.";
+        if (empty($hausnummer)) $errors[] = "Hausnummer ist erforderlich.";
 
         if (strlen($name) > 64 || preg_match('/\s/', $name)) {
             $errors[] = "Nachname darf keine Leerzeichen enthalten und maximal 64 Zeichen lang sein.";
@@ -97,12 +106,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
 
             // Passwort mit Salt hashen
             $pwdhash = password_hash($pwd . $salt, PASSWORD_DEFAULT);
+            echo "P:".$pwd . $salt." : ".$pwdhash;
 
             $t = generateAsciiToken();
 
+            // Stadt in die City-Tabelle einfügen, falls sie noch nicht existiert
+            $stmt = $conn->prepare("SELECT id FROM City WHERE name = ? AND postcode = ?");
+            $stmt->bind_param("si", $stadt, $postleitzahl);
+            $stmt->execute();
+            $stmt->store_result();
+            if ($stmt->num_rows === 0) {
+                $stmt = $conn->prepare("INSERT INTO City (name, postcode) VALUES (?, ?)");
+                $stmt->bind_param("si", $stadt, $postleitzahl);
+                $stmt->execute();
+                $cityId = $stmt->insert_id;
+            } else {
+                $stmt->bind_result($cityId);
+                $stmt->fetch();
+            }
+            $stmt->close();
+
+            // Adresse in die Adressen-Tabelle einfügen
+            $stmt = $conn->prepare("SELECT id FROM Adressen WHERE straße = ? AND number = ? AND cityId = ?");
+            $stmt->bind_param("sii", $straße, $hausnummer, $cityId);
+            $stmt->execute();
+            $stmt->store_result();
+            if ($stmt->num_rows === 0) {
+                // Adresse existiert noch nicht, also einfügen
+                $stmt = $conn->prepare("INSERT INTO Adressen (straße, number, cityId) VALUES (?, ?, ?)");
+                $stmt->bind_param("sii", $straße, $hausnummer, $cityId);
+                $stmt->execute();
+                $adresseId = $stmt->insert_id;
+            } else {
+                // Adresse existiert bereits, die ID abrufen
+                $stmt->bind_result($adresseId);
+                $stmt->fetch();
+            }
+            $stmt->close();
             // SQL-Query zum Einfügen des neuen Kunden
-            $stmt = $conn->prepare("INSERT INTO Kunden (Name, Vorname, bn, pwdhash, pwdsalt, Geburtsdatum, Addresse, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("ssssssss", $name, $vorname, $bn, $pwdhash, $salt, $geburtsdatum, $addresse, $t);
+            $stmt = $conn->prepare("INSERT INTO Kunden (Name, Vorname, bn, pwdhash, pwdsalt, Geburtsdatum, adresseId, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssssssis", $name, $vorname, $bn, $pwdhash, $salt, $geburtsdatum, $adresseId, $t);
             if ($stmt->execute()) $_SESSION['kundeId'] = $stmt->insert_id;
             else $errors[] = "Fehler beim Anlegen des Kunden: " . $stmt->error;
             $stmt->close();
@@ -117,7 +160,7 @@ if(isset($_GET['logout'])) {
 $userData = null;
 if (isset($_SESSION['kundeId'])) {
     $kundeId = $_SESSION['kundeId'];
-    $stmt = $conn->prepare("SELECT Kunden.id, Name, Vorname, bn, Geburtsdatum, Addresse, SUM(t.Betrag) as amount FROM Kunden LEFT JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id WHERE Kunden.id = ?;");
+    $stmt = $conn->prepare("SELECT Kunden.id, Name, Vorname, bn, Geburtsdatum, adresseId, SUM(t.Betrag) as amount FROM Kunden LEFT JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id WHERE Kunden.id = ?;");
     $stmt->bind_param("i", $kundeId);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -178,9 +221,9 @@ if(!isset($_GET["no_frame"])) {
         </div>
     </header>
     <main>
-<?php
-}
-?>
+        <?php
+        }
+        ?>
         <?php
         // Dynamisches Einbinden von Unterseiten
         if (isset($_GET['page'])) {
@@ -209,14 +252,14 @@ if(!isset($_GET["no_frame"])) {
         }
         ?>
 
-<?php
-if(!isset($_GET["no_frame"])) {
-?>
+        <?php
+        if(!isset($_GET["no_frame"])) {
+        ?>
     </main>
 </div>
-<footer>
-    <p>&copy; 2023 Let's Gambling | <a href="./imprint">Impressum</a></p>
-</footer>
+    <footer>
+        <p>&copy; 2023 Let's Gambling | <a href="./imprint">Impressum</a></p>
+    </footer>
 <?php
 }
 ?>
@@ -260,7 +303,10 @@ if ((isset($_GET['login']) || isset($_GET['register'])) && !$userData) {
                 <input type='text' name='bn' placeholder='Benutzername' value='" . ($_POST['bn'] ?? '') . "' required>
                 <input type='password' name='password' placeholder='Passwort' required>
                 <input type='date' name='geburtsdatum' placeholder='Geburtsdatum' value='" . ($_POST['geburtsdatum'] ?? '') . "' required>
-                <input type='text' name='addresse' placeholder='Addresse' value='" . ($_POST['addresse'] ?? '') . "' required>
+                <input type='text' name='stadt' placeholder='Stadt' value='" . ($_POST['stadt'] ?? '') . "' required>
+                <input type='text' name='postleitzahl' placeholder='Postleitzahl' value='" . ($_POST['postleitzahl'] ?? '') . "' required>
+                <input type='text' name='straße' placeholder='Straße' value='" . ($_POST['straße'] ?? '') . "' required>
+                <input type='text' name='hausnummer' placeholder='Hausnummer' value='" . ($_POST['hausnummer'] ?? '') . "' required>
                 <div class='buttons'>
                     <button onclick='event.preventDefault(); closePopup()'>Abbrechen</button>
                     <button type='submit'>Account erstellen</button>

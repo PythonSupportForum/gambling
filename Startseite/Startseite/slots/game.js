@@ -1,3 +1,5 @@
+window.host = "https://localhost:8081";
+
 document.addEventListener("DOMContentLoaded", ()=>{
     window.token = document.getElementById("token").innerText || 1;
 
@@ -29,13 +31,13 @@ document.addEventListener("DOMContentLoaded", ()=>{
         }
     }
 
-    const url = 'http://localhost:8080/bilder';
+    const url = host+'/bilder';
     window.bilder = loadAndSortImages(url);
 
 
     async function startGame(token) {
         try {
-            const response = await fetch('http://localhost:8080/start-game', {
+            const response = await fetch(host+'/start-game', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -59,7 +61,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
     async function fetchBalance(token) {
         try {
-            const response = await fetch('http://localhost:8080/stand', {
+            const response = await fetch(host+'/stand', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json',},
                 body: JSON.stringify({ token }),

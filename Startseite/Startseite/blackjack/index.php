@@ -1,3 +1,7 @@
+<?php
+session_start();
+?>
+
 <meta charset = "UTF-8">
 <meta lang="de">
 
@@ -7,12 +11,12 @@ CSS-Datei, Favicons und JS-Datei einbinden
 <head>
 <link rel="stylesheet" href="Frontend.css">
 <title>Blackjack | Let's go Gambling!</title>
-<link rel="apple-touch-icon" sizes="180x180" href="../../Startseite/Startseite/assets/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../../Startseite/Startseite/assets/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="../../Startseite/Startseite/assets/favicon-16x16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/../assets/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/../assets/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/../assets/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
 <script src="blackjack-frontend.js"></script>
 </head>
 <body>
@@ -20,22 +24,22 @@ CSS-Datei, Favicons und JS-Datei einbinden
 Obere Leiste mit Logo
 -->
 <header>
-  <a href="../../../Startseite/Startseite/index.php">
-    <img id="Logo" src="../assets/Logo_Rand.png"/>
+  <a href="/">
+    <img id="Logo" src="/assets/Logo_Rand.png"/>
   </a>
 
   <!--
   Anmelde-Button
   -->
   <?php
-  if(isset($_SESSION["user_id"])){
+  if(!isset($_SESSION["user_id"])){
     ?>
-    <button onclick="window.location.href = '../../../Startseite/Startseite/index.php'" type="button" id="Anmelden">Anmelden</button>
+    <button onclick="window.location.href = '/login'" type="button" id="Anmelden">Anmelden</button>
     <?php
   }
   else{
     ?>
-    <button onclick="window.location.href = '../../../Startseite/Startseite/src/logout.php'" type="button" id="Logout">Anmelden</button>
+    <button onclick="window.location.href = '/logout'" type="button" id="Logout">Abmelden</button>
     <?php
   }
   ?>
@@ -64,9 +68,9 @@ Obere Leiste mit Logo
 
 
   <div id="Kontostand">
-    <img id="PB" src="../assets/default-profile.png" alt="Profilbild">
+    <img id="PB" src="/assets/default-profile.png" alt="Profilbild">
     <h2 id="Guthaben">100000</h2>
-    <img src="../assets/tilotaler_rand.png" id="Taler"/>
+    <img src="/assets/tilotaler_rand.png" id="Taler"/>
   </div>
 
 </header>
@@ -79,7 +83,7 @@ Obere Leiste mit Logo
 
   <div id="StartGame">
       <h1 id="Titel">Blackjack</h1>
-      <button onclick="window.location.href = 'game.html'" type="button" class="gleichButton">Starten</button>
+      <button onclick="window.location.href = '<?php echo isset($_SESSION['kundeId']) ? "./Game.php" : "/register" ?>'" type="button" class="gleichButton">Starten</button>
   </div>
 
 </main>
