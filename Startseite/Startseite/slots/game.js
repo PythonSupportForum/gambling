@@ -184,6 +184,10 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
     window.isWin = false;
     window.play = async ()=>{
+        if(balance < 1000) {
+            alert("Du bist Pleite!!! Wir akzeptieren keine Schulder! Bitte zahle mehr Kohle ein!");
+            return;
+        }
         console.log("Start Game...");
         document.getElementById("play").disabled = true;
 

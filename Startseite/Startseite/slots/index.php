@@ -64,7 +64,7 @@ if (isset($_SESSION['kundeId'])) {
                 <div class="machine">
                     <div class="t">
                         <span class="a">SLOTS</span>
-                        <span class="b">One Round 4TT</span>
+                        <span class="b">One Round 1000TT</span>
                     </div>
                     <div class="row">
                         <div class="rad">
