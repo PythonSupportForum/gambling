@@ -83,7 +83,7 @@ Obere Leiste mit Logo
 
   <div id="StartGame">
       <h1 id="Titel">Blackjack</h1>
-      <button onclick="window.location.href = '<?php echo isset($_SESSION['kundeId']) ? "./Game.html" : "/register" ?>'" type="button" class="gleichButton">Starten</button>
+      <button onclick="window.location.href = '<?php echo isset($_SESSION['kundeId']) ? "./Game.php" : "/register" ?>'" type="button" class="gleichButton">Starten</button>
   </div>
 
 </main>
