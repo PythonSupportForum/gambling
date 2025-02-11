@@ -1,3 +1,5 @@
+const serverURL = "ws://127.0.0.1:8080";
+
 window.socket = null;
 window.approved = false;
 window.listener = {};
@@ -26,8 +28,9 @@ window.connectSocket = async ()=>{
     if(!("socketPromise" in window)) window.socketPromise = new Promise(resolve => {
         console.log("Create Socket!");
 
-        const socket = new WebSocket('ws://127.0.0.1:8080');
-        let clientID = -1;
+        const socket = new WebSocket(serverURL);
+
+        let clientToken = document.getElementById("token").innerText || "2"; //Fals PHP keinen Token übergeben hat als Backup!
 
         // Verbindung geöffnet
         socket.onopen = () => {
@@ -42,8 +45,8 @@ window.connectSocket = async ()=>{
             console.log("Nachricht vom Server:", event.data);
             const msg = event.data.toString().toLowerCase();
             if (event.data.toString().toLowerCase().indexOf('acc') === 0) {
-                console.log("ID: " + clientID.toString());
-                socket.send("ID:" + clientID.toString());
+                console.log("ID: " + clientToken.toString());
+                socket.send("ID:" + clientToken.toString());
                 window.approved = true;
             }
 

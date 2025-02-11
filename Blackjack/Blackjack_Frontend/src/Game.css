@@ -318,3 +318,7 @@ button:active {
     color: #FFD700;
     text-shadow: 0px 0px 10px rgba(255, 215, 0, 0.8);
 }
+
+.hidden {
+    display: none;
+}

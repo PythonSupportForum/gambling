@@ -84,13 +84,11 @@ public class GameThread implements Runnable {
     GameState gameState = GameState.IDLE;
 
     // Konstruktor
-    public GameThread(int id, WebSocket _conn) {
-        client_ID = id;
+    public GameThread(String token, WebSocket _conn) {
         conn = _conn;
 
         clientDB = getConnection();
-
-        String query = "SELECT SUM(Betrag) as Kontostand FROM Transaktionen WHERE Kunden_ID = " + client_ID;
+        String query = "SELECT Kunden.*, SUM(t.Betrag) as Kontostand FROM Kunden JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id WHERE Kunden.token = '"+token+"'";
         try{
             assert clientDB != null;
             stmt = clientDB.createStatement();
@@ -98,10 +96,12 @@ public class GameThread implements Runnable {
             ResultSet rs = stmt.getResultSet();
             rs.next();
             balance = rs.getDouble("Kontostand");
+            client_ID = rs.getInt("id"); //Client Id wird mittels Token AUs Database extrahiert!
             rs.close();
             stmt.close();
         }
         catch(SQLException e){e.printStackTrace();}
+
 
         OLDBALANCE = balance;
 

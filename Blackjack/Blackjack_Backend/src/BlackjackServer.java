@@ -15,7 +15,6 @@ class BlackjackServer extends WebSocketServer {
     }
 
     // Funktioniert als Client_ID (intern). Mit jedem neuen Client wird diesem eine um 1 höhere ID zugewiesen, da immer um 1 erhöht wird, erhält der erste client die id 0
-    int id = -50;
     boolean acc = false;
 
     // "Dictionary" an Threads, Abfrage eines Threads mit Schlüssel Websocket, synchronizedMaps sind thread-sicher
@@ -58,10 +57,10 @@ class BlackjackServer extends WebSocketServer {
             int startIndex = lowerCaseMessage.indexOf("id:");
             if (startIndex != -1) {
                 try{
-                    id = Integer.parseInt(lowerCaseMessage.substring(startIndex + "id:".length()).trim());
-                    System.out.println("ID: " + id);
+                    String token = message.substring(startIndex + "id:".length()); //Token enthält auch Großbuchstaben
+                    System.out.println("Token: " + token);
                     acc = true;
-                    newThread(conn);
+                    newThread(conn, token);
                 }catch(NumberFormatException e){
                     System.out.println("Fehler: ID ist keine Zahl");
                 }
@@ -85,9 +84,9 @@ class BlackjackServer extends WebSocketServer {
         System.out.println("Blackjack Server wurde erfolgreich gestartet.");
     }
 
-    void newThread(WebSocket conn) {
+    void newThread(WebSocket conn, String token) {
         // Starten eines neuen Threads
-        GameThread gameThread = new GameThread(id, conn);
+        GameThread gameThread = new GameThread(token, conn);
         Thread thread = new Thread(gameThread);
         thread.start();
         // Einfügen in die HashMap ("Dictionary") -> Schlüssel ist der Websocket
