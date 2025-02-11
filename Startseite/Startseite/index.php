@@ -7,6 +7,12 @@ ini_set('display_startup_errors', 1); // Start-Fehler ebenfalls ausgeben
 // Session starten
 session_start();
 
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: Thu, 01 Jan 1970 00:00:00 GMT");
+
+
 $conn = new mysqli('db.ontubs.de', 'carl', 'geilo123!', 'gambling');
 if ($conn->connect_error) {
     die("Verbindung fehlgeschlagen: " . $conn->connect_error);
