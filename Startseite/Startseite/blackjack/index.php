@@ -6,6 +6,24 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 header("Expires: Thu, 01 Jan 1970 00:00:00 GMT");
 
+$conn = new mysqli('db.ontubs.de', 'carl', 'geilo123!', 'gambling');
+if ($conn->connect_error) {
+    die("Verbindung fehlgeschlagen: " . $conn->connect_error);
+}
+
+$userData = null;
+if (isset($_SESSION['kundeId'])) {
+    $kundeId = $_SESSION['kundeId'];
+    $stmt = $conn->prepare("SELECT Kunden.id, Name, Vorname, bn, Geburtsdatum, SUM(t.Betrag) as amount FROM Kunden LEFT JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id WHERE Kunden.id = ?;");
+    if($stmt) {
+        $stmt->bind_param("i", $kundeId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows === 1) $userData = $result->fetch_assoc();
+        $stmt->close();
+    } else echo "Fehler bei SQL Prepare: ".$conn->error;
+}
+
 ?>
 
 <meta charset = "UTF-8">
@@ -75,7 +93,7 @@ Obere Leiste mit Logo
 
   <div id="Kontostand">
     <img id="PB" src="/assets/default-profile.png" alt="Profilbild">
-    <h2 id="Guthaben">100000</h2>
+    <h2 id="Guthaben"><?php echo htmlspecialchars(str_pad($userData["amount"]."" ?? 0, 5, "0", STR_PAD_LEFT)); ?></h2>
     <img src="/assets/tilotaler_rand.png" id="Taler"/>
   </div>
 

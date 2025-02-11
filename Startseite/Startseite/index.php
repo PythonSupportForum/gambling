@@ -315,8 +315,8 @@ if ((isset($_GET['login']) || isset($_GET['register'])) && !$userData) {
         echo "
             <form action='./?register=true' method='post'>
                 <input type='hidden' name='register' value='1'>
-                <input type='text' name='name' placeholder='Name' value='" . ($_POST['name'] ?? '') . "' required>
                 <input type='text' name='vorname' placeholder='Vorname' value='" . ($_POST['vorname'] ?? '') . "' required>
+                <input type='text' name='name' placeholder='Nachname' value='" . ($_POST['name'] ?? '') . "' required>
                 <input type='text' name='bn' placeholder='Benutzername' value='" . ($_POST['bn'] ?? '') . "' required>
                 <input type='password' name='password' placeholder='Passwort' required>
                 <input type='date' name='geburtsdatum' placeholder='Geburtsdatum' value='" . ($_POST['geburtsdatum'] ?? '') . "' required>

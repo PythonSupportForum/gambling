@@ -43,6 +43,13 @@ if (isset($_SESSION['kundeId'])) {
     </div>
 </header>
 <main>
+    <h1><?php
+    if($userData) {
+        ?>
+        Herzlich Willkommen, <?php echo htmlspecialchars($userData["Vorname"])." ".htmlspecialchars($userData["Name"]); ?>!
+        <?php
+    }
+    ?></h1>
     <div id="Blackjack">
         <button onclick="window.location.href = './blackjack/'" class="gleichButton">Blackjack</button>
     </div>

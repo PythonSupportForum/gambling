@@ -9,26 +9,29 @@ import java.util.Map;
 
 // Implementation der Websockets gegenüber der unterlegenen Native Sockets (Websockets sind zudem Standardimplementation für javascript clients)
 class BlackjackServer extends WebSocketServer {
+    private ClientHandshake handshake;
 
     public BlackjackServer() {
         super();
     }
-
-    // Funktioniert als Client_ID (intern). Mit jedem neuen Client wird diesem eine um 1 höhere ID zugewiesen, da immer um 1 erhöht wird, erhält der erste client die id 0
     boolean acc = false;
 
     // "Dictionary" an Threads, Abfrage eines Threads mit Schlüssel Websocket, synchronizedMaps sind thread-sicher
     private final Map<WebSocket, GameThread> clientThreads = Collections.synchronizedMap(new HashMap<>());
-
     // Konstruktor für die Websocket Implementation
     public BlackjackServer(InetSocketAddress address) {
         super(address);
     }
-
     // Beim Öffnen einer Verbindung wird ein neuer Thread erstellt, indem nur die eine Verbindung behandelt wird
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         System.out.println("Neue Verbindung: " + conn.getRemoteSocketAddress());
+
+        //Damit die Verbindung von pberall aufgebraut werden kann und Browser nicht blokieren wegen verscheidneen Origins aus Sicherheitsgründen Sicherheitsmethoden abschalten
+        conn.setAttachment("Access-Control-Allow-Origin: *");
+        conn.setAttachment("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+        conn.setAttachment("Access-Control-Allow-Headers: Content-Type, Authorization");
+
         conn.send("acc");
         System.out.println("acc " + conn.getRemoteSocketAddress());
     }
