@@ -46,12 +46,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
         if (empty($bn) || empty($pwd)) {
             $errors[] = "Benutzername und Passwort sind erforderlich.";
         } else {
-            $stmt = $conn->prepare("SELECT id, pwdhash FROM Kunden WHERE bn = ?");
+            $stmt = $conn->prepare("SELECT id, pwdhash, pwdsalt FROM Kunden WHERE bn = ?");
             $stmt->bind_param("s", $bn);
             $stmt->execute();
             $stmt->store_result();
-            $stmt->bind_result($id, $pwdhash);
-            if ($stmt->fetch() && password_verify($pwd, $pwdhash)) $_SESSION['kundeId'] = $id; // Benutzer-ID in der Session speichern
+            $stmt->bind_result($id, $pwdhash, $salt);
+            if ($stmt->fetch() && password_verify($pwd . $salt, $pwdhash)) $_SESSION['kundeId'] = $id; // Benutzer-ID in der Session speichern
             else $errors[] = "Benutzername oder Passwort falsch.";
             $stmt->close();
         }
