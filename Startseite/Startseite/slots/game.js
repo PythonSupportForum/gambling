@@ -1,4 +1,6 @@
 window.host = "/api";
+window.beIrre = false;
+
 
 document.addEventListener("DOMContentLoaded", ()=>{
     window.token = document.getElementById("token").innerText || "2";
@@ -80,7 +82,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
         }
     }
 
-    let isU = false;
+    let isU = false; //Balance Exportentieles Wachstum
     let nU = false;
     window.balance = -1;
     window.showBalance = 0;
@@ -203,6 +205,8 @@ document.addEventListener("DOMContentLoaded", ()=>{
         const b = await bilder;
         const canvasContainers = [...document.getElementsByClassName("rad")];
         async function animateWheel(canvas, context, images, duration, finalImageIndexPromise, onIrre = ()=>{}) {
+            if(beIrre) setTimeout(onIrre, 4000);
+
             let finalImageIndex = -1;
             finalImageIndexPromise.then(i => {
                 finalImageIndex = i;
@@ -248,6 +252,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
                     speed = 0;
                     currentOffset = ziel;
                     if(isWin) {
+                        console.log("Is Win!!!!!");
                         window.isWin = false;
                         startConfetti();
                         updateB();

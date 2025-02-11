@@ -1,7 +1,6 @@
 * {
     box-sizing: border-box;
-    font-family: Helvetica;
-
+    font-family: Helvetica, serif;
 }
 html, body {
     width: 100%;
@@ -51,8 +50,6 @@ header * {
 header h1 {
     color: #f8bb12;
     font-size: 40pt;
-
-
 }
 
 .machine-container {
