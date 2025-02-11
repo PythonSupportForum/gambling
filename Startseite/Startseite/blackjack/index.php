@@ -38,7 +38,7 @@ Obere Leiste mit Logo
   Anmelde-Button
   -->
   <?php
-  if(!isset($_SESSION["user_id"])){
+  if(!isset($_SESSION['kundeId'])){
     ?>
     <button onclick="window.location.href = '/login'" type="button" id="Anmelden">Anmelden</button>
     <?php

@@ -1,10 +1,16 @@
 <?php
+
+error_reporting(E_ALL); // Alle Fehler anzeigen (Notices, Warnings, Fatal Errors usw.)
+ini_set('display_errors', 1); // Fehler direkt auf der Webseite ausgeben
+ini_set('display_startup_errors', 1); // Start-Fehler ebenfalls ausgeben
+
 session_start();
 
 if (!isset($_SESSION['kundeId'])) {
     header("Location: /");
     exit();
 }
+
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
@@ -20,12 +26,14 @@ if ($conn->connect_error) {
 $userData = null;
 if (isset($_SESSION['kundeId'])) {
     $kundeId = $_SESSION['kundeId'];
-    $stmt = $conn->prepare("SELECT Kunden.id, Name, Vorname, bn, Geburtsdatum, Addresse, SUM(t.Betrag) as amount FROM Kunden LEFT JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id WHERE Kunden.id = ?;");
-    $stmt->bind_param("i", $kundeId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($result->num_rows === 1) $userData = $result->fetch_assoc();
-    $stmt->close();
+    $stmt = $conn->prepare("SELECT Kunden.id, Name, Vorname, bn, Geburtsdatum, SUM(t.Betrag) as amount FROM Kunden LEFT JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id WHERE Kunden.id = ?;");
+    if($stmt) {
+        $stmt->bind_param("i", $kundeId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows === 1) $userData = $result->fetch_assoc();
+        $stmt->close();
+    }
 }
 
 ?>
@@ -51,18 +59,6 @@ if (isset($_SESSION['kundeId'])) {
                 <div class="u">
                     <h1>Slot-Machine - Play and WIN!</h1>
                 </div>
-                <?php
-                if (isset($_SESSION['kundeId'])) {
-                    ?>
-                    <button onclick="window.location.href = '/login'" type="button" id="Anmelden">Anmelden</button>
-                    <?php
-                }
-                else {
-                    ?>
-                    <button onclick="window.location.href = '/logout'" type="button" id="Logout">Abmelden</button>
-                    <?php
-                }
-                ?>
             </header>
             <div class="machine-container">
                 <div class="machine">

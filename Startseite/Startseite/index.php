@@ -155,6 +155,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
             if ($stmt->execute()) $_SESSION['kundeId'] = $stmt->insert_id;
             else $errors[] = "Fehler beim Anlegen des Kunden: " . $stmt->error;
             $stmt->close();
+
+            try {
+                //Startgeld einfügen
+                $stmt = $conn->prepare("INSERT INTO Transaktionen (Kunden_ID, Betrag, type) VALUES (?,?,'start')");
+                $startGeldi = 10000;
+                $stmt->bind_param("ii", $_SESSION['kundeId'], $startGeldi);
+                if (!$stmt->execute()) echo "Fehler! ".$stmt->error;
+                $stmt->close();
+            } catch (Exception $e) {
+                echo $e->getMessage();
+            }
         }
     }
 }
@@ -174,7 +185,7 @@ if (isset($_SESSION['kundeId'])) {
     $stmt->close();
 }
 
-$runGame = $userData ? "./play" : "./register";
+$runGame = $userData ? "./" : "./register";
 ?>
 
 <!DOCTYPE html>

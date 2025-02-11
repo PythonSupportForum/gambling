@@ -34,7 +34,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const url = host+'/bilder';
     window.bilder = loadAndSortImages(url);
 
-
     async function startGame(token) {
         try {
             const response = await fetch(host+'/start-game', {
