@@ -119,7 +119,7 @@ public class User {
             String passwortHash = hashPassword(passwort, salt);
 
             // Benutzer in die Kunden-Tabelle einfügen
-            stmt = conn.prepareStatement("INSERT INTO Kunden (Name, Vorname, bn, pwdhash, pwdsalt, Geburtsdatum, adresseId) VALUES (?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            stmt = conn.prepareStatement("INSERT INTO Kunden (Name, Vorname, bn, pwdhash, pwdsalt, Geburtsdatum, adresseId, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, name);
             stmt.setString(2, vorname);
             stmt.setString(3, benutzername);
@@ -127,6 +127,7 @@ public class User {
             stmt.setString(5, salt);
             stmt.setString(6, geburtsdatum);
             stmt.setInt(7, adresseId);
+            stmt.setString(8, generateSalt());
             stmt.executeUpdate();
 
             // Kunden-id abrufen
