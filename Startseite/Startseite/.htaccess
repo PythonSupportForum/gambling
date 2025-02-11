@@ -1,5 +1,7 @@
 RewriteEngine On
 
+RewriteRule ^pay$ index.php?page=pay&no_frame=true [L,QSA]
+
 RewriteRule ^login$ index.php?login [L,QSA]
 
 RewriteRule ^register$ index.php?register [L,QSA]
