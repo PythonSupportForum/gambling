@@ -29,6 +29,7 @@ main {
 #Titel{
     color: #ffbf00;
     text-decoration: underline;
+    font-size: 100px;
 }
 GameStart{
     background-color: #111111;

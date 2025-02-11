@@ -1,12 +1,5 @@
 <?php
 
-error_reporting(E_ALL); // Alle Fehler anzeigen (Notices, Warnings, Fatal Errors usw.)
-ini_set('display_errors', 1); // Fehler direkt auf der Webseite ausgeben
-ini_set('display_startup_errors', 1); // Start-Fehler ebenfalls ausgeben
-
-// Session starten
-session_start();
-
 $conn = new mysqli('db.ontubs.de', 'carl', 'geilo123!', 'gambling');
 if ($conn->connect_error) {
     die("Verbindung fehlgeschlagen: " . $conn->connect_error);
@@ -15,12 +8,14 @@ if ($conn->connect_error) {
 $userData = null;
 if (isset($_SESSION['kundeId'])) {
     $kundeId = $_SESSION['kundeId'];
-    $stmt = $conn->prepare("SELECT Kunden.id, Name, Vorname, bn, Geburtsdatum, Addresse, SUM(t.Betrag) as amount FROM Kunden LEFT JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id WHERE Kunden.id = ?;");
-    $stmt->bind_param("i", $kundeId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($result->num_rows === 1) $userData = $result->fetch_assoc();
-    $stmt->close();
+    $stmt = $conn->prepare("SELECT Kunden.id, Name, Vorname, bn, Geburtsdatum, SUM(t.Betrag) as amount FROM Kunden LEFT JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id WHERE Kunden.id = ?;");
+    if($stmt) {
+        $stmt->bind_param("i", $kundeId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows === 1) $userData = $result->fetch_assoc();
+        $stmt->close();
+    } else echo "Fehler bei SQL Prepare: ".$conn->error;
 }
 
 ?>
@@ -38,7 +33,7 @@ if (isset($_SESSION['kundeId'])) {
             <?php
         } else {
             ?>
-            <div class="AnmeldenButton">
+            <div class="AnmeldenInfo">
                 <h2 id="Guthaben"><?php echo htmlspecialchars(str_pad($userData["amount"]."" ?? 0, 5, "0", STR_PAD_LEFT)); ?></h2>
                 <img src="assets/tilotaler_rand.png" id="Taler"/>
             </div>

@@ -234,11 +234,11 @@ if(!isset($_GET["no_frame"])) {
         // Dynamisches Einbinden von Unterseiten
         if (isset($_GET['page'])) {
             $page = $_GET['page'];
-            $pagePath = "pages/$page.php";
+            $pagePath = "src/$page.php";
             if (file_exists($pagePath)) {
                 require $pagePath;
             } else {
-                echo "<p>Die angeforderte Seite existiert nicht.</p>";
+                echo "<p>Die angeforderte Seite existiert nicht.".htmlspecialchars($pagePath)."</p>";
             }
         } else {
             // Standardinhalt, wenn keine spezifische Seite angefordert wird
