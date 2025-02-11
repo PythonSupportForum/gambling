@@ -113,14 +113,18 @@ const showResults  = (text)=> { //Nicht wirklich Einsatz, sondern nur ja nein po
     document.getElementById("result").classList.add("show");
 };
 const userTakeCard = async (count = 1) => {
-    while(runningStackId > userStack.length) {
-        console.trace("Versuche User Karte auf nicht exestierenden Stappel zu ziehen!", count, runningStackId);
-        await addUserStack();
-    }
-    if(userStack[runningStackId].restMaxCount !== -1) {
-        if(count > userStack[runningStackId].restMaxCount) {
-            console.log("Error! Try to Ziehen mehr als erlaubt!");
-        } else userStack[runningStackId].restMaxCount -= count;
+    try {
+        while(runningStackId >= userStack.length) {
+            console.trace("Versuche User Karte auf nicht exestierenden Stappel zu ziehen!", count, runningStackId);
+            await addUserStack();
+        }
+        if(userStack[runningStackId].restMaxCount !== -1) {
+            if(count > userStack[runningStackId].restMaxCount) {
+                console.log("Error! Try to Ziehen mehr als erlaubt!");
+            } else userStack[runningStackId].restMaxCount -= count;
+        }
+    } catch(e) {
+        console.log(e);
     }
     console.log("User Karten ziehen!");
     const cardsFromServer = [];

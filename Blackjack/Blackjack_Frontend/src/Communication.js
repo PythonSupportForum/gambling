@@ -188,6 +188,7 @@ window.connectSocket = async ()=>{
                             dealerLeftStack.stopZeigenPunkt();
                             await stackToDefaultPosition([...userStack, dealerLeftStack]);
                             window.userStack = [];
+                            window.runningStackId = 0; //Wichtig!!!
 
                             overlaySetStatus(false);
                             await startGame(false);
