@@ -33,6 +33,7 @@ if (isset($_SESSION['kundeId'])) {
             <?php
         } else {
             ?>
+            <button onclick="window.location.href = '/logout'" type="button" id="Logout">Abmelden</button>
             <div class="AnmeldenInfo">
                 <h2 id="Guthaben"><?php echo htmlspecialchars(str_pad($userData["amount"]."" ?? 0, 5, "0", STR_PAD_LEFT)); ?></h2>
                 <img src="assets/tilotaler_rand.png" id="Taler"/>
