@@ -1,3 +1,7 @@
+<?php
+session_start();
+?>
+
 <meta charset = "UTF-8">
 <meta lang="de">
 
@@ -79,7 +83,7 @@ Obere Leiste mit Logo
 
   <div id="StartGame">
       <h1 id="Titel">Blackjack</h1>
-      <button onclick="window.location.href = './Game.html'" type="button" class="gleichButton">Starten</button>
+      <button onclick="window.location.href = '<?php echo isset($_SESSION['kundeId']) ? "./Game.html" : "/register" ?>'" type="button" class="gleichButton">Starten</button>
   </div>
 
 </main>
