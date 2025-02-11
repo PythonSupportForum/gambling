@@ -26,14 +26,14 @@ if ($conn->connect_error) {
 $userData = null;
 if (isset($_SESSION['kundeId'])) {
     $kundeId = $_SESSION['kundeId'];
-    $stmt = $conn->prepare("SELECT Kunden.id, Name, Vorname, bn, Geburtsdatum, SUM(t.Betrag) as amount FROM Kunden LEFT JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id WHERE Kunden.id = ?;");
+    $stmt = $conn->prepare("SELECT Kunden.id, Name, Vorname, bn, Geburtsdatum, token, SUM(t.Betrag) as amount FROM Kunden LEFT JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id WHERE Kunden.id = ?;");
     if($stmt) {
         $stmt->bind_param("i", $kundeId);
         $stmt->execute();
         $result = $stmt->get_result();
         if ($result->num_rows === 1) $userData = $result->fetch_assoc();
         $stmt->close();
-    }
+    } else echo "Error! ".$conn->error;
 }
 
 ?>

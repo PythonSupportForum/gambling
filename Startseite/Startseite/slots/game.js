@@ -1,7 +1,8 @@
-window.host = "https://localhost:8081";
+window.host = "/api";
 
 document.addEventListener("DOMContentLoaded", ()=>{
-    window.token = document.getElementById("token").innerText || 1;
+    window.token = document.getElementById("token").innerText || "2";
+    console.log("User Token gefunden:", token);
 
     async function loadAndSortImages(url) {
         try {
@@ -113,6 +114,8 @@ document.addEventListener("DOMContentLoaded", ()=>{
         if(nU) updateB().then(()=>{});
     }
     function startConfetti() {
+        console.log("Start Konfetti!!");
+
         const canvas = document.createElement('canvas');
         document.body.appendChild(canvas);
         canvas.style.position = 'fixed';
@@ -214,7 +217,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
                 if (!startTime) startTime = timestamp;
                 const elapsed = timestamp - startTime;
 
-                let ziel = finalImageIndex*imageHeight;
+                let ziel = finalImageIndex*imageHeight+5;
                 if(ziel < currentOffset-0.1) ziel += totalImages*imageHeight;
 
                 if(finalImageIndex < 0 || elapsed < duration) {
@@ -225,21 +228,22 @@ document.addEventListener("DOMContentLoaded", ()=>{
                     let speedProTime = strecke/1000;
                     if(Math.abs(speedProTime) < 5) speedProTime *= 10;
 
-                    speed += speedProTime-speed > 0 ? 0.4 : -0.4;
+                    speed += speedProTime-speed > 0 ? 0.15 : -0.15;
 
                     if(Math.abs(strecke) < 5) {
                         speed -= strecke/10000;
-                        speed -= 0.45;
+                        speed -= 0.1;
                     }
                 }
                 //if(Math.abs(speed) > 40) speed -= Math.max(Math.sqrt(speed), 1);
                 if(!speed) speed -= 2;
                 if(speed < -40) speed += 20;
 
-                if(Math.abs(ziel-currentOffset) < 10 && Math.abs(speed) < 3) {
+                if(Math.abs(ziel-currentOffset) < 0.1 && Math.abs(speed) < 0.5) {
                     speed = 0;
-                    currentOffset += (ziel-currentOffset)/100;
+                    currentOffset = ziel;
                     if(isWin) {
+                        window.isWin = false;
                         startConfetti();
                         updateB();
                     }

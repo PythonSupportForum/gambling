@@ -9,3 +9,6 @@ RewriteRule ^imprint$ index.php?page=imprint [L,QSA]
 RewriteRule ^$ index.php?page=start&no_frame=true [L,QSA]
 
 RewriteRule ^logout$ index.php?page=logout&logout=true [L,QSA]
+
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^api/(.*)$ http://localhost:8081/$1 [P,L]
