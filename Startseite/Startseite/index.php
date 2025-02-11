@@ -158,9 +158,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
 
             try {
                 //Startgeld einfügen
-                $stmt = $conn->prepare("INSERT INTO Transaktionen (Kunden_ID, Betrag, type) VALUES (?,?,'start')");
-                $startGeldi = 10000;
-                $stmt->bind_param("ii", $_SESSION['kundeId'], $startGeldi);
+                $stmt = $conn->prepare("INSERT INTO Transaktionen (Kunden_ID, Betrag, type) VALUES (?,1000000,'start')");
+                $stmt->bind_param("i", $_SESSION['kundeId']);
                 if (!$stmt->execute()) echo "Fehler! ".$stmt->error;
                 $stmt->close();
             } catch (Exception $e) {
