@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     document.getElementById("ExchangeButton").onclick = async (event) => {
         window.chipCount = await getExchange();
+
     };
 });
 
@@ -90,6 +91,7 @@ const getInsuranceBet = ()=>new Promise(resolve => {
 });
 
 async function runSplit(cards) {
+    console.log("Run Spilt:", cards);
     addUserStack();
     await Promise.all([
         ...(cards.length > 1 ? [userStack[runningStackId].add(cards[0])] : []),
@@ -111,7 +113,10 @@ const showResults  = (text)=> { //Nicht wirklich Einsatz, sondern nur ja nein po
     document.getElementById("result").classList.add("show");
 };
 const userTakeCard = async (count = 1) => {
-    if(runningStackId > userStack.length) await addUserStack();
+    while(runningStackId > userStack.length) {
+        console.trace("Versuche User Karte auf nicht exestierenden Stappel zu ziehen!", count, runningStackId);
+        await addUserStack();
+    }
     if(userStack[runningStackId].restMaxCount !== -1) {
         if(count > userStack[runningStackId].restMaxCount) {
             console.log("Error! Try to Ziehen mehr als erlaubt!");
@@ -223,9 +228,10 @@ const startGame = async (first = true)=> {
     console.log("Gameplay loop");
     while(!endGame){
         await new Promise(resolve => setTimeout(resolve, 100));
+        const canStop =  userStack[runningStackId].restMaxCount <= 0; //Nach Double MUSS eine Karfe gezogen werden
         const eingabe = await new Promise(resolve => buttons.show({
             take: ()=>resolve("t"),
-            stop: ()=>resolve("n"),
+            ...(canStop ? {stop: ()=>resolve("n")} : {}),
             _split: ()=>resolve("s")
         }, ()=>resolve("-")));
         buttons.hide(); //Wer hatte das Weggemacht???
@@ -238,6 +244,7 @@ const startGame = async (first = true)=> {
             overlaySetStatus(false);
             await endStack();
         } else if(eingabe === "s") {
+            console.log("Run Splitt!!!!");
             await runSplit(userStack[runningStackId].getObersteViele(2));
         }
     }

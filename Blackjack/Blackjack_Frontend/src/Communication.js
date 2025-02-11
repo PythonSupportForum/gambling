@@ -21,15 +21,20 @@ function getListener(type, save) {
     return ()=>{};
 }
 
-window.connectSocket = ()=>{
-    return new Promise(resolve => {
-        if(socket) return resolve(socket); //Es gibt schon socket!
-        window.socket = new WebSocket('ws://127.0.0.1:8080');
+window.connectSocket = async ()=>{
+    console.log("Connect Socket!");
+    if(!("socketPromise" in window)) window.socketPromise = new Promise(resolve => {
+        console.log("Create Socket!");
+
+        const socket = new WebSocket('ws://127.0.0.1:8080');
         let clientID = -1;
 
         // Verbindung geöffnet
         socket.onopen = () => {
-            resolve(socket); //Promise wird aufgelöst => For Sachen die von Verbindung Abhängen und auf Vebrindung warten müssen
+            console.log("On Open!");
+            setTimeout(()=>{
+                resolve(socket); //Promise wird aufgelöst => For Sachen die von Verbindung Abhängen und auf Vebrindung warten müssen
+            }, 500);
         };
 
          // Nachricht vom Server empfangen → Allgemein für alle Nachrichten (Websocket protokoll)
@@ -105,6 +110,7 @@ window.connectSocket = ()=>{
                 } else {
                     document.getElementById("ChipCount").innerText = chipCount + "¢";
                     getListener("chipupdate")(chipCount);
+                    console.log("Got Chipupdate!");
                     console.error("Auszahlung nicht erfolgt");
                 }
             } else if (msg.startsWith("text:")) {
@@ -229,7 +235,20 @@ window.connectSocket = ()=>{
         socket.onclose = () => {
             console.log('Verbindung zum Server geschlossen.');
         };
+
+        console.log("Start Wait Intervall!");
+        const checkConnection = setInterval(() => {
+            if (socket.readyState !== WebSocket.CONNECTING) {
+                console.log("Interval ist nicht mehr connecting!");
+                clearInterval(checkConnection);
+                if (socket.readyState === WebSocket.OPEN) {
+                    resolve(socket);
+                } else console.error("Error! Error connecting Websocket!", socket.readyState);
+            }
+        }, 50);
     });
+    console.log("Return Socket Promise!");
+    return await socketPromise;
 }
 document.addEventListener("DOMContentLoaded", connectSocket);
 
@@ -284,6 +303,8 @@ window.getDealerCards = ()=>new Promise(async resolve => {
     addListener("dealercards", resolve);
 });
 window.exchange = (chipAmount) =>new Promise(async resolve => {
+    console.log("Run Exchange:", chipAmount);
+
     const socket = await connectSocket();
     socket.send("Exchange:" + chipAmount);
 

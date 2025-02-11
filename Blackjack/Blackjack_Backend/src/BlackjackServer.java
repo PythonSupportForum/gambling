@@ -10,6 +10,10 @@ import java.util.Map;
 // Implementation der Websockets gegenüber der unterlegenen Native Sockets (Websockets sind zudem Standardimplementation für javascript clients)
 class BlackjackServer extends WebSocketServer {
 
+    public BlackjackServer() {
+        super();
+    }
+
     // Funktioniert als Client_ID (intern). Mit jedem neuen Client wird diesem eine um 1 höhere ID zugewiesen, da immer um 1 erhöht wird, erhält der erste client die id 0
     int id = -50;
     boolean acc = false;
@@ -72,11 +76,8 @@ class BlackjackServer extends WebSocketServer {
     public void onError(WebSocket conn, Exception ex) {
         System.out.println("Ein Fehler ist aufgetreten: " + ex.getMessage());
         clientThreads.remove(conn);
-        try {
-            this.stop();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        ex.printStackTrace();
+        //@Carl wenn eine Verbidnung einen Fehler hat soll nicht gleich der ganze Server beedned werden! Ein Fehler kann man vom Client her auch absichtlich provozieren um unseren Dienst zu schrotten
     }
 
     @Override
