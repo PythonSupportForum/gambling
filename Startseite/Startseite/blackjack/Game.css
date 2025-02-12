@@ -1,0 +1,324 @@
+* {
+    box-sizing: border-box;
+    overflow: hidden;
+}
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(145deg, #111, #444);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    position: relative;
+}
+
+.container {
+    text-align: center;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    width: 90%;
+    max-width: 400px;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #ffc107;
+}
+
+p {
+    font-size: 1rem;
+    margin-bottom: 30px;
+    color: #ddd;
+}
+
+button {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #000;
+    background: #ffc107;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(255, 193, 7, 0.6);
+}
+
+button:active {
+    transform: translateY(1px);
+    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.4);
+}
+
+.GameContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    background-color: darkgreen;
+    background-image: url('/../assets/Blackjack.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    transition: all 1s;
+    opacity: 0;
+    pointer-events: none;
+}
+.GameContainer.show {
+    opacity: 1;
+    pointer-events: auto;
+    cursor: crosshair;
+}
+.GameContainer > .elements-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+.GameContainer > .elements-container > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+.GameContainer > .elements-container > canvas {
+    z-index: 3 !important;
+}
+
+.GameContainer > .elements-container > .message-container {
+    z-index: 5 !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 15px;
+}
+.GameContainer > .elements-container > .message-container > .message-box {
+    width: 400px;
+    max-width: 100%;
+    text-align: center;
+}
+.GameContainer > .elements-container > .message-container h2 {
+    margin: 0;
+    padding: 0;
+    font-size: 30px;
+    opacity: 0;
+    color: white;
+    animation: fadeInOut 3s ease-in-out forwards;
+}
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+.GameContainer > .elements-container > .overlay {
+    opacity: 1;
+    z-index: 4;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    transition: opacity 0.5s;
+}
+.GameContainer > .elements-container > .overlay.hide {
+    opacity: 0;
+}
+
+.ui {
+    position: fixed;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 10px;
+    z-index: 6;
+}
+
+.buttons {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 160px;
+    height: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.2s;
+    z-index: 6;
+    opacity: 0;
+    pointer-events: none;
+    padding: 10px;
+}
+.buttons.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.buttons button {
+    display: none;
+    transition: all 0.2s;
+}
+.buttons button:hover {
+    background-color: #e6ac0c;
+    cursor: pointer;
+}
+.buttons button.show {
+    display: block;
+}
+
+.betPopupContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.5s;
+    padding: 10px;
+    z-index: 10;
+    color: black;
+}
+.betPopupContainer p {
+    color: black;
+}
+.betPopupContainer.show {
+    pointer-events: auto;
+    opacity: 1;
+}
+.betPopupContainer .betPopup {
+    width: 500px;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: auto;
+    background-color: white;
+    padding: 15px;
+    border-radius: 15px;
+}
+.betPopupContainer .bb {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#exchangeButtons{
+    justify-content: space-between;
+}
+#exchangePopupContainer{
+     z-index: 100;
+ }
+.betPopupContainer .bb.c {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.slider-container {
+    position: relative;
+    width: 80%;
+    max-width: 500px;
+    margin: 50px auto;
+    text-align: center;
+}
+
+/* Versteckter Standard-Slider */
+.slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: linear-gradient(90deg, #FFD700, #DAA520);
+    outline: none;
+    opacity: 0.9;
+    transition: opacity 0.2s;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+/* Der Schieberegler-Griff (Thumb) */
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: radial-gradient(circle, #FFD700, #B8860B);
+    border: 2px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0px 0px 15px rgba(255, 215, 0, 0.8);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0px 0px 25px rgba(255, 215, 0, 1);
+}
+
+/* Für Firefox */
+.slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    background: radial-gradient(circle, #FFD700, #B8860B);
+    border: 2px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0px 0px 15px rgba(255, 215, 0, 0.8);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0px 0px 25px rgba(255, 215, 0, 1);
+}
+
+/* Die Wertanzeige über dem Slider */
+.slider-value {
+    margin-top: 15px;
+    font-size: 22px;
+    font-weight: bold;
+    color: #FFD700;
+    text-shadow: 0px 0px 10px rgba(255, 215, 0, 0.8);
+}
+
+.hidden {
+    display: none;
+}

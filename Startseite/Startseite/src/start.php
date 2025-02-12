@@ -22,7 +22,7 @@ if (isset($_SESSION['kundeId'])) {
 
 <header>
     <a href="./">
-        <img id="Logo" src="assets/Logo_Rand.png"/>
+        <img loading="lazy" id="Logo" src="assets/Logo_Rand.png"/>
     </a>
     <div class="right">
         <?php
@@ -36,7 +36,7 @@ if (isset($_SESSION['kundeId'])) {
             <button onclick="window.location.href = '/logout'" type="button" id="Logout">Abmelden</button>
             <div class="AnmeldenInfo">
                 <h2 id="Guthaben"><?php echo htmlspecialchars(str_pad($userData["amount"]."" ?? 0, 5, "0", STR_PAD_LEFT)); ?></h2>
-                <img src="assets/tilotaler_rand.png" id="Taler"/>
+                <img loading="lazy" src="assets/tilotaler_rand.png" id="Taler"/>
             </div>
             <?php
         }

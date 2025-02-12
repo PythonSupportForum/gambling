@@ -258,7 +258,7 @@ public class GameThread implements Runnable {
         // Warte auf Startsignal vom Client
         while(!start){
             try{
-                Thread.sleep(100);
+                Thread.sleep(200);
             }catch(Exception ignored){}
         }
         game(); // ruft Hauptmethode des Spiels auf, beginnt Spiel mit dem Client
@@ -338,7 +338,7 @@ public class GameThread implements Runnable {
         conn.send("ask:"+query);
         while(askInput.length() == 0) {
             try {
-                Thread.sleep(100);
+                Thread.sleep(200);
             }
             catch (Exception ignored) {}
         }
@@ -418,7 +418,7 @@ public class GameThread implements Runnable {
             while (!betInput) {
                 //ist nicht vollständig, nach mit Frontend lösen
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(200);
                 }
                 catch (Exception ignored) {}
 //                System.out.println("Du hast " + coins + " Coins");
@@ -454,7 +454,7 @@ public class GameThread implements Runnable {
 
             while(takeCount < 1){
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(200);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -494,7 +494,7 @@ public class GameThread implements Runnable {
 
             while(takeCount < 2){
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(200);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -532,7 +532,7 @@ public class GameThread implements Runnable {
                 System.out.println("Alle Karten gezogen! "+cardInput[0]+" "+playerDone);
                 while(!playerDone){
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(200);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -694,7 +694,7 @@ public class GameThread implements Runnable {
             if(doubleDown && cardsAfterSetDouble >= 1) break;
             while(inputWait){
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(200);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
