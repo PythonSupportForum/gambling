@@ -88,20 +88,26 @@ public class GameThread implements Runnable {
         System.out.println("Token: "+token);
         conn = _conn;
 
-        clientDB = getConnection();
-        String query = "SELECT Kunden.*, SUM(t.Betrag) as Kontostand FROM Kunden JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id WHERE Kunden.token = '"+token+"'";
-        try{
-            assert clientDB != null;
-            stmt = clientDB.createStatement();
-            stmt.executeQuery(query);
-            ResultSet rs = stmt.getResultSet();
-            rs.next();
-            balance = rs.getDouble("Kontostand");
-            client_ID = rs.getInt("id"); //Client Id wird mittels Token AUs Database extrahiert!
-            rs.close();
-            stmt.close();
+        Connection clientDB = getConnection();
+        String query = "SELECT Kunden.*, SUM(t.Betrag) as Kontostand FROM Kunden " +
+                "JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id " +
+                "WHERE Kunden.token = ?";
+
+        try (PreparedStatement stmt = clientDB.prepareStatement(query)) {
+            stmt.setString(1, token); // Token als sicherer Parameter
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) { // Prüfen, ob es ein Ergebnis gibt
+                    balance = rs.getDouble("Kontostand");
+                    client_ID = rs.getInt("id"); // Client ID aus Datenbank extrahieren
+                    System.out.println("Balance: " + balance + ", Client ID: " + client_ID);
+                } else {
+                    System.out.println("Kein Kunde mit diesem Token gefunden.");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        catch(SQLException e){e.printStackTrace();}
 
 
         OLDBALANCE = balance;
@@ -472,7 +478,7 @@ public class GameThread implements Runnable {
             printCard(card);
             takeCount--;
 
-            if (dealerStack.get(1).getValue() == 'a' || true) {
+            if (dealerStack.get(1).getValue() == 'a') {
                 //region Insurance Bet
                 setGameState(GameState.INSURANCE_BET);
 
@@ -725,7 +731,7 @@ public class GameThread implements Runnable {
     }
 
     public void splitCheck(int index){
-        if(playerStack.get(index).get(0).getValue() == playerStack.get(index).get(1).getValue() || true){
+        if(playerStack.get(index).get(0).getValue() == playerStack.get(index).get(1).getValue()){
             String a = askFrontend("split");
             String[] r = a.split(";");
             if(Objects.equals(r[0], "true")) {
