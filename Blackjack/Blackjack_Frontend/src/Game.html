@@ -16,12 +16,16 @@
   <script src="Communication.js"></script>
 </head>
   <body>
+    <div class="hidden" id="token">2</div>
     <div class="container">
       <h1>Blackjack Online</h1>
-      <p>Ein Spiel von Carl Göb!</p>
       <button id="startGameButton">Start Game</button>
     </div>
     <div class="GameContainer" id="GameContainer">
+      <div class="ui">
+        <button id="ExchangeButton">Umtauschen</button>
+        <p id="ChipCount">Chips: 0¢</p>
+      </div>
       <div class="elements-container">
         <div class="overlay" id="overlay"></div>
         <div class="message-container">
@@ -29,15 +33,36 @@
         </div>
         <canvas id="canvas"></canvas>
       </div>
+      <div class="betPopupContainer" id="exchangePopupContainer">
+        <div class="betPopup">
+          <h2>Wie viele Chips willst du erwerben?</h2>
+          <p>Du kannst deine TiloTaler in Chips umtauschen</p>
+          <div class="slider-container">
+            <input type="range" min="1" max="1" id="exchangeValue" value="1" class="slider">
+            <div class="slider-value" id="sValue">1 ¢hips</div>
+          </div>
+          <div class="bb" id="exchangeButtons">
+            <button id="abortExchangeButton">Abbrechen</button>
+            <button id="setExchangeButton">Umtauschen</button>
+          </div>
+        </div>
+      </div>
+      <div class="betPopupContainer" id="wantsExchangePopupContainer">
+      <div class="betPopup">
+        <h2>Willst du Chips erwerben?</h2>
+        <div class="bb">
+          <button id="wantsButtonYes">Umtauschen</button>
+          <button id="wantsButtonNo">Nicht Umtauschen</button>
+        </div>
+      </div>
+    </div>
       <div class="betPopupContainer" id="betPopupContainer">
         <div class="betPopup">
-          <h2>Wie viel Kohle möchtest du kohlen</h2>
-          <p>Je mehr Geld du setzt, desto mehr Geld kannst du gewinnen! Minum ist 100 Maximum ist 100.000! Hier wierst du reich! Klotzen und Klicj!</p>
+          <h2>Welchen Betrag willst du setzen</h2>
           <div class="slider-container">
-            <input type="range" min="100" max="100000" id="betValue" value="500" class="slider">
-            <div class="slider-value" id="sliderValue">500 €</div>
+            <input type="range" min="1" max="100000" id="betValue" value="1" class="slider">
+            <div class="slider-value" id="sliderValue">1 ¢hips</div>
           </div>
-          <p>Sobald du den Button gedrückt hast Buchen wir das Geld von deinem Konto ab!</p>
           <div class="bb">
             <button id="setBetButton">Setzen</button>
           </div>
@@ -46,10 +71,14 @@
       <div class="betPopupContainer" id="insuranceBetPopupContainer">
         <div class="betPopup">
           <h2>Insurance Setzen</h2>
-          <p>Der Dealer hat als Erste Karfe ein Ass gelegt. Du kannst eine zweite Nebenwette darauf abschliepen, ob der Dealer einen Blackjack ziehen wird, also mit 2 karten genau 21 erreichen wird. Für diese Nebenwette wird die Hälfte deine sGeldes genutzt!</p>
+          <p>Der Dealer hat als Erste Karte ein Ass gelegt. Du kannst eine zweite Nebenwette darauf abschließen, ob der Dealer ein Blackjack gezogen hat, also mit 2 karten genau 21 erreichen wird.</p>
+          <div class="slider-container">
+            <input type="range" min="1" max="100000" id="betIValue" value="1" class="slider">
+            <div class="slider-value" id="sliderIValue">1 ¢hips</div>
+          </div>
           <p>Sobald du den Button gedrückt hast Buchen wir das Geld von deinem Konto ab!</p>
           <div class="bb c">
-            <button id="setBetButtonNo">Auf Insuranze versichen</button>
+            <button id="setBetButtonNo">Auf Insurance verzichten</button>
             <button id="setBetButtonYes">Nebenwette Abschließen</button>
           </div>
         </div>
@@ -57,10 +86,11 @@
       <div class="betPopupContainer" id="result">
         <div class="betPopup">
           <h2>Herzlichen Glückwunsch</h2>
-          <p>Das Spiel ist zuende. Im folgenden Erfährst du, ob du gewonnen hast und wenn ja wie viel. </p>
+          <p>Das Spiel ist zu Ende!</p>
           <p id="resultText"></p>
           <div class="bb c">
-            <button id="playAgain">Nochmal Spielen</button>
+            <button id="dontEnd">Noch eine Runde</button>
+            <button id="end">Aufhören</button>
           </div>
         </div>
       </div>

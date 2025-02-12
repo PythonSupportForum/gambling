@@ -1,4 +1,3 @@
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -12,9 +11,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
-import java.util.ArrayList;
 
 
 public class GameServer {
@@ -24,8 +23,8 @@ public class GameServer {
     private static final String DB_PASSWORD = "geilo123!";
 
     public static void main(String[] args) throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
-        System.out.println("Server läuft auf http://localhost:8080");
+        HttpServer server = HttpServer.create(new InetSocketAddress(8081), 0);
+        System.out.println("Server läuft auf http://0.0.0.0:8081");
 
         server.createContext("/bilder", new BilderHandler());
         server.createContext("/start-game", new StartGameHandler());
