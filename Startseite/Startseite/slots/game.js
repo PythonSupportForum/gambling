@@ -1,7 +1,7 @@
 window.host = "/api";
 window.beIrre = false;
 
-
+window.isWin = false;
 document.addEventListener("DOMContentLoaded", ()=>{
     window.token = document.getElementById("token").innerText || "2";
     console.log("User Token gefunden:", token);
@@ -184,7 +184,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
     updateB().then(()=>{});
     setInterval(updateB, 5*1000);
 
-    window.isWin = false;
     window.play = async ()=>{
         if(balance < 1000) {
             alert("Du bist Pleite!!! Wir akzeptieren keine Schuldner! Bitte zahle mehr Kohle ein!");
@@ -195,7 +194,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
         const gamePromise = async () => {
             const {results, winAmount} = await  startGame(token);
-            window.isWin = winAmount > 0;
+            window.isWin = (winAmount+1000) !== 0;
             console.log("R:", {results, winAmount});
             return results;
         }
@@ -250,11 +249,15 @@ document.addEventListener("DOMContentLoaded", ()=>{
                 if(Math.abs(ziel-currentOffset) < 0.1 && Math.abs(speed) < 0.5) {
                     speed = 0;
                     currentOffset = ziel;
+                    console.log("Ende! Ziel Erriecht!!!", isWin);
+                }
+
+                if(Math.abs(ziel-currentOffset) < 5 && Math.abs(speed) < 2) {
                     if(isWin) {
                         console.log("Is Win!!!!!");
-                        window.isWin = false;
                         startConfetti();
                         updateB();
+                        window.isWin = false;
                     }
                 }
 
