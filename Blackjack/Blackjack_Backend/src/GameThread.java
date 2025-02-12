@@ -85,6 +85,7 @@ public class GameThread implements Runnable {
 
     // Konstruktor
     public GameThread(String token, WebSocket _conn) {
+        System.out.println("Token: "+token);
         conn = _conn;
 
         clientDB = getConnection();
@@ -802,22 +803,35 @@ public class GameThread implements Runnable {
         }
     }
 
-    public boolean updateBalance(int coinAmount){
+    public boolean updateBalance(int coinAmount) {
         if (coinAmount > coins) {
             System.out.println("Du hast nicht genug Coins!");
             return false;
         } else {
             coins -= coinAmount;
             sendChipCount(coins);
-            String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum) VALUES (" + client_ID  + ", " + (new DecimalFormat("0.00").format(balance - OLDBALANCE)) + ", NOW())";
+
+            // Formatieren Sie den Betrag korrekt
+            double amount = balance - OLDBALANCE;
+            String formattedAmount = new DecimalFormat("0.00").format(amount);
+
+            // Erstellen Sie die SQL-Abfrage
+            String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, type) VALUES ("
+                    + client_ID + ", "
+                    + formattedAmount + ", "
+                    + "'blackjack')"; // type wird explizit gesetzt
+
             clientDB = getConnection();
-            try{
+            try {
                 // Verbindung zur Datenbank, Veränderung des Kontostandes
                 stmt = clientDB.createStatement();
                 stmt.executeUpdate(transactionQuery);
                 stmt.close();
                 clientDB.close();
-            }catch(SQLException e){ return false;}
+            } catch (SQLException e) {
+                e.printStackTrace(); // Drucken Sie den Stacktrace für detaillierte Fehlerinformationen
+                return false;
+            }
             System.out.println("Du hast " + coinAmount + " Coins umgewandelt!");
             return true;
         }
