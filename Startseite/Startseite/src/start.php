@@ -33,7 +33,11 @@ if (isset($_SESSION['kundeId'])) {
             <?php
         } else {
             ?>
-            <button onclick="window.location.href = '/logout'" type="button" id="Logout">Abmelden</button>
+            <div class="AnmeldenInfo">
+                            <button onclick="window.location.href = '/logout'" type="button" class="gleichButton" id="AbmeldeButton">Abmelden</button>
+                        </div>
+
+
             <div class="AnmeldenInfo">
                 <h2 id="Guthaben"><?php echo htmlspecialchars(str_pad($userData["amount"]."" ?? 0, 5, "0", STR_PAD_LEFT)); ?></h2>
                 <img loading="lazy" src="assets/tilotaler_rand.png" id="Taler"/>
@@ -44,24 +48,17 @@ if (isset($_SESSION['kundeId'])) {
     </div>
 </header>
 <main>
-    <h1><?php
-    if($userData) {
-        ?>
-        Herzlich Willkommen, <?php echo htmlspecialchars($userData["Vorname"])." ".htmlspecialchars($userData["Name"]); ?>!
-        <?php
-    }
-    ?></h1>
     <div id="Blackjack">
-        <button onclick="window.location.href = './blackjack/'" class="gleichButton">Blackjack</button>
+        <button onclick="window.location.href = './blackjack/'" class="gleichButton" id = "BlackjackButton">Blackjack</button>
     </div>
     <div  id="Slots">
-        <button onclick="window.location.href = '<?php echo isset($_SESSION['kundeId']) ? "./slots/" : "/?register=true" ?>'" class="gleichButton">Slots</button>
+        <button onclick="window.location.href = '<?php echo isset($_SESSION['kundeId']) ? "./slots/" : "/?register=true" ?>'" class="gleichButton" id = "SlotsButton">Slots</button>
     </div>
 </main>
 <footer class="footer">
     <div class="footer-content">
         <div class="footer-hint"> >>> Für mehr Informationen hier hovern! <<< </div>
-        <h1>Impressum</h1>
+        <h1 id="Imprint">Impressum</h1>
         <p><strong>Verantwortlich für das Projekt "Let's go Gambling":</strong></p>
         <p>Tilo Behnke, Carl Göb, Silas Hoffmann, Florian Reschke, Lars Ashauer, Atal Raufi, Mina Henke, Alexander Spürck</p>
         <p><strong>Projekt des Q2 Informatik-Kurses</strong></p>

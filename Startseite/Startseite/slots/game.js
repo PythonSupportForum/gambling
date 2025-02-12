@@ -75,7 +75,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
             }
             const data = await response.json();
             console.log('Kontostand:', data.balance);
-            if(!data.balance || data.balance === 0) document.getElementById("balance").innerText = "0";
             return data.balance;
         } catch (error) {
             console.error('Fehler:', error);

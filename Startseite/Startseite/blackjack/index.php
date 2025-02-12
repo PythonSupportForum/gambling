@@ -63,7 +63,7 @@ Obere Leiste mit Logo
   }
   else{
     ?>
-    <button onclick="window.location.href = '/logout'" type="button" id="Anmelden">Abmelden</button>
+    <button onclick="window.location.href = '/logout'" type="button" class = "gleichButton">Abmelden</button>
     <?php
   }
   ?>
