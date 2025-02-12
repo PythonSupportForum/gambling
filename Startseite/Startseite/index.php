@@ -106,6 +106,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SESSION['kundeId'])) {
         if ($age < 18 || $age > 120) {
             $errors[] = "Das Alter muss zwischen 18 und 120 Jahren liegen.";
         }
+        if(empty($errros)) {
+            $stmt = $conn->prepare("SELECT id FROM Kunden WHERE bn = ?");
+            $stmt->bind_param("s", $bn);
+            $stmt->execute();
+            $stmt->store_result();
+            if ($stmt->num_rows > 0) $errors[] = "Benutzername ist bereits vergeben.";
+            $stmt->close();
+        }
         if (empty($errors)) {
             // Salt generieren
             $salt = bin2hex(random_bytes(16));
