@@ -350,7 +350,7 @@ function draw() {
     try {
         Object.values(gameDrawThreads).forEach(c => c(ctx, deltaTime));
         Object.values(getUniqueAttributes(animationObjects, focusElements)).forEach(o => o.update(ctx, deltaTime));
-        higherAnimationObjectsTop.forEach(o => o.update(ctx, deltaTime)); //Damit die Kreise höher wiegen, über dem rest geuecgen werden
+        higherAnimationObjectsTop.forEach(o => o.update(ctx, deltaTime)); // Reihenfolge entscheidet über Ebenen  Kreise als Letztes, um über den Karten zu sein
         if(overlayAlpha > 0) {
             ctx.fillStyle = `rgba(0, 0, 0, ${overlayAlpha})`;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -492,7 +492,7 @@ window.Stack = class Stack {
         }, promise};
     }
     async copyStack(andererStack, count = -1, reverse = true, time = normalMoveTime) { //Um Ganzen Stack auf anderen Stack zu bewegen. Reverse Gibt an ob der Stack umgedreht werden soll  oder niht
-        if(andererStack === this) return; //Soll nicht auf sich selber sondt => Unsendlich Loop
+        if(andererStack === this) return; // Soll nicht auf sich selber kopieren
         console.log("Copy:", this, andererStack);
         if(reverse) {
             while(this.getOberste() && count !== 0) {

@@ -233,22 +233,22 @@ const startGame = async (first = true)=> {
     while(!endGame){
         await new Promise(resolve => setTimeout(resolve, 100));
         const canStop =  userStack[runningStackId].restMaxCount <= 0; //Nach Double MUSS eine Karfe gezogen werden
-        const eingabe = await new Promise(resolve => buttons.show({
+        const input = await new Promise(resolve => buttons.show({
             take: ()=>resolve("t"),
-            ...(canStop ? {stop: ()=>resolve("n")} : {}),
+            ...(canStop ? {stop: ()=>resolve("i")} : {}),
             _split: ()=>resolve("s")
         }, ()=>resolve("-")));
-        buttons.hide(); //Wer hatte das Weggemacht???
-        if(eingabe === "t") {
+        buttons.hide();
+        if(input === "t") {
             await userTakeCard(1);
             if(userStack[runningStackId].restMaxCount === 0) await endStack();
-        } else if(eingabe === "n") {
+        } else if(input === "i") {
             buttons.hide();
             await messageQueue.displayMultipleMessages(["Der Stack wurde geschlossen!"]);
             overlaySetStatus(false);
             await endStack();
-        } else if(eingabe === "s") {
-            console.log("Run Splitt!!!!");
+        } else if(input === "s") {
+            console.log("Run Split");
             await runSplit(userStack[runningStackId].getObersteViele(2));
         }
     }

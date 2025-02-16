@@ -19,7 +19,7 @@ function getListener(type, save) {
         listener[type] = [];
     }
     if(type in listener) return listener[type].shift();
-    console.log("Error! Versuche Listner auszuführen von dem es keinen meher gibt!", type);
+    console.log("Error! Listener Array leer!", type);
     return ()=>{};
 }
 
@@ -107,18 +107,18 @@ window.connectSocket = async ()=>{
                 let updatedChipCount = parseInt(msg.substring("DealerCards:".length - 1));
                 if (updatedChipCount >= 0) {
                     console.log("Chip updated for: " + updatedChipCount);
-                    document.getElementById("ChipCount").innerText = updatedChipCount + "¢";
+                    document.getElementById("ChipCount").innerText = "Chips: " + updatedChipCount + "¢";
                     console.log(updatedChipCount);
                     getListener("chipupdate")(updatedChipCount);
                 } else {
-                    document.getElementById("ChipCount").innerText = chipCount + "¢";
+                    document.getElementById("ChipCount").innerText = "Chips: " + chipCount + "¢";
                     getListener("chipupdate")(chipCount);
                     console.log("Got Chipupdate!");
                     console.error("Auszahlung nicht erfolgt");
                 }
             } else if (msg.startsWith("text:")) {
                 setGameResultText(msg.substring("text:".length));
-                window.endGame = true; //Falls noch nicht true zum Beispiel weil vorzeitiger abbruch durch double down
+                window.endGame = true; // Falls noch nicht true zum Beispiel, weil vorzeitiger Abbruch durch Double Down
             }
 
 
@@ -195,7 +195,7 @@ window.connectSocket = async ()=>{
                         }
                         break;
                     case "coins":
-                        answer("ok"); //Server Wartet auf OK!
+                        answer("ok"); // Server wartet auf OK!
                         const newCoinsCount = Number(textArray[1]);
                         console.log("Got New Coins Count!!!", chipCount, newCoinsCount);
                         window.chipCount = newCoinsCount;
@@ -207,7 +207,7 @@ window.connectSocket = async ()=>{
                 }
             } else if (msg.startsWith("blackjack:")) {
                 console.log("Blackjack!!!!");
-                window.endProcess = true; //Weil ich nicht weiß wie die variable hieß zwei setzen
+                window.endProcess = true; // Weil ich nicht weiß wie die variable hieß zwei setzen
                 window.endGame = true;
             } else if (msg.startsWith("bust:")) {
                 let stackId = parseInt(msg.substring("bust:".length));
@@ -283,17 +283,27 @@ let gameResult = null;
 let onGameResult = [];
 window.setGameResultText = (t) => {
     try {
-        console.log("Got Game Result Text:", t);
-        if(!t) console.trace("Error! No Game Result Text empfangen!",t);
-        gameResult = t;
-        onGameResult.forEach(c => c(t));
+        let part = t.split(">");
+        for(let a in part){
+            console.log(a);
+        }
+        let displayText = part[0];
+        let chipAmount = part[1];
+        window.chipCount = Number(chipAmount);
+        console.log("Got Game Result Text:", displayText);
+        if(!t) console.trace("Error! No Game Result Text empfangen!", displayText);
+        gameResult = displayText;
+        onGameResult.forEach(c => c(displayText));
+        document.getElementById("ChipCount").innerText = "Chips: " + chipAmount;
         onButtonsAbbruch();
     } catch(e) {
         console.log(e);
     }
 }
-window.getGameResults = ()=>new Promise(resolve => {
+window.getGameResults = ()=>new Promise(async resolve => {
+    const socket = await connectSocket();
     if(gameResult) return resolve(gameResult);
+    socket.send("GetResult");
     onGameResult.push(resolve);
 });
 window.getDealerCards = ()=>new Promise(async resolve => {
@@ -315,5 +325,6 @@ window.exchange = (chipAmount) =>new Promise(async resolve => {
 window.endStackServer = (stackIndex)=>new Promise(async resolve => {
     const socket = await connectSocket();
     socket.send("endstack:" + stackIndex);
+    resolve();
 });
 

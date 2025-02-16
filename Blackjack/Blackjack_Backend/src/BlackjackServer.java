@@ -79,7 +79,6 @@ class BlackjackServer extends WebSocketServer {
         System.out.println("Ein Fehler ist aufgetreten: " + ex.getMessage());
         clientThreads.remove(conn);
         ex.printStackTrace();
-        //@Carl wenn eine Verbidnung einen Fehler hat soll nicht gleich der ganze Server beedned werden! Ein Fehler kann man vom Client her auch absichtlich provozieren um unseren Dienst zu schrotten
     }
 
     @Override
