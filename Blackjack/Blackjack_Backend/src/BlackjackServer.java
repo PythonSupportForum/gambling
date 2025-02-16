@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-// Implementation der Websockets gegenüber der unterlegenen Native Sockets (Websockets sind zudem Standardimplementation für javascript clients)
+// Implementation der Websockets gegenüber der unterlegenen Native Sockets (Websockets sind zudem Standardimplementation für javascript Clients)
 class BlackjackServer extends WebSocketServer {
     private ClientHandshake handshake;
 
@@ -50,7 +50,7 @@ class BlackjackServer extends WebSocketServer {
     public void onMessage(WebSocket conn, String message) {
         String lowerCaseMessage = message.toLowerCase();
 
-        // Finde den entsprechenden Thread durch die verwendete Verbindung als Schlüssel
+        // Finde den entsprechenden Thread durch die verwendete Verbindung als Schlüssel fuer das Dictionary
         GameThread thread = clientThreads.get(conn);
 
         if (thread != null) {
@@ -63,7 +63,7 @@ class BlackjackServer extends WebSocketServer {
                     String token = message.substring(startIndex + "id:".length()); //Token enthält auch Großbuchstaben
                     System.out.println("Token: " + token);
                     acc = true;
-                    newThread(conn, token);
+                    newThread(conn, token); // erstellt einen GameThread, wenn ein Token uebermittelt wird
                 }catch(NumberFormatException e){
                     System.out.println("Fehler: ID ist keine Zahl");
                 }

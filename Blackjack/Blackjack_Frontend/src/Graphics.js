@@ -452,16 +452,16 @@ window.Stack = class Stack {
         });
         return w;
     }
-    getOberste() {
+    getFirst() {
         console.log("Get Oberste:", this, this.cards);
         return Object.keys(this.cards).length === 0 ? null : Object.values(this.cards)[Object.values(this.cards).length-1];
     }
-    takeCard(count = 1) { //Macht Dasselbe wie get Oberste nur entfern gleichezig!
-        const c = this.getObersteViele(count);
+    takeCard(count = 1) { // Macht Dasselbe wie get Oberste nur entfern gleichzeitig!
+        const c = this.getMany(count);
         c.forEach(c => c.removeFromStack());
         return c;
     }
-    getObersteViele(count = 1) {
+    getMany(count = 1) {
         console.log("Get Oberste viele:", this, this.cards);
 
         return Object.keys(this.cards).length === 0 ? [] : Object.values(this.cards).slice(-count);
@@ -495,9 +495,9 @@ window.Stack = class Stack {
         if(andererStack === this) return; // Soll nicht auf sich selber kopieren
         console.log("Copy:", this, andererStack);
         if(reverse) {
-            while(this.getOberste() && count !== 0) {
+            while(this.getFirst() && count !== 0) {
                 console.log("Put One...");
-                const p = this.getOberste().putOnStack(andererStack, time);
+                const p = this.getFirst().putOnStack(andererStack, time);
                 await p;
                 count--;
                 await new Promise(resolve => setTimeout(resolve, 1000));

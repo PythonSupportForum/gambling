@@ -218,7 +218,7 @@ const startGame = async (first = true)=> {
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // if(dealerLeftStack.getOberste().cardValue === 11) {
+    // if(dealerLeftStack.getFirst().cardValue === 11) {
     //     if(()) {
     //         console.log("Set insurance...");
     //         await gameInfoPromise;
@@ -249,7 +249,7 @@ const startGame = async (first = true)=> {
             await endStack();
         } else if(input === "s") {
             console.log("Run Split");
-            await runSplit(userStack[runningStackId].getObersteViele(2));
+            await runSplit(userStack[runningStackId].getMany(2));
         }
     }
 
@@ -269,7 +269,7 @@ const calculateResult = async (dealerCards, stackPoints)=>{
     dealerCards.shift();
     for (const c of dealerCards) await showDealerCards(c, 0);
     Object.values(dealerLeftStack.cards).forEach(c => c.cardValue = 0);
-    dealerLeftStack.getOberste().cardValue = stackPoints;
+    dealerLeftStack.getFirst().cardValue = stackPoints;
     dealerLeftStack.startShowPoints();
     console.log("All Fertig!");
 }
@@ -319,7 +319,7 @@ const showDealerCards = async (gameInfoPromise = null, countCoveredCards = 1, fa
         await cardDeck.copyStack(dealerLeftStack, 1 + countCoveredCards);
         const gameInfo = await gameInfoPromise; //Wichtig: Mischen und Ziehen Animation auch vor einsatz abgeben, erst vor dem Umdrehen muss auf einSatz + Server Antwort gewartet werden
         console.log("Dealer First:", gameInfo);
-        await dealerLeftStack.getOberste().aufdecken(gameInfo);
+        await dealerLeftStack.getFirst().aufdecken(gameInfo);
     } else {
         const card = cardDeck.takeCard(1)[0];
         await Promise.all([dealerLeftStack.add(card), card.aufdecken(await gameInfoPromise)]);

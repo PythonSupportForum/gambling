@@ -6,51 +6,48 @@ import java.util.*;
 
 // Implementiert das Runnable interface -> Nutzung der Java Implementation für Multithreading
 public class GameThread implements Runnable {
-
-    Scanner c = new Scanner(System.in);
-
-    // Liste, aus welcher die Karten entnommen werden, welche dann in den Stacks landen
-    List<GameCard> temp = new ArrayList<>();
-
+    // Statische Liste, die alle Karten eines Pokerdecks enthaelt
     final List<GameCard> AVAILABLECARDS = new ArrayList<>();
+    //Statischer, erster Wert des Kontostandes, wichtig zur Berechnung der Transaktionen zu Ende des Programms
     final double OLDBALANCE;
 
-    boolean running = true;
-    WebSocket conn;
-    int client_ID;
+    boolean running = true; // Bestimmt, ob das Programm laeuft
+    WebSocket conn; // Websocket Verbindung mit dem Frontend, Verknuepfung zum User Interface
+    int client_ID; // ID des Kunden, wichtig zur Zuordnung in der Datenbank
 
-    List<GameCard> dealerStack = new ArrayList<>();
-    ArrayList<ArrayList<GameCard>> playerStack = new ArrayList<>();
-    HashMap<Integer, StackState> states;
-    Stack<GameCard> deck = new Stack<>();
-    GameCard card;
+    List<GameCard> dealerStack = new ArrayList<>(); // Stapel an Karten, die der Dealer im Verlauf des Spiels zieht
+    ArrayList<ArrayList<GameCard>> playerStack = new ArrayList<>(); /* Der Spieler kann mithilfe von Splits 4 unterschiedliche Stapel an Karten haben.
+    Dass es dazu kommt, ist extrem unwahrscheinlich, die Moeglichkeit besteht jedoch. Dieses Array beinhaltet jedes dieser 4 Stapel. Mindestens einer wird pro Spielrunde verwendet.
+    Der Rest erhaelt den Wert null*/
+    HashMap<Integer, StackState> states; // Ein Dictionary um den Status eines dieser Stapel mithilfe seiner ID festzuhalten und unabhaengig von den anderen zu veraendern
+    Stack<GameCard> deck = new Stack<>(); // Das Deck von dem gezogen wird
+    GameCard card; // Ein Objekt der Klasse GameCard. Repraesentiert eine Spielkarte
 
-    Statement stmt;
+    Statement stmt; // SQL-Statement Objekt
 
+    // Variablen, mit denen auf das Frontend gewartet wird
     boolean start = false;
     boolean wantsExchange;
     boolean exchangeInput;
+    boolean askDealer = false;
+    boolean askForResult = false;
+    boolean splitInput = false;
     boolean betInput;
-    String askInput = ""; //Allgemein für Nachfragen ans Frontent
+    String askInput = ""; //Allgemein für Nachfragen ans Frontend
     boolean insuranceInput = false;
     boolean inputWait = true;
     boolean doubleDown = false;
     boolean playerDone = false;
     boolean waitDoubleDown = false;
+    int takeCount = 0;
 
     boolean[] cardInput = new boolean[4];
 
-    Connection clientDB;
-    Connection transactionDB;
+    Connection gamingDB; // Objekt zur Anbindung an die Datenbank
 
-    int chips = 0;
-    double balance = 0.0;
+    int chips = 0; // Kontostand in Spiel Jetons
+    double balance = 0.0; // Allgemeiner Kontostand in TiloTalern
     int bet = 0;
-    boolean doubleDownInput = false;
-    boolean askDealer = false;
-    boolean askForResult = false;
-    boolean splitInput = false;
-    int takeCount = 0;
     int splitCount = 0;
     int insuranceBet = 0;
 
@@ -59,6 +56,7 @@ public class GameThread implements Runnable {
     // Ermöglicht Zugriff auf Thread Objekt, wenn GameThread Objekt gefunden wurde
     public Thread currentThread = Thread.currentThread();
 
+    // Ansammlung aller Zustaende, in denen sich das Spiel und jeder einzelne Stapel des Spielers aufhalten kann
     public enum GameState {
         IDLE,
         DEPOSIT,
@@ -84,11 +82,12 @@ public class GameThread implements Runnable {
     // Beschreibt den Status, indem sich das Spiel befindet
     GameState gameState = GameState.IDLE;
 
-    // Konstruktor
+    // Konstruktor, der durch BlackjackServer aufgerufen wird
     public GameThread(String token, WebSocket _conn) {
         System.out.println("Token: "+token);
         conn = _conn;
 
+        // Datenbankverbindung und Auslese aller relevanten Informationen
         Connection clientDB = getConnection();
         String query = "SELECT Kunden.*, SUM(t.Betrag) as Kontostand FROM Kunden " +
                 "JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id " +
@@ -110,9 +109,10 @@ public class GameThread implements Runnable {
             e.printStackTrace();
         }
 
-
+        // Setzen des statischen Wertes
         OLDBALANCE = balance;
 
+        //Hinzufuegen aller Karten zur statischen Liste AVAILABLECARDS
         //region Karten hinzufügen
         // Clubs (Kreuz)
         AVAILABLECARDS.add(new GameCard('2', 'c'));
@@ -180,12 +180,12 @@ public class GameThread implements Runnable {
     public GameThread(){
         client_ID = -1;
         conn = null;
-        clientDB = getConnection();
+        gamingDB = getConnection();
 
         String query = "SELECT SUM(Betrag) as Kontostand FROM Transaktionen WHERE Kunden_ID = " + client_ID;
         try{
-            assert clientDB != null;
-            stmt = clientDB.createStatement();
+            assert gamingDB != null;
+            stmt = gamingDB.createStatement();
             stmt.executeQuery(query);
             ResultSet rs = stmt.getResultSet();
             rs.next();
@@ -260,7 +260,7 @@ public class GameThread implements Runnable {
         // endregion
     }
 
-    // Implementation der run() - Methode des Runnable Interfaces, erste Funktion die nach der Öffnung des Threads ausgeführt wird
+    // Implementation der run() - Methode des Runnable Interfaces, erste Funktion die nach der Öffnung des Threads durch BlackjackServer ausgeführt wird
     public void run() {
         System.out.print(client_ID + "\n");
         // Warte auf Startsignal vom Client
@@ -272,112 +272,16 @@ public class GameThread implements Runnable {
         game(); // ruft Hauptmethode des Spiels auf, beginnt Spiel mit dem Client
     }
 
-    //Um den Text anzuzeigen im Frontend der i Ergebiss popup seht
-    public void sendGameResultText(String t) {
-        conn.send("text:"+t);
-    }
-
-    // Verarbeiten einer einkommenden Nachricht vom Client
-    public void handleMessage(String message) {
-        System.out.println("Nachricht von Client " + client_ID + " empfangen: " + message + "\n");
-        if(message.contains(":")){
-            if (message.startsWith("exchange:")){
-                chipAmount = Integer.parseInt(message.substring("exchange:".length()).trim());
-                System.out.println("Client " + client_ID + " will " + chipAmount + " umtauschen\n");
-                if ((balance - (double) (chipAmount / 100)) < 0) {
-                    System.out.println("Hat nicht genug Tilotaler um diesen Betrag zu erwerben!");
-                    conn.send("ChipUpdate:-1");
-                } else {
-                    chips += chipAmount;
-                    balance -= (double) chipAmount / 100;
-                    exchangeInput = true;
-                    System.out.println("Client " + client_ID + " hat " + chipAmount + " Coins erworben!");
-                    conn.send("ChipUpdate:" + chips);
-                }
-            }
-            else if (message.startsWith("bet:")) {
-                bet = Integer.parseInt(message.substring("bet:".length()).trim());
-                System.out.println("Client " + client_ID + " wettet " + bet);
-                if(bet > chipAmount){
-                    bet = chipAmount;
-                }
-                chips -= chipAmount;
-                betInput = true;
-            }
-            else if (message.startsWith("answer:")) {
-                askInput = message.substring("answer:".length());
-            }
-            else if (message.startsWith("endstack:")) {
-                int i = Integer.parseInt(message.substring("endstack:".length()));
-                System.out.println("Got End Stack! " + i);
-                cardInput[i] = true;
-            }
-        }
-        else{
-            switch(message.toLowerCase()){
-                case "takedealer":
-                    takeCount += 1;
-                    inputWait = false;
-                    break;
-                case "getresult":
-                    askForResult = true;
-                    break;
-                case "split":
-                    inputWait = false;
-                    splitInput = true;
-                    break;
-                case "getdealer":
-                    playerDone = true;
-                    inputWait = false;
-                    askDealer = true;
-                    break;
-                case "takeuser":
-                    takeCount += 1;
-                    inputWait = false;
-                    waitDoubleDown = false;
-                    break;
-                case "end":
-                    running = false;
-                    break;
-                case "start":
-                    start = true;
-                    DecimalFormat df = new DecimalFormat("0.00");
-                    conn.send("Bal:"+ df.format(balance));
-                    System.out.println("Bal:"+balance);
-                    break;
-                default:
-                    System.out.println("ERROR: Message not detected");
-                    break;
-            }
-        }
-    }
-
-    public void sendChipCount(int c) {
-        this.askFrontend("coins:"+c);
-    }
-
-    public String askFrontend(String query) { // Variablenminimierung
-        askInput = ""; // Reset
-        conn.send("ask:"+query);
-        while(askInput.length() == 0) {
-            try {
-                Thread.sleep(200);
-            }
-            catch (Exception ignored) {}
-        }
-        System.out.println("Frontent Answer:"+askInput);
-        return askInput;
-    }
-
+    // region Game Logic
     // Funktioniert als Hauptmethode für das Blackjack Spiel
     public void game() {
         System.out.println("Start des Spiels");
         //Start der Spiellogik
         setGameState(GameState.START);
-        states = new HashMap<>();
+        states = new HashMap<>(); // initialisieren des Dictionaries, in dem der Status des Spieler Stapels dem Spieler zugerordnet wird
 
         ArrayList<GameCard> temp = new ArrayList<>();
-        playerStack.add(temp);
+        playerStack.add(new ArrayList<>());
         states.put(0, StackState.RUNNING);
 
         // Loop zum erneuten Spielen
@@ -631,14 +535,13 @@ public class GameThread implements Runnable {
             updateBalance(0);
         }
         else{
-            while (true) {
-                System.out.println("Du hast " + chips +" Coins\nWie viele Coins willst du in Tilotaler umwandeln?");
+            System.out.println("Withdrawal time");
+            while(true){ // Provisorisch
                 try {
-                    int input = Integer.parseInt(c.nextLine());
-                    if(updateBalance(input)){
-                        break;
-                    }
-                } catch (NumberFormatException ignored) {}
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 
@@ -825,6 +728,9 @@ public class GameThread implements Runnable {
         sendGameResultText(t + ">"+chips); //send ans Frontent den Text als Ergebisse
         setGameState(GameState.GAME_END);
     }
+    //endregion
+
+    // region Database Connection
     // Methode zum Erstellen der Verbindung
     public static Connection getConnection() {
         // Verknüpfung zur Datenbank
@@ -846,15 +752,16 @@ public class GameThread implements Runnable {
         }
     }
 
+    // Methode, um den durch das Spiel geaenderten Kontostand zu aktualisieren
     public boolean updateBalance(int coinAmount){
         if (coinAmount > chips) {
-            System.out.println("Du hast nicht genug Coins!");
+            System.out.println("Du hast nicht genug Coins!"); // Falls Falscheingabe durch Client
             return false;
         } else {
             chips -= coinAmount;
-            sendChipCount(chips);
+            sendChipCount(chips); // Aktualisierung im Frontend
 
-            // Formatieren Sie den Betrag korrekt
+            // Formatieren des Betrags
             double amount = balance - OLDBALANCE;
             String formattedAmount = new DecimalFormat("0.00").format(amount);
 
@@ -864,23 +771,123 @@ public class GameThread implements Runnable {
                     + formattedAmount + ", "
                     + "'blackjack')"; // type wird explizit gesetzt
 
-            clientDB = getConnection();
+            gamingDB = getConnection();
             try {
                 // Verbindung zur Datenbank, Veränderung des Kontostandes
-                stmt = clientDB.createStatement();
+                stmt = gamingDB.createStatement();
                 stmt.executeUpdate(transactionQuery);
                 stmt.close();
-                clientDB.close();
+                gamingDB.close();
             } catch (SQLException e) {
                 e.printStackTrace();
                 return false;
             }
             System.out.println("Du hast " + coinAmount + " Coins umgewandelt!");
-            return true;
+            return true; // Rueckgabe, wenn Aktualisierung gelingt
+        }
+    }
+    // endregion
+
+    // region Frontend Connection
+    public void sendChipCount(int c) {
+        this.askFrontend("coins:"+c); // Uebermitteln des Kontostands an Jetons mithilfe des Befehls "coins:"
+    }
+
+    public String askFrontend(String query) { // Variablenminimierung, Anfrage an das Frontend mit anschliessendem Warten auf die Antwort
+        askInput = ""; // Reset
+        conn.send("ask:"+query);
+        while(askInput.length() == 0) {
+            try {
+                Thread.sleep(200);
+            }
+            catch (Exception ignored) {}
+        }
+        System.out.println("Frontend Answer:"+askInput);
+        return askInput;
+    }
+
+    // Debugging Loesung zur Angabe des Ergebnisses des Spiels
+    public void sendGameResultText(String t) {
+        conn.send("text:"+t);
+    }
+
+    // Verarbeiten einer einkommenden Nachricht vom Client
+    public void handleMessage(String message) {
+        System.out.println("Nachricht von Client " + client_ID + " empfangen: " + message + "\n");
+        if(message.contains(":")){ // alle, die ein ':' enthalten, enthalten Werte die gelesen werden muessen. Simple Befehle vom Client koennen durch ein switch-case bearbeitet werden
+            if (message.startsWith("exchange:")){
+                chipAmount = Integer.parseInt(message.substring("exchange:".length()).trim());
+                System.out.println("Client " + client_ID + " will " + chipAmount + " umtauschen\n");
+                if ((balance - (double) (chipAmount / 100)) < 0) {
+                    System.out.println("Hat nicht genug Tilotaler um diesen Betrag zu erwerben!");
+                    conn.send("ChipUpdate:-1");
+                } else {
+                    chips += chipAmount;
+                    balance -= (double) chipAmount / 100;
+                    exchangeInput = true;
+                    System.out.println("Client " + client_ID + " hat " + chipAmount + " Coins erworben!");
+                    conn.send("ChipUpdate:" + chips);
+                }
+            }
+            else if (message.startsWith("bet:")) {
+                bet = Integer.parseInt(message.substring("bet:".length()).trim());
+                System.out.println("Client " + client_ID + " wettet " + bet);
+                if(bet > chipAmount){
+                    bet = chipAmount;
+                }
+                chips -= chipAmount;
+                betInput = true;
+            }
+            else if (message.startsWith("answer:")) {
+                askInput = message.substring("answer:".length());
+            }
+            else if (message.startsWith("endstack:")) {
+                int i = Integer.parseInt(message.substring("endstack:".length()));
+                System.out.println("Got End Stack! " + i);
+                cardInput[i] = true;
+            }
+        }
+        else{
+            switch(message.toLowerCase()){
+                case "takedealer":
+                    takeCount += 1;
+                    inputWait = false;
+                    break;
+                case "getresult":
+                    askForResult = true;
+                    break;
+                case "split":
+                    inputWait = false;
+                    splitInput = true;
+                    break;
+                case "getdealer":
+                    playerDone = true;
+                    inputWait = false;
+                    askDealer = true;
+                    break;
+                case "takeuser":
+                    takeCount += 1;
+                    inputWait = false;
+                    waitDoubleDown = false;
+                    break;
+                case "end":
+                    running = false;
+                    break;
+                case "start":
+                    start = true;
+                    DecimalFormat df = new DecimalFormat("0.00");
+                    conn.send("Bal:"+ df.format(balance));
+                    System.out.println("Bal:"+balance);
+                    break;
+                default:
+                    System.out.println("ERROR: Message not detected");
+                    break;
+            }
         }
     }
 
-    public void handleQuit(){
+
+    public void handleQuit(){ // Bearbeitung eines gewollten oder ungewollten Beenden des Programms
         if(running){
             updateBalance(chips);
             running = false;
@@ -889,4 +896,5 @@ public class GameThread implements Runnable {
             conn.close();
         }
     }
+    //endregion
 }
