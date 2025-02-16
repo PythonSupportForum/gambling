@@ -154,8 +154,8 @@ const userTakeCard = async (count = 1) => {
     const input = await new Promise(resolve => buttons.show({
         proceed: ()=>resolve("p"),
         _split: ()=>resolve("s"),
-        _double: ()=>resolve("p"), //Zum Beisiel weil Spit oder Double Down ausgefürht urd
-    }, ()=>resolve("p")));
+        _double: ()=>resolve("d"), //Zum Beisiel weil Spit oder Double Down ausgefürht urd
+    }, ()=>resolve("")));
     buttons.hide();
 
     end(); //Um Overlay schließen → Karten aus dem Vordergrund
