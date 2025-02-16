@@ -139,9 +139,9 @@ window.connectSocket = async ()=>{
                     state: state
                 });
             } else if (msg.startsWith("ask:")) {
-                const textArray = msg.substring("ask:".length).split("$");
+                const textArray = msg.substring("ask:".length).split(":");
                 const text = textArray[0];
-                console.log("Server Asked Frontend:", text);
+                console.log("Server Asked Frontend: ", text);
                 let answered = false;
                 const answer = (t) => {
                     if(answered) return; //Nur einmal debugging
@@ -162,10 +162,6 @@ window.connectSocket = async ()=>{
                         console.log("Frage nach Double..");
                         const r = await buttons.addDynamicYesOrNoButton("double");
                         console.log("Double Answer erhalten:", r);
-                        if(r) {
-                            userStack[runningStackId].einsatz*=2;
-                            userStack[runningStackId].restMaxCount = 1;
-                        }
                         answer(r?"true":"false");
                         break;
                     case "split":
