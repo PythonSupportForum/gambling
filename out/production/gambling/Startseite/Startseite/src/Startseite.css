@@ -178,6 +178,14 @@
     text-align: center;
 }
 
+#Slots {
+    width: 40%;
+    height: 22.5%;
+    position: fixed;
+    right: 7.5%;
+    top: 35%;
+}
+
 #BlackjackButton {
     height: 7%;
     position: fixed;
@@ -194,16 +202,16 @@
 
 #SlotsButton {
     height: 7%;
-    position: fixed;
-    bottom: 35%;
     width: 20%;
-    right: 17.5%;
+    margin-top: 46.5%;
+    margin-left: 40%;
     background-color: #e6ac0c;
     border: solid 15px #e6ac0c;
     border-radius: 40px;
     color: #00541d;
     font-weight: 700;
     font-size: 60px;
+    z-index: 5;
 }
 
 #BlackjackImage {
@@ -215,12 +223,11 @@
 }
 #SlotsImage {
     width: 40%;
-    height: 33%;
     position: fixed;
     right: 7.5%;
     top: 35%;
     border-radius: 40px;
-    aspect-ratio: 1 / 1;
+    z-index: 4;
 }
 
 #Footer {

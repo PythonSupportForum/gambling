@@ -86,22 +86,29 @@ public class GameThread implements Runnable {
 
     // Konstruktor
     public GameThread(String token, WebSocket _conn) {
+        System.out.println("Token: "+token);
         conn = _conn;
 
-        clientDB = getConnection();
-        String query = "SELECT Kunden.*, SUM(t.Betrag) as Kontostand FROM Kunden JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id WHERE Kunden.token = '"+token+"'";
-        try{
-            assert clientDB != null;
-            stmt = clientDB.createStatement();
-            stmt.executeQuery(query);
-            ResultSet rs = stmt.getResultSet();
-            rs.next();
-            balance = rs.getDouble("Kontostand");
-            client_ID = rs.getInt("id"); //Client Id wird mittels Token AUs Database extrahiert!
-            rs.close();
-            stmt.close();
+        Connection clientDB = getConnection();
+        String query = "SELECT Kunden.*, SUM(t.Betrag) as Kontostand FROM Kunden " +
+                "JOIN Transaktionen as t ON t.Kunden_ID = Kunden.id " +
+                "WHERE Kunden.token = ?";
+
+        try (PreparedStatement stmt = clientDB.prepareStatement(query)) {
+            stmt.setString(1, token); // Token als sicherer Parameter
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) { // Prüfen, ob es ein Ergebnis gibt
+                    balance = rs.getDouble("Kontostand");
+                    client_ID = rs.getInt("id"); // Client ID aus Datenbank extrahieren
+                    System.out.println("Balance: " + balance + ", Client ID: " + client_ID);
+                } else {
+                    System.out.println("Kein Kunde mit diesem Token gefunden.");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        catch(SQLException e){e.printStackTrace();}
 
 
         OLDBALANCE = balance;
@@ -259,7 +266,7 @@ public class GameThread implements Runnable {
         // Warte auf Startsignal vom Client
         while(!start){
             try{
-                Thread.sleep(100);
+                Thread.sleep(200);
             }catch(Exception ignored){}
         }
         game(); // ruft Hauptmethode des Spiels auf, beginnt Spiel mit dem Client
@@ -340,7 +347,7 @@ public class GameThread implements Runnable {
         conn.send("ask:"+query);
         while(askInput.length() == 0) {
             try {
-                Thread.sleep(100);
+                Thread.sleep(200);
             }
             catch (Exception ignored) {}
         }
@@ -420,7 +427,7 @@ public class GameThread implements Runnable {
             while (!betInput) {
                 //ist nicht vollständig, nach mit Frontend lösen
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(200);
                 }
                 catch (Exception ignored) {}
 //                System.out.println("Du hast " + coins + " Coins");
@@ -456,7 +463,7 @@ public class GameThread implements Runnable {
 
             while(takeCount < 1){
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(200);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -473,7 +480,7 @@ public class GameThread implements Runnable {
             printCard(card);
             takeCount--;
 
-            if (dealerStack.get(1).getValue() == 'a' || true) {
+            if (dealerStack.get(1).getValue() == 'a') {
                 //region Insurance Bet
                 setGameState(GameState.INSURANCE_BET);
 
@@ -496,7 +503,7 @@ public class GameThread implements Runnable {
 
             while(takeCount < 2){
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(200);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -544,7 +551,7 @@ public class GameThread implements Runnable {
                 System.out.println("Alle Karten gezogen! " + cardInput[0] + " " + playerDone);
                 while (!playerDone) {
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(200);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -705,7 +712,7 @@ public class GameThread implements Runnable {
         while (!cardInput[index]) {
             while(inputWait){
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(200);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -727,7 +734,7 @@ public class GameThread implements Runnable {
     }
 
     public void splitCheck(int index){
-        if(playerStack.get(index).get(0).getValue() == playerStack.get(index).get(1).getValue() || true){
+        if(playerStack.get(index).get(0).getValue() == playerStack.get(index).get(1).getValue()){
             String a = askFrontend("split");
             String[] r = a.split(";");
             if(Objects.equals(r[0], "true")) {
@@ -810,17 +817,30 @@ public class GameThread implements Runnable {
             System.out.println("Du hast nicht genug Coins!");
             return false;
         } else {
-            chips -= coinAmount;
-            sendChipCount(chips);
-            String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, Datum) VALUES (" + client_ID  + ", " + (new DecimalFormat("0.00").format(balance - OLDBALANCE)) + ", NOW())";
+            coins -= coinAmount;
+            sendChipCount(coins);
+
+            // Formatieren Sie den Betrag korrekt
+            double amount = balance - OLDBALANCE;
+            String formattedAmount = new DecimalFormat("0.00").format(amount);
+
+            // Erstellen Sie die SQL-Abfrage
+            String transactionQuery = "INSERT INTO Transaktionen (Kunden_ID, Betrag, type) VALUES ("
+                    + client_ID + ", "
+                    + formattedAmount + ", "
+                    + "'blackjack')"; // type wird explizit gesetzt
+
             clientDB = getConnection();
-            try{
+            try {
                 // Verbindung zur Datenbank, Veränderung des Kontostandes
                 stmt = clientDB.createStatement();
                 stmt.executeUpdate(transactionQuery);
                 stmt.close();
                 clientDB.close();
-            }catch(SQLException e){ return false;}
+            } catch (SQLException e) {
+                e.printStackTrace(); // Drucken Sie den Stacktrace für detaillierte Fehlerinformationen
+                return false;
+            }
             System.out.println("Du hast " + coinAmount + " Coins umgewandelt!");
             return true;
         }

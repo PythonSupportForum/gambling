@@ -63,7 +63,7 @@ Obere Leiste mit Logo
   }
   else{
     ?>
-    <button onclick="window.location.href = '/logout'" type="button" id="Anmelden">Abmelden</button>
+    <button onclick="window.location.href = '/logout'" type="button" class = "gleichButton">Abmelden</button>
     <?php
   }
   ?>
@@ -92,7 +92,6 @@ Obere Leiste mit Logo
 
 
   <div id="Kontostand">
-    <img id="PB" src="/assets/default-profile.png" alt="Profilbild">
     <h2 id="Guthaben"><?php echo htmlspecialchars(str_pad($userData["amount"]."" ?? 0, 5, "0", STR_PAD_LEFT)); ?></h2>
     <img src="/assets/tilotaler_rand.png" id="Taler"/>
   </div>

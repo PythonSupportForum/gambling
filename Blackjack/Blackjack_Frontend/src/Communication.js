@@ -1,4 +1,4 @@
-const serverURL = "ws://127.0.0.1:8080";
+const serverURL = "ws://127.0.0.1:8082";
 
 window.socket = null;
 window.approved = false;

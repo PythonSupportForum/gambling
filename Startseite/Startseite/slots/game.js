@@ -1,5 +1,7 @@
 window.host = "/api";
+window.beIrre = false;
 
+window.isWin = false;
 document.addEventListener("DOMContentLoaded", ()=>{
     window.token = document.getElementById("token").innerText || "2";
     console.log("User Token gefunden:", token);
@@ -73,14 +75,13 @@ document.addEventListener("DOMContentLoaded", ()=>{
             }
             const data = await response.json();
             console.log('Kontostand:', data.balance);
-            if(!data.balance || data.balance === 0) document.getElementById("balance").innerText = "0";
             return data.balance;
         } catch (error) {
             console.error('Fehler:', error);
         }
     }
 
-    let isU = false;
+    let isU = false; //Balance Exportentieles Wachstum
     let nU = false;
     window.balance = -1;
     window.showBalance = 0;
@@ -183,7 +184,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
     updateB().then(()=>{});
     setInterval(updateB, 5*1000);
 
-    window.isWin = false;
     window.play = async ()=>{
         if(balance < 1000) {
             alert("Du bist Pleite!!! Wir akzeptieren keine Schuldner! Bitte zahle mehr Kohle ein!");
@@ -194,7 +194,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
         const gamePromise = async () => {
             const {results, winAmount} = await  startGame(token);
-            window.isWin = winAmount > 0;
+            window.isWin = (winAmount+1000) !== 0;
             console.log("R:", {results, winAmount});
             return results;
         }
@@ -203,6 +203,8 @@ document.addEventListener("DOMContentLoaded", ()=>{
         const b = await bilder;
         const canvasContainers = [...document.getElementsByClassName("rad")];
         async function animateWheel(canvas, context, images, duration, finalImageIndexPromise, onIrre = ()=>{}) {
+            if(beIrre) setTimeout(onIrre, 4000);
+
             let finalImageIndex = -1;
             finalImageIndexPromise.then(i => {
                 finalImageIndex = i;
@@ -247,10 +249,15 @@ document.addEventListener("DOMContentLoaded", ()=>{
                 if(Math.abs(ziel-currentOffset) < 0.1 && Math.abs(speed) < 0.5) {
                     speed = 0;
                     currentOffset = ziel;
+                    console.log("Ende! Ziel Erriecht!!!", isWin);
+                }
+
+                if(Math.abs(ziel-currentOffset) < 5 && Math.abs(speed) < 2) {
                     if(isWin) {
-                        window.isWin = false;
+                        console.log("Is Win!!!!!");
                         startConfetti();
                         updateB();
+                        window.isWin = false;
                     }
                 }
 
