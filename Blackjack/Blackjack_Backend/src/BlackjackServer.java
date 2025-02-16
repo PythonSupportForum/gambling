@@ -27,7 +27,7 @@ class BlackjackServer extends WebSocketServer {
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         System.out.println("Neue Verbindung: " + conn.getRemoteSocketAddress());
 
-        //Damit die Verbindung von pberall aufgebraut werden kann und Browser nicht blokieren wegen verscheidneen Origins aus Sicherheitsgründen Sicherheitsmethoden abschalten
+        //Damit die Verbindung von überall aufgebraut werden kann und Browser nicht blockieren wegen verschiednen Origins aus Sicherheitsgründen Sicherheitsmethoden abschalten
         conn.setAttachment("Access-Control-Allow-Origin: *");
         conn.setAttachment("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
         conn.setAttachment("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -79,7 +79,7 @@ class BlackjackServer extends WebSocketServer {
         System.out.println("Ein Fehler ist aufgetreten: " + ex.getMessage());
         clientThreads.remove(conn);
         ex.printStackTrace();
-        //@Carl wenn eine Verbidnung einen Fehler hat soll nicht gleich der ganze Server beedned werden! Ein Fehler kann man vom Client her auch absichtlich provozieren um unseren Dienst zu schrotten
+
     }
 
     @Override

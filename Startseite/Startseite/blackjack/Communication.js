@@ -19,7 +19,7 @@ function getListener(type, save) {
         listener[type] = [];
     }
     if(type in listener) return listener[type].shift();
-    console.log("Error! Versuche Listner auszuführen von dem es keinen meher gibt!", type);
+    console.log("Error! Versuche Listener auszuführen von dem es keinen mehr gibt!", type);
     return ()=>{};
 }
 
