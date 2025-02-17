@@ -47,17 +47,17 @@ public class GameThread implements Runnable {
 
     int chips = 0; // Kontostand in Spiel Jetons
     double balance = 0.0; // Allgemeiner Kontostand in TiloTalern
-    int bet = 0;
-    int splitCount = 0;
-    int insuranceBet = 0;
+    int bet = 0; // Betrag, den der Spieler gesetzt hat
+    int splitCount = 0; // Anzahl, wie oft gesplittet wurde, wichtig um den richtig Stack beim splitten aufzurufen
+    int insuranceBet = 0; // Betrag, den der Spieler als Insurance Bet setzt
 
-    int chipAmount = 0;
+    int chipAmount = 0; //temporär, Uebermittlung Frontend
 
     // Ermöglicht Zugriff auf Thread Objekt, wenn GameThread Objekt gefunden wurde
     public Thread currentThread = Thread.currentThread();
 
     // Ansammlung aller Zustaende, in denen sich das Spiel und jeder einzelne Stapel des Spielers aufhalten kann
-    public enum GameState {
+    public enum GameState { // Alle Zustände, in denen sich das Spiel befinden kann, wichtig für Synchronisation mit Frontend
         IDLE,
         DEPOSIT,
         START,
@@ -72,7 +72,7 @@ public class GameThread implements Runnable {
         WITHDRAW,
         END
     }
-    public enum StackState {
+    public enum StackState { // Jeder Zustand, den ein Stapel Karten haben kann; wichtig fuer differenzierte Auswertung beim splitten
         RUNNING,
         WON,
         LOST,
@@ -176,7 +176,7 @@ public class GameThread implements Runnable {
         // endregion
     }
 
-    // Test Konstruktor zum Debuggen
+    /** Test Konstruktor zum Debuggen
     public GameThread(){
         client_ID = -1;
         conn = null;
@@ -259,6 +259,7 @@ public class GameThread implements Runnable {
         AVAILABLECARDS.add(new GameCard('a', 's')); // Ass
         // endregion
     }
+    */
 
     // Implementation der run() - Methode des Runnable Interfaces, erste Funktion die nach der Öffnung des Threads durch BlackjackServer ausgeführt wird
     public void run() {
@@ -281,11 +282,12 @@ public class GameThread implements Runnable {
         states = new HashMap<>(); // initialisieren des Dictionaries, in dem der Status des Spieler Stapels dem Spieler zugerordnet wird
 
         ArrayList<GameCard> temp = new ArrayList<>();
-        playerStack.add(new ArrayList<>());
-        states.put(0, StackState.RUNNING);
+        playerStack.add(new ArrayList<>()); // In die zweidimensionale ArrayListe wird eine neue Liste als Kartenstapel hinzufügenen
+        states.put(0, StackState.RUNNING); // Der Stack ist aktuell am laufen
 
         // Loop zum erneuten Spielen
         while (running) {
+            // Alle wichtigen Variablen, die pro Spiel immer wieder zurueckgesetzt, bekommen hier ihren Ursprungswert
             setGameState(GameState.DEPOSIT);
             exchangeInput = false;
             betInput = false;
@@ -312,7 +314,7 @@ public class GameThread implements Runnable {
 
             sendChipCount(chips);
 
-            if(chips == 0 && balance == 0){
+            if(chips == 0 && balance == 0){ // Ueberpruefung, ob der Spieler genug Geld hat
                 running = false;
                 System.out.println("Kein Geld mehr");
                 continue;
@@ -321,13 +323,11 @@ public class GameThread implements Runnable {
             // Start des Spiels
             setGameState(GameState.START);
 
-            // füllt temp mit allen Karten
+            // fuellt temp mit allen Karten
             temp.addAll(AVAILABLECARDS);
 
-            setGameState(GameState.BET);
-            //region Coins setzen
+            setGameState(GameState.BET); // Das Backend Programm wartet darauf, dass der Spieler eine Wette gesetzt hat
             while (!betInput) {
-                //ist nicht vollständig, nach mit Frontend lösen
                 try {
                     Thread.sleep(200);
                 }
@@ -335,7 +335,7 @@ public class GameThread implements Runnable {
             }
 
             setGameState(GameState.SHUFFLE);
-
+            // Die Karten werden mittels der Random klasse, gemischt auf den Nachziehstapel (deck) getan
             while (!temp.isEmpty()) {
                 Random b = new Random();
                 int random = b.nextInt(temp.size());
@@ -353,10 +353,9 @@ public class GameThread implements Runnable {
                 }
             }
 
-            GameCard tempCard = deck.pop();
-            printCard(tempCard);
-            dealerStack.add(tempCard);
-
+            card = deck.pop(); // Von Nachzeihstapel werden zweiKarten gezogen, ausgegeben, auf den DealerStack gelegt und an das Frontend gesendet
+            printCard(card);
+            dealerStack.add(card);
             card = deck.pop();
             int currentValue = currentValue(dealerStack);
             dealerStack.add(card);
@@ -392,7 +391,7 @@ public class GameThread implements Runnable {
                     throw new RuntimeException(e);
                 }
             }
-            for(int i = 0; i < 2 ; i++){
+            for(int i = 0; i < 2 ; i++){ // Der Spieler bekommt zwei Karten aufgedeckt
                 card = deck.pop();
                 currentValue = currentValue(playerStack.get(0));
                 playerStack.get(0).add(card);
@@ -404,7 +403,7 @@ public class GameThread implements Runnable {
             waitDoubleDown = true;
             String a = askFrontend("double");
             String[] r = a.split(";");
-            if(Objects.equals(r[0], "true")) {
+            if(Objects.equals(r[0], "true")) { // Wird nur ausgeführt, wenn der Spieler einen Double Down machen will
                 System.out.println("Double Down!");
 
                 while(waitDoubleDown){
@@ -444,7 +443,7 @@ public class GameThread implements Runnable {
                 System.out.println("Der Spieler hat kein Double Down gesetzt!");
             }
 
-            if (getGameState() == GameState.PLAYER_DRAW) {
+            if (getGameState() == GameState.PLAYER_DRAW) { // Normales Programm, wird nur ausgeführt, wenn vorher kein Double Down passiert ist
                 // Main Split Logic
                 splitCheck(0);
                 System.out.println("Checked Split! " + splitCount);
@@ -467,11 +466,11 @@ public class GameThread implements Runnable {
                         ended++;
                     }
                 }
-                if(splitCount == ended) setGameState(GameState.GAME_END);
+                if(splitCount == ended) setGameState(GameState.GAME_END); // Nur wenn alle Stapel beendet wurden, Bsp. Bust/Blackjack, kann das Spiel an sich beendet werden
                 System.out.println("Spieler fertig");
                 if(getGameState() == GameState.GAME_END) System.out.println("Ended early");
             }
-            if(getGameState() != GameState.GAME_END) {
+            if(getGameState() != GameState.GAME_END) { // Wenn das Spiel noch nicht vorbei ist, macht der Dealer nach dem Spieler weiter
                 setGameState(GameState.DEALER_DRAW);
 
                 int total = 0;
@@ -484,8 +483,8 @@ public class GameThread implements Runnable {
                 }
                 total = currentValue(dealerStack);
 
-                // Weiter Karten nehmen bis eine neue Karte zu riskant ist
-                while (total < 17 || (total < 18 && aceCounter > 0)) {
+                // Der Dealer geht nur bis zum einen Stapelwert von 17 mit
+                while (total < 18) {
                     GameCard newCard = deck.pop();
                     dealerStack.add(newCard);
 
@@ -546,11 +545,11 @@ public class GameThread implements Runnable {
         }
 
         setGameState(GameState.END);
-        handleQuit();// Kümmert sich um die ausstehende Verbindung, falls diese aktiv sind
+        handleQuit();// Kuemmert sich um die ausstehende Verbindung, falls diese aktiv sind
         currentThread.interrupt(); // Beende den Thread
     }
 
-    private void checkValue(int index) {
+    private void checkValue(int index) { // Die Methode ueberprueft nur auf Blackjack oder Bust, das ist wichtig, weil das auch waehrend des Spiels passieren kann, dieses muss dann frühzeitig verwendet werden
         ArrayList<GameCard> cardStack = playerStack.get(index);
         if (currentValue(cardStack) > 21) {
             states.replace(index, StackState.LOST);
@@ -571,7 +570,7 @@ public class GameThread implements Runnable {
         }
     }
 
-    public int currentValue (List<GameCard> cardStack) {
+    public int currentValue (List<GameCard> cardStack) { // Die Methode berechnet generell den Wert einer Stacks, dabei wird beruecksichtigt, dass ein Ass situationsbedingt 1 oder 11 sein kann
         int totalValue = 0;
         int aceCount = 0;
 
@@ -610,7 +609,7 @@ public class GameThread implements Runnable {
     }
     //endregion
 
-    void printCard(GameCard card){
+    void printCard(GameCard card){ // Die Methode gibt eine Karte im Backend in der konsole aus, um zu debuggen
         String coat = "";
         System.out.print("Wert: " + card.getValue() + " ");
         switch (card.getCoat()){
@@ -632,7 +631,7 @@ public class GameThread implements Runnable {
         System.out.print("Farbe: " + coat + "\n");
     }
 
-    public void karteZiehen(int index){
+    public void karteZiehen(int index){ // Die Methode wurde ausgelagert, da diese an verschiedenen Stellen in Programm benoetigt wird, mit dem index kann vorgegeben werden auf welchen PlayerStack die Karte gezogen wird
         while (!cardInput[index]) {
             while(inputWait){
                 try {
@@ -656,7 +655,7 @@ public class GameThread implements Runnable {
         }
     }
 
-    public void splitCheck(int index){
+    public void splitCheck(int index){ // Die Methode wurde ausgelagert, immer wenn diese waehrend des Spielablaufes aufgerufen wird, ueberprueft sie ob gesplittet werden kann und ob der Spieler das will; wenn das der Fall ist, wird einer neuer Stapel erstellt und ei Karten werden entsprechend aufgeteilt
         if(playerStack.get(index).get(0).getValue() == playerStack.get(index).get(1).getValue()){
             String a = askFrontend("split");
             String[] r = a.split(";");
@@ -671,7 +670,7 @@ public class GameThread implements Runnable {
             } else System.out.println("Frontend möchte nicht splitten!");
         }
     }
-    public void checkGameState(){
+    public void checkGameState(){ // Die Methode wurde ausgelagert, wenn diese aufgerufen wird (einmal am Ende), werden die Ergebnisse aller Stapel ausgerechnet und übergeben
         StringBuilder t = new StringBuilder(); //Text wird gesammelt mit allen Ergebnissen!
         if (insuranceBet > 0 && dealerStack.get(0).getValue() == '0') {
             chips += insuranceBet;
