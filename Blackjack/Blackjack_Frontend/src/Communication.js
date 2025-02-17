@@ -65,6 +65,8 @@ window.connectSocket = async ()=>{
 
                 points = part[2].substring("p:".length);
 
+                console.log("God Cart:", value, coat, points);
+
                 getListener("card")({
                     type: value + "_" + coat,
                     points: points
