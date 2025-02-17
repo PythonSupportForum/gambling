@@ -4,7 +4,7 @@ import java.sql.*;
 import java.text.DecimalFormat;
 import java.util.*;
 
-// Implementiert das Runnable interface -> Nutzung der Java Implementation für Multithreading
+// Implementiert das Runnable interface -> Nutzung der Java Implementation fuer Multithreading
 public class GameThread implements Runnable {
     // Statische Liste, die alle Karten eines Pokerdecks enthaelt
     final List<GameCard> AVAILABLECARDS = new ArrayList<>();
@@ -33,7 +33,7 @@ public class GameThread implements Runnable {
     boolean askForResult = false;
     boolean splitInput = false;
     boolean betInput;
-    String askInput = ""; //Allgemein für Nachfragen ans Frontend
+    String askInput = ""; //Allgemein fuer Nachfragen ans Frontend
     boolean insuranceInput = false;
     boolean inputWait = true;
     boolean doubleDown = false;
@@ -51,13 +51,13 @@ public class GameThread implements Runnable {
     int splitCount = 0; // Anzahl, wie oft gesplittet wurde, wichtig um den richtig Stack beim splitten aufzurufen
     int insuranceBet = 0; // Betrag, den der Spieler als Insurance Bet setzt
 
-    int chipAmount = 0; //temporär, Uebermittlung Frontend
+    int chipAmount = 0; //temporaer, Uebermittlung Frontend
 
-    // Ermöglicht Zugriff auf Thread Objekt, wenn GameThread Objekt gefunden wurde
+    // Ermoeglicht Zugriff auf Thread Objekt, wenn GameThread Objekt gefunden wurde
     public Thread currentThread = Thread.currentThread();
 
     // Ansammlung aller Zustaende, in denen sich das Spiel und jeder einzelne Stapel des Spielers aufhalten kann
-    public enum GameState { // Alle Zustände, in denen sich das Spiel befinden kann, wichtig für Synchronisation mit Frontend
+    public enum GameState { // Alle Zustaende, in denen sich das Spiel befinden kann, wichtig fuer Synchronisation mit Frontend
         IDLE,
         DEPOSIT,
         START,
@@ -97,7 +97,7 @@ public class GameThread implements Runnable {
             stmt.setString(1, token); // Token als sicherer Parameter
 
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) { // Prüfen, ob es ein Ergebnis gibt
+                if (rs.next()) { // Pruefen, ob es ein Ergebnis gibt
                     balance = rs.getDouble("Kontostand");
                     client_ID = rs.getInt("id"); // Client ID aus Datenbank extrahieren
                     System.out.println("Balance: " + balance + ", Client ID: " + client_ID);
@@ -113,7 +113,7 @@ public class GameThread implements Runnable {
         OLDBALANCE = balance;
 
         //Hinzufuegen aller Karten zur statischen Liste AVAILABLECARDS
-        //region Karten hinzufügen
+        //region Karten hinzufuegen
         // Clubs (Kreuz)
         AVAILABLECARDS.add(new GameCard('2', 'c'));
         AVAILABLECARDS.add(new GameCard('3', 'c'));
@@ -126,7 +126,7 @@ public class GameThread implements Runnable {
         AVAILABLECARDS.add(new GameCard('0', 'c')); // 10
         AVAILABLECARDS.add(new GameCard('j', 'c')); // Bube
         AVAILABLECARDS.add(new GameCard('q', 'c')); // Dame
-        AVAILABLECARDS.add(new GameCard('k', 'c')); // König
+        AVAILABLECARDS.add(new GameCard('k', 'c')); // Koenig
         AVAILABLECARDS.add(new GameCard('a', 'c')); // Ass
 
         // Diamonds (Karo)
@@ -141,7 +141,7 @@ public class GameThread implements Runnable {
         AVAILABLECARDS.add(new GameCard('0', 'd')); // 10
         AVAILABLECARDS.add(new GameCard('j', 'd')); // Bube
         AVAILABLECARDS.add(new GameCard('q', 'd')); // Dame
-        AVAILABLECARDS.add(new GameCard('k', 'd')); // König
+        AVAILABLECARDS.add(new GameCard('k', 'd')); // Koenig
         AVAILABLECARDS.add(new GameCard('a', 'd')); // Ass
 
         // Hearts (Herz)
@@ -156,7 +156,7 @@ public class GameThread implements Runnable {
         AVAILABLECARDS.add(new GameCard('0', 'h')); // 10
         AVAILABLECARDS.add(new GameCard('j', 'h')); // Bube
         AVAILABLECARDS.add(new GameCard('q', 'h')); // Dame
-        AVAILABLECARDS.add(new GameCard('k', 'h')); // König
+        AVAILABLECARDS.add(new GameCard('k', 'h')); // Koenig
         AVAILABLECARDS.add(new GameCard('a', 'h')); // Ass
 
         // Spades (Pik)
@@ -171,7 +171,7 @@ public class GameThread implements Runnable {
         AVAILABLECARDS.add(new GameCard('0', 's')); // 10
         AVAILABLECARDS.add(new GameCard('j', 's')); // Bube
         AVAILABLECARDS.add(new GameCard('q', 's')); // Dame
-        AVAILABLECARDS.add(new GameCard('k', 's')); // König
+        AVAILABLECARDS.add(new GameCard('k', 's')); // Koenig
         AVAILABLECARDS.add(new GameCard('a', 's')); // Ass
         // endregion
     }
@@ -197,7 +197,7 @@ public class GameThread implements Runnable {
 
         OLDBALANCE = balance;
 
-        //region Karten hinzufügen
+        //region Karten hinzufuegen
         // Clubs (Kreuz)
         AVAILABLECARDS.add(new GameCard('2', 'c'));
         AVAILABLECARDS.add(new GameCard('3', 'c'));
@@ -210,7 +210,7 @@ public class GameThread implements Runnable {
         AVAILABLECARDS.add(new GameCard('0', 'c')); // 10
         AVAILABLECARDS.add(new GameCard('j', 'c')); // Bube
         AVAILABLECARDS.add(new GameCard('q', 'c')); // Dame
-        AVAILABLECARDS.add(new GameCard('k', 'c')); // König
+        AVAILABLECARDS.add(new GameCard('k', 'c')); // Koenig
         AVAILABLECARDS.add(new GameCard('a', 'c')); // Ass
 
         // Diamonds (Karo)
@@ -225,7 +225,7 @@ public class GameThread implements Runnable {
         AVAILABLECARDS.add(new GameCard('0', 'd')); // 10
         AVAILABLECARDS.add(new GameCard('j', 'd')); // Bube
         AVAILABLECARDS.add(new GameCard('q', 'd')); // Dame
-        AVAILABLECARDS.add(new GameCard('k', 'd')); // König
+        AVAILABLECARDS.add(new GameCard('k', 'd')); // Koenig
         AVAILABLECARDS.add(new GameCard('a', 'd')); // Ass
 
         // Hearts (Herz)
@@ -240,7 +240,7 @@ public class GameThread implements Runnable {
         AVAILABLECARDS.add(new GameCard('0', 'h')); // 10
         AVAILABLECARDS.add(new GameCard('j', 'h')); // Bube
         AVAILABLECARDS.add(new GameCard('q', 'h')); // Dame
-        AVAILABLECARDS.add(new GameCard('k', 'h')); // König
+        AVAILABLECARDS.add(new GameCard('k', 'h')); // Koenig
         AVAILABLECARDS.add(new GameCard('a', 'h')); // Ass
 
         // Spades (Pik)
@@ -255,13 +255,13 @@ public class GameThread implements Runnable {
         AVAILABLECARDS.add(new GameCard('0', 's')); // 10
         AVAILABLECARDS.add(new GameCard('j', 's')); // Bube
         AVAILABLECARDS.add(new GameCard('q', 's')); // Dame
-        AVAILABLECARDS.add(new GameCard('k', 's')); // König
+        AVAILABLECARDS.add(new GameCard('k', 's')); // Koenig
         AVAILABLECARDS.add(new GameCard('a', 's')); // Ass
         // endregion
     }
     */
 
-    // Implementation der run() - Methode des Runnable Interfaces, erste Funktion die nach der Öffnung des Threads durch BlackjackServer ausgeführt wird
+    // Implementation der run() - Methode des Runnable Interfaces, erste Funktion die nach der oeffnung des Threads durch BlackjackServer ausgefuehrt wird
     public void run() {
         System.out.print(client_ID + "\n");
         // Warte auf Startsignal vom Client
@@ -274,7 +274,7 @@ public class GameThread implements Runnable {
     }
 
     // region Game Logic
-    // Funktioniert als Hauptmethode für das Blackjack Spiel
+    // Funktioniert als Hauptmethode fuer das Blackjack Spiel
     public void game() {
         System.out.println("Start des Spiels");
         //Start der Spiellogik
@@ -282,7 +282,7 @@ public class GameThread implements Runnable {
         states = new HashMap<>(); // initialisieren des Dictionaries, in dem der Status des Spieler Stapels dem Spieler zugerordnet wird
 
         ArrayList<GameCard> temp = new ArrayList<>();
-        playerStack.add(new ArrayList<>()); // In die zweidimensionale ArrayListe wird eine neue Liste als Kartenstapel hinzufügenen
+        playerStack.add(new ArrayList<>()); // In die zweidimensionale ArrayListe wird eine neue Liste als Kartenstapel hinzufuegenen
         states.put(0, StackState.RUNNING); // Der Stack ist aktuell am laufen
 
         // Loop zum erneuten Spielen
@@ -403,7 +403,7 @@ public class GameThread implements Runnable {
             waitDoubleDown = true;
             String a = askFrontend("double");
             String[] r = a.split(";");
-            if(Objects.equals(r[0], "true")) { // Wird nur ausgeführt, wenn der Spieler einen Double Down machen will
+            if(Objects.equals(r[0], "true")) { // Wird nur ausgefuehrt, wenn der Spieler einen Double Down machen will
                 System.out.println("Double Down!");
 
                 while(waitDoubleDown){
@@ -443,7 +443,7 @@ public class GameThread implements Runnable {
                 System.out.println("Der Spieler hat kein Double Down gesetzt!");
             }
 
-            if (getGameState() == GameState.PLAYER_DRAW) { // Normales Programm, wird nur ausgeführt, wenn vorher kein Double Down passiert ist
+            if (getGameState() == GameState.PLAYER_DRAW) { // Normales Programm, wird nur ausgefuehrt, wenn vorher kein Double Down passiert ist
                 // Main Split Logic
                 splitCheck(0);
                 System.out.println("Checked Split! " + splitCount);
@@ -497,7 +497,7 @@ public class GameThread implements Runnable {
                         total += Character.getNumericValue(newCard.getValue());
                     }
 
-                    // Checken, ob mit dem Ass als 11 die 21 überschritten werden
+                    // Checken, ob mit dem Ass als 11 die 21 ueberschritten werden
                     while (aceCounter > 0 && total > 21) {
                         total -= 10; // Ass Wert auf 1 anpassen
                         aceCounter -= 1; // Ass Counter einen herabsetzen
@@ -549,7 +549,7 @@ public class GameThread implements Runnable {
         currentThread.interrupt(); // Beende den Thread
     }
 
-    private void checkValue(int index) { // Die Methode ueberprueft nur auf Blackjack oder Bust, das ist wichtig, weil das auch waehrend des Spiels passieren kann, dieses muss dann frühzeitig verwendet werden
+    private void checkValue(int index) { // Die Methode ueberprueft nur auf Blackjack oder Bust, das ist wichtig, weil das auch waehrend des Spiels passieren kann, dieses muss dann fruehzeitig verwendet werden
         ArrayList<GameCard> cardStack = playerStack.get(index);
         if (currentValue(cardStack) > 21) {
             states.replace(index, StackState.LOST);
@@ -560,9 +560,9 @@ public class GameThread implements Runnable {
             playerDone = true;
         }
         else if (currentValue(cardStack) == 21) {
-            System.out.println("Herzlichen Glückwunsch! Du hast auf Stapel " + (index + 1) + " einen Blackjack!");
+            System.out.println("Herzlichen Glueckwunsch! Du hast auf Stapel " + (index + 1) + " einen Blackjack!");
             conn.send("blackjack:"+index);
-            this.sendGameResultText("Herzlichen Glückwunsch! Du hast auf Stapel " + (index + 1) + " einen Blackjack!\n");
+            this.sendGameResultText("Herzlichen Glueckwunsch! Du hast auf Stapel " + (index + 1) + " einen Blackjack!\n");
             states.replace(index, StackState.WON);
             cardInput[index] = true;
             sendChipCount(chips);
@@ -581,10 +581,10 @@ public class GameThread implements Runnable {
                 // Numerische Karten: '2' bis '9'
                 totalValue += Character.getNumericValue(valueOfCard);
             } else if (valueOfCard == '0' || valueOfCard == 'j' || valueOfCard == 'q' || valueOfCard == 'k') {
-                // Zehner ('0'), Bube ('j'), Dame ('q'), König ('k'): Wert 10
+                // Zehner ('0'), Bube ('j'), Dame ('q'), Koenig ('k'): Wert 10
                 totalValue += 10;
             } else if (valueOfCard == 'a') {
-                // Ass: Hat zunächst den Wert 11
+                // Ass: Hat zunaechst den Wert 11
                 totalValue += 11;
                 aceCount++;
             }
@@ -660,17 +660,17 @@ public class GameThread implements Runnable {
             String a = askFrontend("split");
             String[] r = a.split(";");
             if(Objects.equals(r[0], "true")) {
-                System.out.println("Frontend Möchte Splitten");
+                System.out.println("Frontend Moechte Splitten");
                 ArrayList<GameCard> temp = new ArrayList<>();
                 playerStack.add(temp);
                 playerStack.get(index + 1).add(playerStack.get(index).get(1));
                 playerStack.get(index).remove(1);
                 splitCount++;
                 states.replace(index, StackState.RUNNING);
-            } else System.out.println("Frontend möchte nicht splitten!");
+            } else System.out.println("Frontend moechte nicht splitten!");
         }
     }
-    public void checkGameState(){ // Die Methode wurde ausgelagert, wenn diese aufgerufen wird (einmal am Ende), werden die Ergebnisse aller Stapel ausgerechnet und übergeben
+    public void checkGameState(){ // Die Methode wurde ausgelagert, wenn diese aufgerufen wird (einmal am Ende), werden die Ergebnisse aller Stapel ausgerechnet und uebergeben
         StringBuilder t = new StringBuilder(); //Text wird gesammelt mit allen Ergebnissen!
         if (insuranceBet > 0 && dealerStack.get(0).getValue() == '0') {
             chips += insuranceBet;
@@ -706,7 +706,7 @@ public class GameThread implements Runnable {
             } else if (states.get(i) == StackState.PUSH) {
                 t.append("Push auf Stapel " + (i + 1) + "!\n");
                 chips += bet;
-                t.append("Du hast " + bet + " Coins zurück erhalten!\n");
+                t.append("Du hast " + bet + " Coins zurueck erhalten!\n");
             }
             else if (states.get(i) == StackState.LOST) {
                 t.append("Du hast auf Stapel " + (i + 1) + " verloren!\n");
@@ -732,7 +732,7 @@ public class GameThread implements Runnable {
     // region Database Connection
     // Methode zum Erstellen der Verbindung
     public static Connection getConnection() {
-        // Verknüpfung zur Datenbank
+        // Verknuepfung zur Datenbank
         String url = "jdbc:mariadb://db.ontubs.de:3306/gambling";
         // Benutzername und Passwort
         String user = "carl";
@@ -744,7 +744,7 @@ public class GameThread implements Runnable {
             System.out.println("Verbindung zur Datenbank erfolgreich!");
             return connection;
         } catch (SQLException e) {
-            // Fehlerbehandlung, falls die Verbindung fehlschlägt
+            // Fehlerbehandlung, falls die Verbindung fehlschlaegt
             System.err.println("Datenbankverbindung fehlgeschlagen!");
             e.printStackTrace();
             return null;
@@ -772,7 +772,7 @@ public class GameThread implements Runnable {
 
             gamingDB = getConnection();
             try {
-                // Verbindung zur Datenbank, Veränderung des Kontostandes
+                // Verbindung zur Datenbank, Veraenderung des Kontostandes
                 stmt = gamingDB.createStatement();
                 stmt.executeUpdate(transactionQuery);
                 stmt.close();
