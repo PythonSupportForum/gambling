@@ -9,7 +9,7 @@ import java.util.Map;
 
 // Implementation der Websockets gegenüber der unterlegenen Native Sockets (Websockets sind zudem Standardimplementation für javascript Clients)
 class BlackjackServer extends WebSocketServer {
-    private ClientHandshake handshake;
+    private ClientHandshake handshake; //Enthällt ein Objkekt mit Infos zur Verbindung (Header Daten der Websocket Verbindung und IP Adresse des Clients)
 
     boolean acc = false; //Ob schon die Token Autentifizierung war, eig. Unnötig, da er erst nach Token weiter
 
