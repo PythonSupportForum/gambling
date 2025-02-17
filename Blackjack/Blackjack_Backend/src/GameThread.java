@@ -302,11 +302,11 @@ public class GameThread implements Runnable {
             playerDone = false;
             askDealer = false;
             takeCount = 0;
-            for(int i = 0; i < states.size(); i++){
+            for (int i = 0; i < states.size(); i++) {
                 states.replace(i, StackState.RUNNING);
             }
 
-            for(ArrayList<GameCard> stack : playerStack){
+            for (ArrayList<GameCard> stack : playerStack) {
                 stack.clear();
             }
             dealerStack.clear();
@@ -314,7 +314,7 @@ public class GameThread implements Runnable {
 
             sendChipCount(chips);
 
-            if(chips == 0 && balance == 0){ // Ueberpruefung, ob der Spieler genug Geld hat
+            if (chips == 0 && balance == 0) { // Ueberpruefung, ob der Spieler genug Geld hat
                 running = false;
                 System.out.println("Kein Geld mehr");
                 continue;
@@ -330,231 +330,233 @@ public class GameThread implements Runnable {
             while (!betInput) {
                 try {
                     Thread.sleep(200);
+                } catch (Exception ignored) {
                 }
-                catch (Exception ignored) {}
-            setGameState(GameState.BET);
+                setGameState(GameState.BET);
 
-            askFrontend("bet");
-            bet = Integer.parseInt(askInput.substring("bet:".length()).trim());
-            System.out.println("Client " + client_ID + " wettet " + bet);
-            if(bet > chips){
-                bet = chips;
-            }
-            chips -= bet;
-
-            setGameState(GameState.SHUFFLE);
-            // Die Karten werden mittels der Random klasse, gemischt auf den Nachziehstapel (deck) getan
-            while (!temp.isEmpty()) {
-                Random b = new Random();
-                int random = b.nextInt(temp.size());
-                deck.push(temp.get(random));
-                temp.remove(random);
-            }
-
-            setGameState(GameState.DEALER_START);
-
-            while(takeCount < 1){
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                askFrontend("bet");
+                bet = Integer.parseInt(askInput.substring("bet:".length()).trim());
+                System.out.println("Client " + client_ID + " wettet " + bet);
+                if (bet > chips) {
+                    bet = chips;
                 }
-            }
+                chips -= bet;
 
-            card = deck.pop(); // Von Nachzeihstapel werden zweiKarten gezogen, ausgegeben, auf den DealerStack gelegt und an das Frontend gesendet
-            printCard(card);
-            dealerStack.add(card);
-            card = deck.pop();
-            int currentValue = currentValue(dealerStack);
-            dealerStack.add(card);
-            conn.send("DealerCard:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(dealerStack) - currentValue));
-            printCard(card);
-            takeCount--;
-
-            if (dealerStack.get(1).getValue() == 'a') {
-                //region Insurance Bet
-                setGameState(GameState.INSURANCE_BET);
-
-                System.out.print("Willst du eine Insurance bet ablegen?(false, true)\n");
-
-                String a = askFrontend("insurance");
-                String[] r = a.split(";");
-                if(Objects.equals(r[0], "true")) {
-                    insuranceInput = true;
-                    insuranceBet = Integer.parseInt(r[1]);
-                    System.out.println("Du hast " + insuranceBet + " als Insurance Bet gesetzt");
-                } else {
-                    insuranceInput = true;
-                    insuranceBet = 0;
+                setGameState(GameState.SHUFFLE);
+                // Die Karten werden mittels der Random klasse, gemischt auf den Nachziehstapel (deck) getan
+                while (!temp.isEmpty()) {
+                    Random b = new Random();
+                    int random = b.nextInt(temp.size());
+                    deck.push(temp.get(random));
+                    temp.remove(random);
                 }
-                //endregion
-            }
 
-            setGameState(GameState.PLAYER_DRAW);
+                setGameState(GameState.DEALER_START);
 
-            while(takeCount < 2){
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                while (takeCount < 1) {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-            }
-            for(int i = 0; i < 2 ; i++){ // Der Spieler bekommt zwei Karten aufgedeckt
+
+                card = deck.pop(); // Von Nachzeihstapel werden zweiKarten gezogen, ausgegeben, auf den DealerStack gelegt und an das Frontend gesendet
+                printCard(card);
+                dealerStack.add(card);
                 card = deck.pop();
-                currentValue = currentValue(playerStack.get(0));
-                playerStack.get(0).add(card);
-                conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(playerStack.get(0)) - currentValue));
+                int currentValue = currentValue(dealerStack);
+                dealerStack.add(card);
+                conn.send("DealerCard:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(dealerStack) - currentValue));
                 printCard(card);
                 takeCount--;
-            }
 
-            waitDoubleDown = true;
-            String a = askFrontend("double");
-            String[] r = a.split(";");
-            if(Objects.equals(r[0], "true")) { // Wird nur ausgeführt, wenn der Spieler einen Double Down machen will
-                System.out.println("Double Down!");
-
-                while(waitDoubleDown){
-                    try {
-                        Thread.sleep(200);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                card = deck.pop();
-                conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(playerStack.get(0)) - currentValue));
-                playerStack.get(0).add(card);
-                printCard(card);
-                balance -= bet;
-                bet *= 2;
-                inputWait = false;
-                doubleDown = true;
-                int ended = 0;
-                for(int i = 0; i < splitCount + 1; i++){
-                    if (states.get(i) != StackState.RUNNING) {
-                        ended++;
-                    }
-                }
-                if(splitCount == ended) setGameState(GameState.GAME_END);
-                System.out.println("Spieler fertig");
-                if(getGameState() == GameState.GAME_END) System.out.println("Ended early");
-                while(cardInput[0] != true){
-                    try {
-                        Thread.sleep(200);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                checkValue(0);
-                setGameState(GameState.DEALER_DRAW);
-            } else {
-                System.out.println("Der Spieler hat kein Double Down gesetzt!");
-            }
-
-            if (getGameState() == GameState.PLAYER_DRAW) { // Normales Programm, wird nur ausgeführt, wenn vorher kein Double Down passiert ist
-                // Main Split Logic
-                splitCheck(0);
-                System.out.println("Checked Split! " + splitCount);
-                for (int i = 0; i <= splitCount; i++) {
-                    playerDone = false;
-                    karteZiehen(i); // Spieler zieht pro gesplittetes Deck
-                }
-                System.out.println("Alle Karten gezogen! " + cardInput[0] + " " + playerDone);
-                while (!playerDone) {
-                    try {
-                        Thread.sleep(200);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-
-                int ended = 0;
-                for(int i = 0; i < splitCount + 1; i++){
-                    if (states.get(i) != StackState.RUNNING) {
-                        ended++;
-                    }
-                }
-                if(splitCount == ended) setGameState(GameState.GAME_END); // Nur wenn alle Stapel beendet wurden, Bsp. Bust/Blackjack, kann das Spiel an sich beendet werden
-                System.out.println("Spieler fertig");
-                if(getGameState() == GameState.GAME_END) System.out.println("Ended early");
-            }
-            if(getGameState() != GameState.GAME_END) { // Wenn das Spiel noch nicht vorbei ist, macht der Dealer nach dem Spieler weiter
-                setGameState(GameState.DEALER_DRAW);
-
-                int total = 0;
-                int aceCounter = 0;
-                if (dealerStack.get(0).getValue() == 'a') {
-                    aceCounter += 1;
-                }
                 if (dealerStack.get(1).getValue() == 'a') {
-                    aceCounter += 1;
-                }
-                total = currentValue(dealerStack);
+                    //region Insurance Bet
+                    setGameState(GameState.INSURANCE_BET);
 
-                // Der Dealer geht nur bis zum einen Stapelwert von 17 mit
-                while (total < 18) {
-                    GameCard newCard = deck.pop();
-                    dealerStack.add(newCard);
+                    System.out.print("Willst du eine Insurance bet ablegen?(false, true)\n");
 
-                    if (newCard.getValue() == 'a') {
-                        aceCounter += 1;
-                        total += 11;
-                    } else if (newCard.getValue() == 'j' || newCard.getValue() == 'q' || newCard.getValue() == 'k' || newCard.getValue() == '0') {
-                        total += 10;
+                    String a = askFrontend("insurance");
+                    String[] r = a.split(";");
+                    if (Objects.equals(r[0], "true")) {
+                        insuranceInput = true;
+                        insuranceBet = Integer.parseInt(r[1]);
+                        System.out.println("Du hast " + insuranceBet + " als Insurance Bet gesetzt");
                     } else {
-                        total += Character.getNumericValue(newCard.getValue());
+                        insuranceInput = true;
+                        insuranceBet = 0;
+                    }
+                    //endregion
+                }
+
+                setGameState(GameState.PLAYER_DRAW);
+
+                while (takeCount < 2) {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                for (int i = 0; i < 2; i++) { // Der Spieler bekommt zwei Karten aufgedeckt
+                    card = deck.pop();
+                    currentValue = currentValue(playerStack.get(0));
+                    playerStack.get(0).add(card);
+                    conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(playerStack.get(0)) - currentValue));
+                    printCard(card);
+                    takeCount--;
+                }
+
+                waitDoubleDown = true;
+                String a = askFrontend("double");
+                String[] r = a.split(";");
+                if (Objects.equals(r[0], "true")) { // Wird nur ausgeführt, wenn der Spieler einen Double Down machen will
+                    System.out.println("Double Down!");
+
+                    while (waitDoubleDown) {
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    card = deck.pop();
+                    conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(playerStack.get(0)) - currentValue));
+                    playerStack.get(0).add(card);
+                    printCard(card);
+                    balance -= bet;
+                    bet *= 2;
+                    inputWait = false;
+                    doubleDown = true;
+                    int ended = 0;
+                    for (int i = 0; i < splitCount + 1; i++) {
+                        if (states.get(i) != StackState.RUNNING) {
+                            ended++;
+                        }
+                    }
+                    if (splitCount == ended) setGameState(GameState.GAME_END);
+                    System.out.println("Spieler fertig");
+                    if (getGameState() == GameState.GAME_END) System.out.println("Ended early");
+                    while (cardInput[0] != true) {
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    checkValue(0);
+                    setGameState(GameState.DEALER_DRAW);
+                } else {
+                    System.out.println("Der Spieler hat kein Double Down gesetzt!");
+                }
+
+                if (getGameState() == GameState.PLAYER_DRAW) { // Normales Programm, wird nur ausgeführt, wenn vorher kein Double Down passiert ist
+                    // Main Split Logic
+                    splitCheck(0);
+                    System.out.println("Checked Split! " + splitCount);
+                    for (int i = 0; i <= splitCount; i++) {
+                        playerDone = false;
+                        karteZiehen(i); // Spieler zieht pro gesplittetes Deck
+                    }
+                    System.out.println("Alle Karten gezogen! " + cardInput[0] + " " + playerDone);
+                    while (!playerDone) {
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
 
-                    // Checken, ob mit dem Ass als 11 die 21 überschritten werden
-                    while (aceCounter > 0 && total > 21) {
-                        total -= 10; // Ass Wert auf 1 anpassen
-                        aceCounter -= 1; // Ass Counter einen herabsetzen
+                    int ended = 0;
+                    for (int i = 0; i < splitCount + 1; i++) {
+                        if (states.get(i) != StackState.RUNNING) {
+                            ended++;
+                        }
+                    }
+                    if (splitCount == ended)
+                        setGameState(GameState.GAME_END); // Nur wenn alle Stapel beendet wurden, Bsp. Bust/Blackjack, kann das Spiel an sich beendet werden
+                    System.out.println("Spieler fertig");
+                    if (getGameState() == GameState.GAME_END) System.out.println("Ended early");
+                }
+
+                if (getGameState() != GameState.GAME_END) { // Wenn das Spiel noch nicht vorbei ist, macht der Dealer nach dem Spieler weiter
+                    setGameState(GameState.DEALER_DRAW);
+
+                    int total = 0;
+                    int aceCounter = 0;
+                    if (dealerStack.get(0).getValue() == 'a') {
+                        aceCounter += 1;
+                    }
+                    if (dealerStack.get(1).getValue() == 'a') {
+                        aceCounter += 1;
+                    }
+                    total = currentValue(dealerStack);
+
+                    // Der Dealer geht nur bis zum einen Stapelwert von 17 mit
+                    while (total < 18) {
+                        GameCard newCard = deck.pop();
+                        dealerStack.add(newCard);
+
+                        if (newCard.getValue() == 'a') {
+                            aceCounter += 1;
+                            total += 11;
+                        } else if (newCard.getValue() == 'j' || newCard.getValue() == 'q' || newCard.getValue() == 'k' || newCard.getValue() == '0') {
+                            total += 10;
+                        } else {
+                            total += Character.getNumericValue(newCard.getValue());
+                        }
+
+                        // Checken, ob mit dem Ass als 11 die 21 überschritten werden
+                        while (aceCounter > 0 && total > 21) {
+                            total -= 10; // Ass Wert auf 1 anpassen
+                            aceCounter -= 1; // Ass Counter einen herabsetzen
+                        }
+                    }
+                }
+                System.out.println("In");
+                while (!askDealer) {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                System.out.println("Out");
+                String sendDealer = "DealerCards:";
+                for (GameCard card : dealerStack) {
+                    sendDealer += "c:" + card.getCoat() + ",v:" + card.getValue() + ";";
+                }
+                conn.send(sendDealer.substring(0, sendDealer.length() - 1) + ">" + currentValue(dealerStack));
+                System.out.println(sendDealer.substring(0, sendDealer.length() - 1) + ">" + currentValue(dealerStack));
+                //Methode zur Bestimmung wer gewonnen oder verloren hat nach unten ausgelagert
+                checkGameState();
+
+                System.out.println("Ask Frontend for End!");
+
+                String askEnd = askFrontend("end");
+                running = !askEnd.equals("true");
+            }
+
+            setGameState(GameState.WITHDRAW);
+
+            if (balance == 0 && chips == 0) {
+                updateBalance(0);
+            } else {
+                System.out.println("Withdrawal time");
+                while (true) { // Provisorisch
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
                 }
             }
-            System.out.println("In");
-            while(!askDealer){
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            System.out.println("Out");
-            String sendDealer = "DealerCards:";
-            for (GameCard card : dealerStack) {
-                sendDealer += "c:" + card.getCoat() + ",v:" + card.getValue() + ";";
-            }
-            conn.send(sendDealer.substring(0, sendDealer.length() - 1) + ">" + currentValue(dealerStack));
-            System.out.println(sendDealer.substring(0, sendDealer.length() - 1) + ">" + currentValue(dealerStack));
-            //Methode zur Bestimmung wer gewonnen oder verloren hat nach unten ausgelagert
-            checkGameState();
 
-            System.out.println("Ask Frontend for End!");
-
-            String askEnd = askFrontend("end");
-            running = !askEnd.equals("true");
+            setGameState(GameState.END);
+            handleQuit();// Kuemmert sich um die ausstehende Verbindung, falls diese aktiv sind
+            currentThread.interrupt(); // Beende den Thread
         }
-
-        setGameState(GameState.WITHDRAW);
-
-        if (balance == 0 && chips == 0){
-            updateBalance(0);
-        }
-        else{
-            System.out.println("Withdrawal time");
-            while(true){ // Provisorisch
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
-        setGameState(GameState.END);
-        handleQuit();// Kuemmert sich um die ausstehende Verbindung, falls diese aktiv sind
-        currentThread.interrupt(); // Beende den Thread
     }
 
     private void checkValue(int index) { // Die Methode ueberprueft nur auf Blackjack oder Bust, das ist wichtig, weil das auch waehrend des Spiels passieren kann, dieses muss dann frühzeitig verwendet werden
