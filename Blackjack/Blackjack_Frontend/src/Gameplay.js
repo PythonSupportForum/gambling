@@ -32,7 +32,7 @@ const getExchange = ()=>new Promise(resolve => {
    document.getElementById("exchangePopupContainer").classList.add("show");
    document.getElementById("setExchangeButton").onclick = ()=>{
        const v = document.getElementById("exchangeValue").value;
-       if(v < 1 || v > balance * 100) return;
+       if(v < 1 || v > balance / 100) return;
        document.getElementById("exchangePopupContainer").classList.remove("show");
        return exchange(v).then(chipAmount => {
            if(chipAmount !== -1) resolve(chipAmount);
@@ -43,7 +43,7 @@ const getExchange = ()=>new Promise(resolve => {
         return chipCount;
     }
    const slider = document.getElementById("exchangeValue");
-   slider.max = balance * 100;
+   slider.max = balance / 100;
    const output = document.getElementById("sValue");
 
    slider.oninput = function() {
@@ -51,16 +51,21 @@ const getExchange = ()=>new Promise(resolve => {
    };
 });
 
+const awaitBet = () => new Promise(resolve => {
+    console.log("Warte auf Wette");
+    addListener("awaitBet", resolve);
+});
+
 const getBet = ()=> new Promise(resolve => {
     document.getElementById("betPopupContainer").classList.add("show");
     document.getElementById("setBetButton").onclick = ()=>{
         const v = document.getElementById("betValue").value;
-        if(v < 1 || v > chipCount) return;
+        if(v < 1 || v > window.chipCount) return;
         document.getElementById("betPopupContainer").classList.remove("show");
         setTimeout(()=>resolve(Number(v)), 1500); //Weil Karten sonst schon umgedreht werden bevor transition von css verschwinden noch nicht fertig ist
     }
     const slider = document.getElementById("betValue");
-    slider.max = chipCount;
+    slider.max = window.chipCount;
     const output = document.getElementById("sliderValue");
 
     slider.oninput = function() {
@@ -72,7 +77,7 @@ const getInsuranceBet = ()=>new Promise(resolve => {
     overlaySetStatus(true);
     document.getElementById("insuranceBetPopupContainer").classList.add("show");
     const slider = document.getElementById("betIValue");
-    slider.max = chipCount;
+    slider.max = window.chipCount;
     const output = document.getElementById("sliderIValue");
     slider.oninput = function() {
         console.log("Change Value Slider!", slider.value);
@@ -184,7 +189,7 @@ window.chipCount = 0;
 window.insuranceBet = 0; // Einsatz der auf Dealer Blackjack gewettet wurde
 const startGame = async (first = true)=> {
     window.endGame = false;
-    window.betPromise = getBet();
+    window.betPromise = awaitBet();
 
     if(first){
         if(showIntro) {
@@ -217,15 +222,6 @@ const startGame = async (first = true)=> {
     await showDealerCards(null, 1);
 
     await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // if(dealerLeftStack.getFirst().cardValue === 11) {
-    //     if(()) {
-    //         console.log("Set insurance...");
-    //         await gameInfoPromise;
-    //         console.log("Start Game");
-    //         window.insuranceBet = (await betPromise)/2;
-    //     }
-    // }
 
     await userTakeCard(2);
 

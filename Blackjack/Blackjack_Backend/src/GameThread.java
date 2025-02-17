@@ -6,22 +6,22 @@ import java.util.*;
 
 // Implementiert das Runnable interface -> Nutzung der Java Implementation für Multithreading
 public class GameThread implements Runnable {
-    // Statische Liste, die alle Karten eines Pokerdecks enthaelt
+    // Statische Liste, die alle Karten eines Pokerdecks enthält
     final List<GameCard> AVAILABLECARDS = new ArrayList<>();
     //Statischer, erster Wert des Kontostandes, wichtig zur Berechnung der Transaktionen zu Ende des Programms
     final double OLDBALANCE;
 
-    boolean running = true; // Bestimmt, ob das Programm laeuft
-    WebSocket conn; // Websocket Verbindung mit dem Frontend, Verknuepfung zum User Interface
+    boolean running = true; // Bestimmt, ob das Programm läuft
+    WebSocket conn; // Websocket Verbindung mit dem Frontend, Verknüpfung zum User Interface
     int client_ID; // ID des Kunden, wichtig zur Zuordnung in der Datenbank
 
     List<GameCard> dealerStack = new ArrayList<>(); // Stapel an Karten, die der Dealer im Verlauf des Spiels zieht
     ArrayList<ArrayList<GameCard>> playerStack = new ArrayList<>(); /* Der Spieler kann mithilfe von Splits 4 unterschiedliche Stapel an Karten haben.
-    Dass es dazu kommt, ist extrem unwahrscheinlich, die Moeglichkeit besteht jedoch. Dieses Array beinhaltet jedes dieser 4 Stapel. Mindestens einer wird pro Spielrunde verwendet.
-    Der Rest erhaelt den Wert null*/
-    HashMap<Integer, StackState> states; // Ein Dictionary um den Status eines dieser Stapel mithilfe seiner ID festzuhalten und unabhaengig von den anderen zu veraendern
+    Dass es dazu kommt, ist extrem unwahrscheinlich, die Möglichkeit besteht jedoch. Dieses Array beinhaltet jedes dieser 4 Stapel. Mindestens einer wird pro Spielrunde verwendet.
+    Der Rest erhält den Wert null*/
+    HashMap<Integer, StackState> states; // Ein Dictionary um den Status eines dieser Stapel mithilfe seiner ID festzuhalten und unabhängig von den anderen zu verändern
     Stack<GameCard> deck = new Stack<>(); // Das Deck von dem gezogen wird
-    GameCard card; // Ein Objekt der Klasse GameCard. Repraesentiert eine Spielkarte
+    GameCard card; // Ein Objekt der Klasse GameCard. Repräsentiert eine Spielkarte
 
     Statement stmt; // SQL-Statement Objekt
 
@@ -56,7 +56,7 @@ public class GameThread implements Runnable {
     // Ermöglicht Zugriff auf Thread Objekt, wenn GameThread Objekt gefunden wurde
     public Thread currentThread = Thread.currentThread();
 
-    // Ansammlung aller Zustaende, in denen sich das Spiel und jeder einzelne Stapel des Spielers aufhalten kann
+    // Ansammlung aller Zustände, in denen sich das Spiel und jeder einzelne Stapel des Spielers aufhalten kann
     public enum GameState {
         IDLE,
         DEPOSIT,
@@ -112,7 +112,7 @@ public class GameThread implements Runnable {
         // Setzen des statischen Wertes
         OLDBALANCE = balance;
 
-        //Hinzufuegen aller Karten zur statischen Liste AVAILABLECARDS
+        //Hinzufügen aller Karten zur statischen Liste AVAILABLECARDS
         //region Karten hinzufügen
         // Clubs (Kreuz)
         AVAILABLECARDS.add(new GameCard('2', 'c'));
@@ -193,7 +193,7 @@ public class GameThread implements Runnable {
             rs.close();
             stmt.close();
         }
-        catch(SQLException e){}
+        catch(SQLException ignored){}
 
         OLDBALANCE = balance;
 
@@ -273,12 +273,12 @@ public class GameThread implements Runnable {
     }
 
     // region Game Logic
-    // Funktioniert als Hauptmethode für das Blackjack Spiel
+    // funktioniert als Hauptmethode für das Blackjack Spiel
     public void game() {
         System.out.println("Start des Spiels");
         //Start der Spiellogik
         setGameState(GameState.START);
-        states = new HashMap<>(); // initialisieren des Dictionaries, in dem der Status des Spieler Stapels dem Spieler zugerordnet wird
+        states = new HashMap<>(); // initialisieren des Dictionaries, in dem der Status des Stapels dem Stapel des Spielers zugeordnet wird
 
         ArrayList<GameCard> temp = new ArrayList<>();
         playerStack.add(new ArrayList<>());
@@ -325,14 +325,14 @@ public class GameThread implements Runnable {
             temp.addAll(AVAILABLECARDS);
 
             setGameState(GameState.BET);
-            //region Coins setzen
-            while (!betInput) {
-                //ist nicht vollständig, nach mit Frontend lösen
-                try {
-                    Thread.sleep(200);
-                }
-                catch (Exception ignored) {}
+
+            askFrontend("bet");
+            bet = Integer.parseInt(askInput.substring("bet:".length()).trim());
+            System.out.println("Client " + client_ID + " wettet " + bet);
+            if(bet > chips){
+                bet = chips;
             }
+            chips -= bet;
 
             setGameState(GameState.SHUFFLE);
 
@@ -646,7 +646,7 @@ public class GameThread implements Runnable {
                     card = deck.pop();
                     int j = currentValue(playerStack.get(index));
                     playerStack.get(index).add(card);
-                    conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(playerStack.get(0)) - j));
+                    conn.send("Card:c:" + card.getCoat() + ",v:" + card.getValue() + ",p:" + (currentValue(playerStack.get(index)) - j));
                     printCard(card);
                 }
             } catch (NumberFormatException e) {
@@ -673,7 +673,7 @@ public class GameThread implements Runnable {
     }
     public void checkGameState(){
         StringBuilder t = new StringBuilder(); //Text wird gesammelt mit allen Ergebnissen!
-        if (insuranceBet > 0 && dealerStack.get(0).getValue() == '0') {
+        if (insuranceBet > 0 && dealerStack.getFirst().getValue() == '0') {
             chips += insuranceBet;
             t.append("Du hast den Insurance Bet erhalten!\n");
         }
@@ -725,7 +725,7 @@ public class GameThread implements Runnable {
                 throw new RuntimeException(e);
             }
         }
-        sendGameResultText(t + ">"+chips); //send ans Frontent den Text als Ergebisse
+        sendGameResultText(t + ">"+chips); // Resultat wird ans Frontend gesendet
         setGameState(GameState.GAME_END);
     }
     //endregion
@@ -752,12 +752,13 @@ public class GameThread implements Runnable {
         }
     }
 
-    // Methode, um den durch das Spiel geaenderten Kontostand zu aktualisieren
+    // Methode, um den durch das Spiel geänderten Kontostand zu aktualisieren
     public boolean updateBalance(int coinAmount){
         if (coinAmount > chips) {
             System.out.println("Du hast nicht genug Coins!"); // Falls Falscheingabe durch Client
             return false;
         } else {
+            balance += coinAmount / 100;
             chips -= coinAmount;
             sendChipCount(chips); // Aktualisierung im Frontend
 
@@ -783,14 +784,14 @@ public class GameThread implements Runnable {
                 return false;
             }
             System.out.println("Du hast " + coinAmount + " Coins umgewandelt!");
-            return true; // Rueckgabe, wenn Aktualisierung gelingt
+            return true; // Rückgabe, wenn Aktualisierung gelingt
         }
     }
     // endregion
 
     // region Frontend Connection
     public void sendChipCount(int c) {
-        this.askFrontend("coins:"+c); // Uebermitteln des Kontostands an Jetons mithilfe des Befehls "coins:"
+        this.askFrontend("coins:"+c); // übermitteln des Kontostands an Jetons mithilfe des Befehls "coins:"
     }
 
     public String askFrontend(String query) { // Variablenminimierung, Anfrage an das Frontend mit anschliessendem Warten auf die Antwort
@@ -806,7 +807,7 @@ public class GameThread implements Runnable {
         return askInput;
     }
 
-    // Debugging Loesung zur Angabe des Ergebnisses des Spiels
+    // Debugging Lösung zur Angabe des Ergebnisses des Spiels
     public void sendGameResultText(String t) {
         conn.send("text:"+t);
     }
@@ -814,29 +815,23 @@ public class GameThread implements Runnable {
     // Verarbeiten einer einkommenden Nachricht vom Client
     public void handleMessage(String message) {
         System.out.println("Nachricht von Client " + client_ID + " empfangen: " + message + "\n");
-        if(message.contains(":")){ // alle, die ein ':' enthalten, enthalten Werte die gelesen werden muessen. Simple Befehle vom Client koennen durch ein switch-case bearbeitet werden
+        if(message.contains(":")){ // alle, die ein ':' enthalten, enthalten Werte die gelesen werden müssen. Simple Befehle vom Client können durch ein switch-case bearbeitet werden
             if (message.startsWith("exchange:")){
                 chipAmount = Integer.parseInt(message.substring("exchange:".length()).trim());
                 System.out.println("Client " + client_ID + " will " + chipAmount + " umtauschen\n");
-                if ((balance - (double) (chipAmount / 100)) < 0) {
+                if ((balance - (double) (chipAmount * 100)) < 0) {
                     System.out.println("Hat nicht genug Tilotaler um diesen Betrag zu erwerben!");
                     conn.send("ChipUpdate:-1");
                 } else {
                     chips += chipAmount;
-                    balance -= (double) chipAmount / 100;
+                    balance -= (double) chipAmount * 100;
                     exchangeInput = true;
                     System.out.println("Client " + client_ID + " hat " + chipAmount + " Coins erworben!");
-                    conn.send("ChipUpdate:" + chips);
+                    sendChipCount(chips);
                 }
             }
             else if (message.startsWith("bet:")) {
-                bet = Integer.parseInt(message.substring("bet:".length()).trim());
-                System.out.println("Client " + client_ID + " wettet " + bet);
-                if(bet > chipAmount){
-                    bet = chipAmount;
-                }
-                chips -= chipAmount;
-                betInput = true;
+                askInput = message.substring("bet:".length()).trim();
             }
             else if (message.startsWith("answer:")) {
                 askInput = message.substring("answer:".length());

@@ -199,7 +199,13 @@ window.connectSocket = async ()=>{
                         const newCoinsCount = Number(textArray[1]);
                         console.log("Got New Coins Count!!!", chipCount, newCoinsCount);
                         window.chipCount = newCoinsCount;
-                        document.getElementById("ChipCount").innerText = chipCount + "¢";
+                        document.getElementById("ChipCount").innerText = "Chips: " + chipCount + "¢";
+                        break;
+                    case "bet":
+                        const bet = await getBet();
+                        answer(bet);
+                        getListener("awaitBet")(bet);
+                        console.log("Fertig");
                         break;
                     default:
                         console.log("Error! Server labert Müll!", text);
@@ -207,7 +213,7 @@ window.connectSocket = async ()=>{
                 }
             } else if (msg.startsWith("blackjack:")) {
                 console.log("Blackjack!!!!");
-                window.endProcess = true; // Weil ich nicht weiß wie die variable hieß zwei setzen
+                window.endProcess = true;
                 window.endGame = true;
             } else if (msg.startsWith("bust:")) {
                 let stackId = parseInt(msg.substring("bust:".length));
