@@ -18,7 +18,7 @@ class BlackjackServer extends WebSocketServer {
 
     // "Dictionary" an Threads, Abfrage eines Threads mit Schlüssel Websocket, synchronizedMaps sind thread-sicher
     private final Map<WebSocket, GameThread> clientThreads = Collections.synchronizedMap(new HashMap<>());
-    // Konstruktor für die Websocket Implementation
+    // Construktor für die Websocket Implementation
     public BlackjackServer(InetSocketAddress address) {
         super(address);
     }
