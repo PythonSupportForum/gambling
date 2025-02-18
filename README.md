@@ -40,3 +40,5 @@ Diese Gambling-Anwendung bietet eine einfache, interaktive Benutzeroberfläche, 
 1. Klone das Repository:
    ```bash
    git clone git@github.com:PythonSupportForum/gambling.git
+
+	Finde selbst raus was du weiter machen musst
