@@ -1,6 +1,6 @@
 # Gambling Application
 
-Dies ist eine Gambling Webanwendung, die HTML und JavaScript für das Frontend verwendet und Java und SQL für das Backend.
+Dies ist eine Gambling-Webanwendung, die HTML und JavaScript für das Frontend verwendet und Java und SQL für das Backend.
 
 ## Inhaltsverzeichnis
 
@@ -22,6 +22,8 @@ Diese Gambling-Anwendung bietet eine einfache, interaktive Benutzeroberfläche, 
 
 - **Frontend:** 
   - HTML
+  - PHP
+  - CSS
   - JavaScript (für Interaktivität)
 - **Backend:**
   - Java (für die Serverlogik)
@@ -37,4 +39,4 @@ Diese Gambling-Anwendung bietet eine einfache, interaktive Benutzeroberfläche, 
 
 1. Klone das Repository:
    ```bash
-   git clone https://github.com/deinBenutzername/gambling-application.git
+   git clone git@github.com:PythonSupportForum/gambling.git
