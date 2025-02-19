@@ -3,10 +3,11 @@ const serverURL = "ws://127.0.0.1:8082";
 window.socket = null;
 window.approved = false;
 window.listener = {};
+window.awaitListener = {};
 window.results = {};
 
 function addListener(type, callback = ()=>{}) {
-    console.log("Add Listner:", type, callback);
+    console.log("Add Listener:", type, callback);
     if(!(type in listener)) listener[type] = [];
     listener[type].push(callback);
     while((type in results) && listener[type].length > 0 ) listener[type].shift()(...results[type]);
@@ -205,9 +206,11 @@ window.connectSocket = async ()=>{
                         break;
                     case "bet":
                         const bet = await getBet();
+                        window.userStack[0].einsatz = bet;
                         answer(bet);
                         getListener("awaitBet")(bet);
                         console.log("Fertig");
+                        window.awaitListener.shift();
                         break;
                     default:
                         console.log("Error! Server labert Müll!", text);

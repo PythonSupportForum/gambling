@@ -340,6 +340,8 @@ public class GameThread implements Runnable {
             }
             chips -= bet;
 
+            System.out.println("Bet done");
+
             setGameState(GameState.SHUFFLE);
             // Die Karten werden mittels der Random klasse, gemischt auf den Nachziehstapel (deck) getan
             while (!temp.isEmpty()) {

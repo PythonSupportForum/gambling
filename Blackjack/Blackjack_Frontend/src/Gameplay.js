@@ -189,7 +189,9 @@ window.chipCount = 0;
 window.insuranceBet = 0; // Einsatz der auf Dealer Blackjack gewettet wurde
 const startGame = async (first = true)=> {
     window.endGame = false;
-    window.betPromise = awaitBet();
+    window.betPromise = new Promise(resolve => {
+        window.awaitListener.push(resolve);
+    });
 
     if(first){
         if(showIntro) {
@@ -211,12 +213,10 @@ const startGame = async (first = true)=> {
         initDealerStack();
 
     }
-    addUserStack(); // Ersten User Stack vor erstem Splitten
 
-    window.gameInfoPromise = betPromise.then(bet => {
-        userStack[0].einsatz = bet;
-        return startNewBidding(bet);
-    });
+    await window.betPromise;
+
+    addUserStack(); // Ersten User Stack vor erstem Splitten
 
     await new Promise(resolve => setTimeout(resolve, 2000));
     await showDealerCards(null, 1);
